@@ -1,0 +1,2815 @@
+<?php
+/**
+ * Theme functions and definitions.
+ *
+ * For additional information on potential customization options,
+ * read the developers' documentation:
+ *
+ * https://developers.elementor.com/docs/hello-elementor-theme/
+ *
+ * @package HelloElementorChild
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+define( 'HELLO_ELEMENTOR_CHILD_VERSION', '2.0.0' );
+
+/**
+ * Load child theme scripts & styles.
+ *
+ * @return void
+ */
+function hello_elementor_child_scripts_styles() {
+
+	wp_enqueue_style(
+		'hello-elementor-child-style',
+		get_stylesheet_directory_uri() . '/style.css',
+		[
+			'hello-elementor-theme-style',
+		],
+		HELLO_ELEMENTOR_CHILD_VERSION
+	);
+
+}
+add_action( 'wp_enqueue_scripts', 'hello_elementor_child_scripts_styles', 20 );
+
+
+
+
+//ADMIN UI
+
+
+
+
+// function add_cors_http_header() {
+//     header("Access-Control-Allow-Origin: https://wellness-for-you-ecommerce.vercel.app");
+//     header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+//     header("Access-Control-Allow-Headers: Content-Type, Authorization");
+// }
+
+// add_action('init', 'add_cors_http_header');
+
+// function add_cors_headers_to_rest_api() {
+//     header("Access-Control-Allow-Origin: https://wellness-for-you-ecommerce.vercel.app");
+//     header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+//     header("Access-Control-Allow-Headers: Content-Type, Authorization");
+// }
+
+// add_action('rest_api_init', 'add_cors_headers_to_rest_api');
+
+
+//COLOR SCHEME
+function wpacg_bynuna_admin_color_scheme() {
+  //Get the theme directory
+  $theme_dir = get_stylesheet_directory_uri();
+
+  //Bynuna
+  wp_admin_css_color( 'bynuna', __( 'Bynuna' ),
+    $theme_dir . '/bynuna.css',
+    array( '#988643', '#f2fcff', '#aa9d88' , '#a4914a')
+  );
+}
+add_action('admin_init', 'wpacg_bynuna_admin_color_scheme');
+
+
+
+//HIDE WOOCOMERECE FIELDS
+function remove_product_data_tabs($tabs) {
+    if (!current_user_can('administrator')) { // Check if the user is not an administrator
+        unset($tabs['inventory']);            // Hide Inventory tab
+        unset($tabs['shipping']);             // Hide Shipping tab
+        // unset($tabs['linked_product']);    // Hide Linked Products tab
+        unset($tabs['attributes']);           // Hide Attributes tab
+        unset($tabs['advanced']);             // Hide Advanced tab
+    }
+    return $tabs;
+}
+add_filter('woocommerce_product_data_tabs', 'remove_product_data_tabs');
+
+function hide_product_tags_field() {
+    if (!current_user_can('administrator')) { // Check if the user is not an administrator
+        remove_meta_box('tagsdiv-post_tag', 'product', 'side'); // Hide Tags from the right sidebar
+    }
+}
+add_action('admin_menu', 'hide_product_tags_field');
+
+add_action('admin_head', function () {
+    if (!current_user_can('administrator')) { // Check if the user is not an administrator
+        echo '<style>
+            .product-data-wrapper, .marketplace-suggestions_options, #tagsdiv-product_tag, .attribute_options { display: none !important; } /* Hides the Product Data section */
+        </style>';
+    }
+});
+
+
+
+//WIDGET FOR ANALYTICS
+function custom_dashboard_widget() {
+    // Fetch data from the API
+    $url = 'https://admin.bynuna.ae/wp-json/wc-analytics/reports/revenue/stats?consumer_key=ck_c10388e89a3e74feeaf32ec349bf9f810f8071bc&consumer_secret=cs_48ef9b20fbd7ca0883b3cb20e9cd0d78398f3d03&orderby=date&order=desc&after=2024-09-21T00%3A00%3A00&page=1&per_page=25&interval=day&_locale=user';
+    $response = wp_remote_get($url);
+
+    if (is_wp_error($response)) {
+        echo 'Unable to fetch data.';
+        return;
+    }
+
+    $data = json_decode(wp_remote_retrieve_body($response), true);
+    
+    if (empty($data['totals'])) {
+        echo 'No data available.';
+        return;
+    }
+
+    // Extract totals and intervals data
+    $totals = $data['totals'];
+    $intervals = array_slice($data['intervals'], 0, 5); // Limit to 5 recent activities
+
+    ?>
+   
+        <!-- Stats Cards (Vertical Layout) -->
+        <div class="dashboard-widget-stats-vertical">
+            <div class="card">
+                <div class="card-icon orders">
+                    <i class="bi bi-cart"></i> <!-- Bootstrap Icon for Cart -->
+                </div>
+                <div class="card-title">Orders Count</div>
+                <div class="card-value"><?php echo $totals['orders_count']; ?></div>
+            </div>
+            <div class="card">
+                <div class="card-icon sales">
+                    <i class="bi bi-cash-stack"></i> <!-- Bootstrap Icon for Sales -->
+                </div>
+                <div class="card-title">Gross Sales</div>
+                <div class="card-value"><?php echo '₹' . number_format($totals['gross_sales'], 2); ?> </div>
+            </div>
+            <div class="card">
+                <div class="card-icon revenue">
+                    <i class="bi bi-wallet2"></i> <!-- Bootstrap Icon for Wallet -->
+                </div>
+                <div class="card-title">Net Revenue</div>
+                <div class="card-value"><?php echo '₹' . number_format($totals['net_revenue'], 2); ?></div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Table (Limit 5 Entries) -->
+        <h4>Recent Activity</h4>
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Orders</th>
+                    <th>Gross Sales</th>
+                    <th>Net Revenue</th>
+                    <th>Avg Order Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($intervals as $interval): ?>
+                    <tr>
+                        <td><?php echo date('Y-m-d', strtotime($interval['date_start'])); ?></td>
+                        <td><?php echo $interval['subtotals']['orders_count']; ?></td>
+                        <td><?php echo '₹' . number_format($interval['subtotals']['gross_sales'], 2); ?></td>
+                        <td><?php echo '₹' . number_format($interval['subtotals']['net_revenue'], 2); ?></td>
+                        <td><?php echo '₹' . number_format($interval['subtotals']['avg_order_value'], 2); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+   
+    <?php
+}
+
+// Register the custom dashboard widget
+function register_custom_dashboard_widget() {
+    wp_add_dashboard_widget(
+        'custom_dashboard_widget', // Widget slug
+        'Revenue Analytics',       // Widget title
+        'custom_dashboard_widget'  // Callback function
+    );
+}
+add_action('wp_dashboard_setup', 'register_custom_dashboard_widget');
+
+// Enqueue Bootstrap Icons CDN
+function load_bootstrap_icons() {
+    wp_enqueue_style( 'bootstrap-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css', false, null );
+}
+add_action('admin_enqueue_scripts', 'load_bootstrap_icons');
+
+// Enqueue custom CSS styles
+function custom_dashboard_widget_styles() {
+    echo '<style>
+    
+        .custom-dashboard-widget {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+
+        .custom-dashboard-widget h3,
+        .custom-dashboard-widget h4 {
+            color: #3c3c3c;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .custom-dashboard-widget h3 {
+            font-weight: 600;
+        }
+
+        .custom-dashboard-widget h4 {
+            font-weight: 500;
+        }
+
+        .dashboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .dashboard-table th,
+        .dashboard-table td {
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+            border: 1px solid #eee;
+        }
+
+        .dashboard-table th {
+            background-color: #ffffff;
+            color: #333;
+            font-weight: 600;
+        }
+
+      
+
+        .dashboard-widget-stats-vertical {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-widget-stats-vertical .card {
+            min-width: inherit !important;
+            max-width: inherit !important;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #16bd4b;
+            color: #16bd4b;
+			width:100%;
+        }
+
+        .dashboard-widget-stats-vertical .card .card-title {
+            font-size: 12px;
+            margin-bottom: 0px;
+            color: #333;
+        }
+
+        .dashboard-widget-stats-vertical .card .card-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #16bd4b;
+        }
+
+        .dashboard-widget-stats-vertical .card .card-icon {
+            font-size: 27px;
+            color: #16bd4b !important;
+            margin-bottom: 10px;
+        }
+
+        .dashboard-widget-stats-vertical .card .card-icon.orders {
+            color: #2196f3;
+        }
+
+        .dashboard-widget-stats-vertical .card .card-icon.sales {
+            color: #4caf50;
+        }
+
+        .dashboard-widget-stats-vertical .card .card-icon.revenue {
+            color: #ff9800;
+        }
+
+        @media screen and (max-width: 768px) {
+            .dashboard-widget-stats-vertical {
+                flex-direction: column;
+            }
+
+            .dashboard-widget-stats-vertical .card {
+                width: 100%;
+            }
+        }
+    </style>';
+}
+add_action('admin_head', 'custom_dashboard_widget_styles');
+
+
+
+
+//TOP ORDER WIDGET
+// Register the dashboard widget
+function top_ordered_products_dashboard_widget() {
+    wp_add_dashboard_widget(
+        'top_ordered_products_widget', // Widget slug
+        'Top Ordered Products',        // Widget title
+        'display_top_ordered_products' // Callback function to display the widget
+    );
+}
+add_action('wp_dashboard_setup', 'top_ordered_products_dashboard_widget');
+
+// Callback function to display the widget content
+function display_top_ordered_products() {
+    // Get the top ordered products
+    $args = array(
+        'post_type'      => 'product',
+        'posts_per_page' => 5, // Display top 5 products
+        'orderby'        => 'meta_value_num',
+        'meta_key'       => 'total_sales', // WooCommerce stores sales count here
+        'order'          => 'DESC'
+    );
+
+    $query = new WP_Query($args);
+
+    if ($query->have_posts()) {
+        echo '<table class="widefat">';
+        echo '<thead><tr><th></th><th>Product</th><th>Sales</th></tr></thead>';
+        echo '<tbody>';
+        while ($query->have_posts()) {
+            $query->the_post();
+            $product = wc_get_product(get_the_ID());
+            $total_sales = get_post_meta($product->get_id(), 'total_sales', true);
+
+            // Get the product image
+            $product_image_url = get_the_post_thumbnail_url($product->get_id(), 'thumbnail');
+            $product_image = $product_image_url ? '<img src="' . esc_url($product_image_url) . '" alt="' . get_the_title() . '" style="width: 30px; height: 30px; object-fit: cover;" />' : 'No image';
+
+            echo '<tr>';
+            echo '<td>' . $product_image . '</td>';
+            echo '<td><a href="' . get_edit_post_link() . '">' . get_the_title() . '</a></td>';
+            echo '<td>' . number_format($total_sales) . '</td>';
+            echo '</tr>';
+        }
+        echo '</tbody></table>';
+    } else {
+        echo '<p>No top ordered products found.</p>';
+    }
+
+    wp_reset_postdata();
+}
+
+
+//WIDGET FOR RECENT ORDERS
+
+function recent_orders_dashboard_widget() {
+    wp_add_dashboard_widget(
+        'recent_orders_widget',      // Widget slug
+        'Recent Orders',             // Widget title
+        'display_recent_orders'      // Callback function to display the widget
+    );
+}
+add_action('wp_dashboard_setup', 'recent_orders_dashboard_widget');
+
+// Callback function to display the widget content
+function display_recent_orders() {
+    // WooCommerce REST API credentials
+    $consumer_key = 'ck_c10388e89a3e74feeaf32ec349bf9f810f8071bc';
+    $consumer_secret = 'cs_48ef9b20fbd7ca0883b3cb20e9cd0d78398f3d03';
+    
+    // Base API URL
+    $base_url = 'https://admin.bynuna.ae/wp-json/wc/v3/orders';
+
+    // Number of orders per page (set to 5 for the most recent 5 orders)
+    $per_page = 5;
+    $page = 1;
+
+    // Construct the API URL
+    $api_url = $base_url . '?consumer_key=' . $consumer_key . '&consumer_secret=' . $consumer_secret . '&per_page=' . $per_page . '&page=' . $page;
+
+    // Perform the GET request
+    $response = wp_remote_get($api_url);
+
+    if (is_wp_error($response)) {
+        echo 'Error retrieving orders: ' . $response->get_error_message();
+        return;
+    }
+
+    // Decode the JSON response
+    $orders = json_decode(wp_remote_retrieve_body($response), true);
+
+    // Check if there are any orders
+    if (!empty($orders)) {
+        echo '<table class="widefat">';
+        echo '<thead><tr><th>Order</th><th>Customer</th><th>Status</th><th>Total</th><th>Date</th></tr></thead>';
+        echo '<tbody>';
+
+        // Loop through the orders and display them
+        foreach ($orders as $order) {
+            $order_id = $order['id'];
+            $customer_name = $order['billing']['first_name'] . ' ' . $order['billing']['last_name'];
+            $order_status = ucfirst($order['status']);
+            $order_total = '₹' . number_format($order['total'], 2);  // Adding ₹ symbol for the total
+            $order_date = new DateTime($order['date_created']);
+            $formatted_date = $order_date->format('M d, Y') . ' at ' . $order_date->format('g:i A');  // Format to 'Dec 24, 2024 at 2:30 PM'
+
+            // Set status text color
+            $status_colors = array(
+                'completed' => 'color: #4caf50;',     // Green
+                'processing' => 'color: #ff9800;',    // Orange
+                'pending' => 'color: #2196f3;',       // Blue
+                'cancelled' => 'color: #f44336;',     // Red
+                'failed' => 'color: #9e9e9e;',        // Grey
+                'on-hold' => 'color: #607d8b;',       // Blue-grey
+            );
+
+            // Default status text color (if not defined in the array)
+            $status_color = isset($status_colors[$order['status']]) ? $status_colors[$order['status']] : 'color: #000000;';  // Default to black if not found
+
+            // Render each order row
+            echo '<tr>';
+            echo '<td><a href="https://admin.bynuna.ae/wp-admin/post.php?post=' . $order_id . '&action=edit">#' . $order_id . '</a></td>';
+            echo '<td>' . esc_html($customer_name) . '</td>';
+            echo '<td style="' . $status_color . '">' . esc_html($order_status) . '</td>';
+            echo '<td>' . esc_html($order_total) . '</td>';
+            echo '<td>' . esc_html($formatted_date) . '</td>';
+            echo '</tr>';
+        }
+
+        echo '</tbody></table>';
+    } else {
+        echo '<p>No recent orders found.</p>';
+    }
+}
+
+
+
+
+//CUSTOM GENERAL STYLE FOR WORDPRESS DASHBOARD WIDGETS
+
+function custom_dashboard_widget_styles_common() {
+    echo '<style>
+    
+     .widefat td {
+    vertical-align: top;
+    color: #50575e;
+    padding: 8px;
+    text-align: left;
+    font-size: 12px;
+    border-right: 1px solid #eee;
+    border-bottom: solid thin #eee;
+    font-size: 12px !important;
+}
+
+.widefat {
+  
+    border: solid thin #eee !important;
+}
+
+.widefat tfoot tr td, .widefat tfoot tr th, .widefat thead tr td, .widefat thead tr th {
+    color: #2c3338;
+    padding: 8px;
+    text-align: left;
+    font-size: 12px;
+    border: 1px solid #eee;
+    font-weight: 600;
+}
+
+    </style>';
+}
+add_action('admin_head', 'custom_dashboard_widget_styles_common');
+
+
+
+//GET USERS BY EMAIL
+
+// Add a custom REST API endpoint to retrieve user by email
+add_action( 'rest_api_init', function() {
+    register_rest_route( 'custom/v1', '/users/', [
+        'methods' => 'GET',
+        'callback' => 'custom_get_user_by_email', // Renamed callback function
+        'args' => [
+            'email' => [
+                'required' => true,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_email( $param ); // Ensure the email format is valid
+                }
+            ],
+        ]
+    ]);
+});
+
+/**
+ * Callback function for the custom REST API endpoint.
+ * Retrieves the user by their email address.
+ *
+ * @param WP_REST_Request $data The request object.
+ * @return array|int
+ */
+function custom_get_user_by_email( $data ) {
+    // Get the email parameter from the request
+    $email = sanitize_email( $data['email'] );
+
+    // Check if the email is valid
+    if ( ! is_email( $email ) ) {
+        return 0; // Invalid email, return 0
+    }
+
+    // Query the user by email
+    $user = get_user_by( 'email', $email );
+
+    // If no user found, return 0
+    if ( ! $user ) {
+        return 0;
+    }
+
+    // Prepare user data to return
+    $user_data = [
+        'id' => $user->ID,
+        'name' => $user->display_name,
+        'email' => $user->user_email,
+    ];
+
+    // Return user data in response
+    return $user_data;
+}
+
+
+//SHOW PRODUCT IMAGE IN REVIEW CUSTOM RST API
+add_action( 'rest_api_init', function() {
+    register_rest_route( 'custom/v1', '/product-reviews/', array(
+        'methods' => 'GET',
+        'callback' => 'get_product_reviews_with_images',
+        'permission_callback' => '__return_true', // Public access, modify as needed
+    ));
+});
+
+function get_product_reviews_with_images( $data ) {
+    // Query to fetch all approved reviews
+    $args = array(
+        'status' => 'approve',
+        'post_type' => 'product',
+        'number' => 10, // Modify number of reviews per page as needed
+    );
+
+    // Fetch reviews from the database
+    $reviews = get_comments( $args );
+
+    // Prepare response array
+    $response = [];
+
+    foreach ( $reviews as $review ) {
+        $product_id = $review->comment_post_ID;
+        $product = wc_get_product( $product_id );
+
+        // Get the product image URL
+        $product_image = '';
+        if ( has_post_thumbnail( $product_id ) ) {
+            $product_image = wp_get_attachment_url( $product->get_image_id() );
+        } else {
+            // If no image, use a placeholder
+            $product_image = 'https://via.placeholder.com/150';
+        }
+
+        // Prepare the review data
+        $response[] = [
+            'id' => $review->comment_ID,
+            'date_created' => $review->comment_date,
+            'product_id' => $product_id,
+            'product_name' => $product->get_name(),
+            'product_permalink' => get_permalink( $product_id ),
+            'status' => $review->comment_approved,
+            'reviewer' => $review->comment_author,
+            'reviewer_email' => $review->comment_author_email,  // Include reviewer email
+            'review' => $review->comment_content,
+            'rating' => get_comment_meta( $review->comment_ID, 'rating', true ),
+            'verified' => false, // You can implement your own logic to check if the reviewer is verified
+            'reviewer_avatar' => get_avatar_url( $review->comment_author_email, ['size' => 96] ),
+            'product_image' => $product_image,
+        ];
+    }
+
+    return rest_ensure_response( $response );
+}
+
+
+
+//SHOW FEATURED IMAGES IN CUSTOM POST TYPE
+
+function add_featured_image_details_to_all_rest_api() {
+    // Get all custom post types (including built-in post type "post")
+    $post_types = get_post_types(array('public' => true), 'names'); // Filters for public post types (including custom post types)
+    
+    // Loop through each post type and add the custom field
+    foreach ($post_types as $post_type) {
+        // Register the custom field for the featured image details
+        register_rest_field(
+            $post_type, // Use dynamic post type here
+            'featured_image_details', // The custom field to be added
+            array(
+                'get_callback' => 'get_featured_image_details', // Callback function to get featured image details
+                'schema' => null, // No schema required
+            )
+        );
+    }
+}
+
+function get_featured_image_details($object) {
+    // Get the post ID
+    $post_id = $object['id'];
+
+    // Get the featured image ID
+    $featured_image_id = get_post_thumbnail_id($post_id);
+
+    // If there's no featured image, return a default image
+    if (!$featured_image_id) {
+        return array(
+            'src' => '',
+            'alt' => 'Default image alt text',
+            'sizes' => array(
+                'thumbnail' => 'https://example.com/path/to/default-image-150x150.jpg',
+                'medium' => 'https://example.com/path/to/default-image-300x200.jpg',
+                'large' => 'https://example.com/path/to/default-image-1024x683.jpg'
+            ),
+            'width' => 1024,
+            'height' => 683
+        );
+    }
+
+    // Get image details using wp_get_attachment_image_src and other functions
+    $image_details = array();
+
+    // Get the full size image URL
+    $image_details['src'] = wp_get_attachment_image_url($featured_image_id, 'full');
+
+    // Get the image alt text
+    $image_details['alt'] = get_post_meta($featured_image_id, '_wp_attachment_image_alt', true);
+
+    // Get different image sizes (e.g., 'thumbnail', 'medium', 'large')
+    $image_details['sizes'] = array(
+        'thumbnail' => wp_get_attachment_image_url($featured_image_id, 'thumbnail'),
+        'medium' => wp_get_attachment_image_url($featured_image_id, 'medium'),
+        'large' => wp_get_attachment_image_url($featured_image_id, 'large'),
+    );
+
+    // Get the image width and height
+    $image_details['width'] = getimagesize(get_attached_file($featured_image_id))[0];
+    $image_details['height'] = getimagesize(get_attached_file($featured_image_id))[1];
+
+    return $image_details;
+}
+
+// Hook to add the custom field to all REST API responses
+add_action('rest_api_init', 'add_featured_image_details_to_all_rest_api');
+
+
+
+//=================================================================================================================================================================================================================//
+
+
+/////////////////////////FILTER CUSTOM FIELD START///////////////////////////////////
+
+function add_repeatable_custom_fields_to_product() {
+    global $post;
+
+    // Retrieve the current '_filter_items' value
+    $existing_custom_fields = get_post_meta( $post->ID, '_filter_items', true );
+    $existing_custom_fields = $existing_custom_fields ? explode( ', ', $existing_custom_fields ) : [];
+
+    ?>
+    <div class="repeatable-field-container" style="padding: 20px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+        <table class="widefat" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr style="background-color: #f1f1f1; color: #333;">
+                    <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Custom Text Field', 'woocommerce' ); ?></th>
+                    <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Custom Filter Field', 'woocommerce' ); ?></th>
+                    <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Actions', 'woocommerce' ); ?></th>
+                </tr>
+            </thead>
+            <tbody class="repeatable-field-body">
+                <tr class="repeatable-field-group" style="background-color: #fff; border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px 15px;">
+                        <input type="text" name="custom_text_field[]" class="custom_text_field" placeholder="<?php _e( 'Enter property', 'woocommerce' ); ?>" value="" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    </td>
+                    <td style="padding: 10px 15px;">
+                        <select name="custom_filter_field[]" class="custom_filter_field" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                            <option value=""><?php _e( 'Select a filter', 'woocommerce' ); ?></option>
+                            <?php
+                            // Get all 'filter' custom post type posts
+                            $filters = get_posts( array(
+                                'post_type' => 'filter',
+                                'posts_per_page' => -1,
+                                'post_status' => 'publish',
+                            ) );
+                            foreach ( $filters as $filter ) {
+                                echo '<option value="' . $filter->ID . '">' . esc_html( $filter->post_title ) . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </td>
+                    <td style="padding: 10px 15px;">
+                        <button type="button" class="remove-repeatable-field" style="background-color: #e74c3c; color: #fff; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">
+                            <?php _e( 'Remove', 'woocommerce' ); ?>
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Display existing filter items below the table -->
+                <?php if ( ! empty( $existing_custom_fields ) ) : ?>
+                    <tr>
+                        <td colspan="3" style="padding: 15px 0;">
+                            <h3 style="margin-bottom: 10px;"><?php _e( 'Current Filter Items:', 'woocommerce' ); ?></h3>
+                            <ul class="current-filter-items" style="list-style-type: none; padding: 0; margin: 0;">
+                                <?php
+                                foreach ( $existing_custom_fields as $index => $item ) {
+                                    list( $filter_slug, $value ) = explode( ':', $item );
+                                    echo '<li data-index="' . $index . '" style="background-color: #f7f7f7; margin-bottom: 10px; padding: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-weight: bold;">' . esc_html( $filter_slug ) . ': ' . esc_html( $value ) . '</span>
+                                            <button type="button" class="remove-current-item" style="background-color: #e74c3c; color: #fff; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer;">' . __( 'Remove', 'woocommerce' ) . '</button>
+                                          </li>';
+                                }
+                                ?>
+                            </ul>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+        <button type="button" class="add-repeatable-field" style="background-color: #2ecc71; color: #fff; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
+            <?php _e( 'Add Another', 'woocommerce' ); ?>
+        </button>
+    </div>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Add new repeatable field group
+            $('button.add-repeatable-field').click(function() {
+                var new_field_group = $('.repeatable-field-group:first').clone();
+                new_field_group.find('input').val('');
+                new_field_group.find('select').val('');
+                $('.repeatable-field-body').append(new_field_group);
+            });
+
+            // Remove repeatable field group
+            $('.repeatable-field-container').on('click', '.remove-repeatable-field', function() {
+                $(this).closest('.repeatable-field-group').remove();
+            });
+
+            // Remove current filter item
+            $('.repeatable-field-container').on('click', '.remove-current-item', function() {
+                var item = $(this).closest('li');
+                var index = item.data('index'); // Get the index of the item
+
+                // Send an AJAX request to remove the item from the meta field
+                $.ajax({
+                    type: 'POST',
+                    url: ajaxurl,
+                    data: {
+                        action: 'remove_filter_item',
+                        post_id: <?php echo $post->ID; ?>,
+                        index: index
+                    },
+                    success: function(response) {
+                        item.remove(); // Remove the list item from the UI
+                    }
+                });
+            });
+        });
+    </script>
+    <?php
+}
+add_action( 'woocommerce_product_options_general_product_data', 'add_repeatable_custom_fields_to_product' );
+
+// Save repeatable custom fields (store slugs instead of IDs) and append if not already exist
+function save_repeatable_custom_fields( $post_id ) {
+    if ( isset( $_POST['custom_text_field'] ) && is_array( $_POST['custom_text_field'] ) ) {
+        // Get the current '_filter_items' value
+        $existing_custom_fields = get_post_meta( $post_id, '_filter_items', true );
+        $existing_custom_fields = $existing_custom_fields ? explode( ', ', $existing_custom_fields ) : [];
+
+        // Iterate through each set of fields and append if not already present
+        $new_custom_fields = [];
+        foreach ( $_POST['custom_text_field'] as $index => $value ) {
+            if ( ! empty( $value ) && isset( $_POST['custom_filter_field'][$index] ) ) {
+                $filter_id = $_POST['custom_filter_field'][$index];
+
+                // Get the filter slug based on the selected ID
+                $filter_post = get_post( $filter_id );
+                if ( $filter_post && 'filter' === $filter_post->post_type ) {
+                    $filter_slug = $filter_post->post_name; // Get the slug of the filter post
+                    $new_item = $filter_slug . ':' . sanitize_text_field( $value );
+
+                    // Append the new item if it's not already in the existing list
+                    if ( ! in_array( $new_item, $existing_custom_fields ) ) {
+                        $existing_custom_fields[] = $new_item;
+                    }
+                }
+            }
+        }
+
+        // Save the updated custom fields as a single concatenated string
+        $custom_field_value = implode( ', ', $existing_custom_fields );
+        update_post_meta( $post_id, '_filter_items', $custom_field_value );
+    }
+}
+add_action( 'woocommerce_process_product_meta', 'save_repeatable_custom_fields' );
+
+// AJAX function to remove a filter item
+function remove_filter_item() {
+    // Check if necessary data is provided
+    if ( isset( $_POST['post_id'] ) && isset( $_POST['index'] ) ) {
+        $post_id = intval( $_POST['post_id'] );
+        $index = intval( $_POST['index'] );
+
+        // Retrieve the existing '_filter_items' value
+        $existing_custom_fields = get_post_meta( $post_id, '_filter_items', true );
+        $existing_custom_fields = $existing_custom_fields ? explode( ', ', $existing_custom_fields ) : [];
+
+        // Remove the item at the specified index
+        if ( isset( $existing_custom_fields[$index] ) ) {
+            unset( $existing_custom_fields[$index] );
+        }
+
+        // Re-index the array and update the meta field
+        $existing_custom_fields = array_values( $existing_custom_fields );
+        $custom_field_value = implode( ', ', $existing_custom_fields );
+        update_post_meta( $post_id, '_filter_items', $custom_field_value );
+
+        // Send a response back to indicate success
+        echo 'Item removed successfully.';
+    }
+
+    // Always die in AJAX functions
+    wp_die();
+}
+add_action( 'wp_ajax_remove_filter_item', 'remove_filter_item' );
+
+
+/////////////////////////FILTER CUSTOM FIELD END///////////////////////////////////
+
+//WISHLIST
+// Register a custom REST API route for WooCommerce wishlist
+add_action('rest_api_init', function() {
+    // Get wishlist items by custom user ID
+    register_rest_route('wishlist/v1', '/items', [
+        'methods' => 'GET',
+        'callback' => 'get_wishlist_items',
+        'args' => [
+            'user_id' => [
+                'required' => true,
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param); // Ensure user_id is numeric
+                }
+            ]
+        ],
+        'permission_callback' => '__return_true', // Open to all users
+    ]);
+
+    // Add an item to the wishlist for a custom user ID
+    register_rest_route('wishlist/v1', '/add', [
+        'methods' => 'POST',
+        'callback' => 'add_to_wishlist',
+        'args' => [
+            'user_id' => [
+                'required' => true,
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param); // Ensure user_id is numeric
+                }
+            ],
+            'product_id' => [
+                'required' => true,
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param); // Ensure product_id is numeric
+                }
+            ]
+        ],
+        'permission_callback' => '__return_true', // Open to all users
+    ]);
+
+    // Remove an item from the wishlist for a custom user ID
+    register_rest_route('wishlist/v1', '/remove', [
+        'methods' => 'POST',
+        'callback' => 'remove_from_wishlist',
+        'args' => [
+            'user_id' => [
+                'required' => true,
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param); // Ensure user_id is numeric
+                }
+            ],
+            'product_id' => [
+                'required' => true,
+                'validate_callback' => function($param, $request, $key) {
+                    return is_numeric($param); // Ensure product_id is numeric
+                }
+            ]
+        ],
+        'permission_callback' => '__return_true', // Open to all users
+    ]);
+});
+
+// Callback to get wishlist items for a specific user
+function get_wishlist_items($data) {
+    $user_id = $data['user_id'];
+
+    // Get the wishlist items from the user meta for the specified user_id
+    $wishlist = get_user_meta($user_id, '_wishlist_items', true);
+    return !empty($wishlist) ? $wishlist : [];
+}
+
+// Callback to add an item to the wishlist for a specific user
+function add_to_wishlist($data) {
+    $user_id = $data['user_id'];
+    $product_id = $data['product_id'];
+
+    // Get the current wishlist items for the user
+    $wishlist = get_user_meta($user_id, '_wishlist_items', true);
+    if (!$wishlist) {
+        $wishlist = [];
+    }
+
+    // Add the product to the wishlist if it's not already there
+    if (!in_array($product_id, $wishlist)) {
+        $wishlist[] = $product_id;
+        update_user_meta($user_id, '_wishlist_items', $wishlist);
+    }
+
+    return ['success' => true];
+}
+
+// Callback to remove an item from the wishlist for a specific user
+function remove_from_wishlist($data) {
+    $user_id = $data['user_id'];
+    $product_id = $data['product_id'];
+
+    // Get the current wishlist items for the user
+    $wishlist = get_user_meta($user_id, '_wishlist_items', true);
+    if (empty($wishlist)) {
+        return new WP_Error('no_wishlist', 'Wishlist is empty', ['status' => 404]);
+    }
+
+    // Remove the product from the wishlist
+    if (($key = array_search($product_id, $wishlist)) !== false) {
+        unset($wishlist[$key]);
+        update_user_meta($user_id, '_wishlist_items', $wishlist);
+    }
+
+    return ['success' => true];
+}
+
+//GET https://admin.bynuna.ae/wp-json/wishlist/v1/items?user_id=12345
+//REMOVE https://admin.bynuna.ae/wp-json/wishlist/v1/remove
+//ADD https://admin.bynuna.ae/wp-json/wishlist/v1/add
+
+// {
+//   "user_id": 12345,
+//   "product_id": 123
+// }
+// 
+// 
+
+////////////////////////////////////AUTH//////////////////////////
+
+
+
+
+//FORGOT PASSWORD: REQUEST
+
+// Register the REST API route for sending the password reset email
+function register_password_reset_routes() {
+    register_rest_route('password-reset/v1', '/request', array(
+        'methods' => 'POST',
+        'callback' => 'handle_password_reset_request',
+        'permission_callback' => '__return_true', // No authentication required for this endpoint
+    ));
+}
+
+add_action('rest_api_init', 'register_password_reset_routes');
+
+// Handle the password reset request
+function handle_password_reset_request(WP_REST_Request $request) {
+    $email = sanitize_email($request->get_param('email'));
+
+    if (!is_email($email)) {
+        return new WP_REST_Response(array('message' => 'Invalid email address.'), 400);
+    }
+
+    // Check if user exists with this email
+    $user = get_user_by('email', $email);
+
+    if (!$user) {
+        return new WP_REST_Response(array('message' => 'No user found with this email address.'), 404);
+    }
+
+    // Generate a token and its expiration time (1 minute)
+    $token = bin2hex(random_bytes(16)); // Generate a random token
+    $expires_at = time() + 60; // Token is valid for 1 minute
+
+    // Store the token and expiration time in the user meta
+    update_user_meta($user->ID, '_password_reset_token', $token);
+    update_user_meta($user->ID, '_password_reset_token_expiry', $expires_at);
+
+    // Send response with token to the frontend
+    return new WP_REST_Response(array('message' => 'Token generated successfully.', 'token' => $token, 'email' => $email), 200);
+}
+
+
+///wp-json/password-reset/v1/request
+
+
+//Verify Token and Reset Password (POST Request)
+
+// Register the REST API route for verifying the token and resetting the password
+function register_verify_token_routes() {
+    register_rest_route('password-reset/v1', '/reset', array(
+        'methods' => 'POST',
+        'callback' => 'verify_token_and_reset_password',
+        'permission_callback' => '__return_true', // No authentication required for this endpoint
+    ));
+}
+
+add_action('rest_api_init', 'register_verify_token_routes');
+
+// Handle the token verification and password reset
+function verify_token_and_reset_password(WP_REST_Request $request) {
+    $email = sanitize_email($request->get_param('email'));
+    $token = sanitize_text_field($request->get_param('token'));
+    $new_password = sanitize_text_field($request->get_param('newPassword'));
+
+    if (!is_email($email)) {
+        return new WP_REST_Response(array('message' => 'Invalid email address.'), 400);
+    }
+
+    // Get user by email
+    $user = get_user_by('email', $email);
+
+    if (!$user) {
+        return new WP_REST_Response(array('message' => 'User not found.'), 404);
+    }
+
+    // Get stored token and expiration time
+    $stored_token = get_user_meta($user->ID, '_password_reset_token', true);
+    $expires_at = get_user_meta($user->ID, '_password_reset_token_expiry', true);
+
+    // Check if token exists and is valid
+    if (!$stored_token || $stored_token !== $token) {
+        return new WP_REST_Response(array('message' => 'Invalid token.'), 400);
+    }
+
+    if ($expires_at < time()) {
+        return new WP_REST_Response(array('message' => 'Token expired.'), 400);
+    }
+
+    // Reset password
+    wp_set_password($new_password, $user->ID);
+
+    // Clear token and expiration
+    delete_user_meta($user->ID, '_password_reset_token');
+    delete_user_meta($user->ID, '_password_reset_token_expiry');
+
+    return new WP_REST_Response(array('message' => 'Password reset successfully.'), 200);
+}
+
+
+//POST /wp-json/password-reset/v1/reset
+
+
+
+
+//LOGIN
+
+// Hook into the REST API initialization
+add_action('rest_api_init', function () {
+    register_rest_route('custom/v1', '/login', [
+        'methods' => 'POST',
+        'callback' => 'custom_login_user',
+        'permission_callback' => '__return_true', // You can adjust the permissions as needed
+    ]);
+});
+
+// Function to handle login request
+function custom_login_user(WP_REST_Request $request) {
+    // Get the email and password from the request
+    $email = $request->get_param('email');
+    $password = $request->get_param('password');
+
+    // Validate email and password
+    if (empty($email) || empty($password)) {
+        return new WP_REST_Response('Email and password are required.', 400);
+    }
+
+    // Check if user exists by email
+    $user = get_user_by('email', $email);
+    if (!$user) {
+        return new WP_REST_Response('User not found with that email address.', 404);
+    }
+
+    // Verify the password
+    if (!wp_check_password($password, $user->user_pass, $user->ID)) {
+        return new WP_REST_Response('Incorrect password.', 403);
+    }
+
+    // Check if the user has the "customer" role (WooCommerce role)
+    if (!in_array('customer', (array) $user->roles)) {
+        return new WP_REST_Response('User is not a customer.', 403);
+    }
+
+    // Generate authentication token (JWT or cookie based)
+    $token = wp_create_nonce('wp_rest');  // This is a simple nonce for demo purposes. You can use JWT for better security.
+
+    // Return success with user data
+    return new WP_REST_Response([
+        'message' => 'Login successful.',
+        'user_id' => $user->ID,
+        'user_email' => $user->user_email,
+        'role' => $user->roles[0],  // Return the role of the user
+        'token' => $token,  // You can use JWT or a custom session token here
+    ], 200);
+}
+
+
+
+//-----------------
+
+// Hook into the REST API initialization
+add_action('rest_api_init', function () {
+    register_rest_route('custom/v1', '/validate-token', [
+        'methods' => 'POST',
+        'callback' => 'validate_token',
+        'permission_callback' => '__return_true', // Adjust permission callback as needed
+    ]);
+});
+
+// Function to handle token validation
+function validate_token(WP_REST_Request $request) {
+    $token = $request->get_param('token');
+    
+    // In a real-world scenario, you would validate the token here.
+    // For example, you can check if it's a valid JWT and extract user information.
+    // For nonce-based token, you could verify it with wp_verify_nonce().
+
+    // Example: If using JWT, you would decode and verify it here.
+    if (!$token) {
+        return new WP_REST_Response('No token provided.', 400);
+    }
+
+    // Dummy validation (replace with your JWT or other token validation logic)
+    // Check if the token exists (as a simple example)
+    if (wp_verify_nonce($token, 'wp_rest')) {
+        return new WP_REST_Response('Token is valid.', 200);
+    }
+
+    return new WP_REST_Response('Invalid token.', 403);
+}
+
+
+//PASSWORD CHANGE
+
+// Register the custom endpoint for password change
+function custom_password_change_endpoint() {
+    register_rest_route( 'custom/v1', '/change-password/', array(
+        'methods'  => 'POST',
+        'callback' => 'change_user_password',
+    ));
+}
+add_action( 'rest_api_init', 'custom_password_change_endpoint' );
+
+// Callback function to handle the password change
+function change_user_password( WP_REST_Request $request ) {
+    // Get parameters from the request
+    $user_id = $request->get_param( 'user_id' );
+    $old_password = sanitize_text_field( $request->get_param( 'old_password' ) );
+    $new_password = sanitize_text_field( $request->get_param( 'new_password' ) );
+
+    // Check if the user exists
+    $user = get_user_by( 'id', $user_id );
+    if ( ! $user ) {
+        return new WP_Error( 'invalid_user', 'The specified user does not exist.', array( 'status' => 400 ) );
+    }
+
+    // Check if the old password is correct
+    if ( ! wp_check_password( $old_password, $user->user_pass, $user_id ) ) {
+        return new WP_Error( 'incorrect_password', 'The old password is incorrect.', array( 'status' => 400 ) );
+    }
+
+    // Validate the new password
+    if ( empty( $new_password ) ) {
+        return new WP_Error( 'invalid_password', 'The new password cannot be empty.', array( 'status' => 400 ) );
+    }
+
+    // Update the password
+    wp_set_password( $new_password, $user_id );
+
+    // Return success response
+    return new WP_REST_Response( 'Password changed successfully', 200 );
+}
+
+
+//https://admin.wellness4u.in/wp-json/custom/v1/change-password/
+// {
+//     "user_id":14,
+//     "old_password": "123456",
+//       "new_password": "123456789"
+// }
+// 
+
+
+//====================================REST API FOR CUSTOM PRODUCTS///////////////
+add_action( 'rest_api_init', function() {
+    register_rest_route( 'wc/v3', '/products/filter/', [
+        'methods'  => 'GET',
+        'callback' => 'custom_wc_meta_filter',
+        'permission_callback' => '__return_true',
+        'args' => [
+            'meta_key' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_string( $param );
+                }
+            ],
+            'meta_value' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_array( $param ) || is_string( $param );
+                }
+            ],
+            'min_price' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_numeric( $param );
+                }
+            ],
+            'max_price' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_numeric( $param );
+                }
+            ],
+            'per_page' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_numeric( $param ) && $param > 0;
+                },
+                'default' => 10 // Default per page if not set
+            ],
+            'featured' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return in_array($param, ['1', '0']);
+                },
+            ],
+            'sort_by' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return in_array($param, ['name', 'price']);
+                },
+                'default' => 'name' // Default sorting by title
+            ],
+            'order' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return in_array($param, ['asc', 'desc']);
+                },
+                'default' => 'asc' // Default sorting order (A-Z)
+            ],
+            'slug' => [
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_string( $param );
+                }
+            ],
+        ]
+    ]);
+});
+
+// Custom product filtering by meta key, value, price range, per_page, featured status, sorting, and slug
+function custom_wc_meta_filter( $data ) {
+    $meta_key = isset( $data['meta_key'] ) ? $data['meta_key'] : '';
+    $meta_values = isset( $data['meta_value'] ) ? (array)$data['meta_value'] : []; // Convert to array if multiple values
+    $min_price = isset( $data['min_price'] ) ? floatval( $data['min_price'] ) : '';
+    $max_price = isset( $data['max_price'] ) ? floatval( $data['max_price'] ) : '';
+    $per_page = isset( $data['per_page'] ) ? intval( $data['per_page'] ) : 10;
+    $featured = isset( $data['featured'] ) ? $data['featured'] : null;  // Check for featured filter
+    $sort_by = isset( $data['sort_by'] ) ? $data['sort_by'] : 'name';  // Default sorting by title
+    $order = isset( $data['order'] ) ? $data['order'] : 'asc'; // Default sorting order
+    $slug = isset( $data['slug'] ) ? $data['slug'] : ''; // Slug filter
+
+    // Set up the query args for filtering products
+    $args = [
+        'post_type'      => 'product',
+        'posts_per_page' => $per_page, // Use the per_page value
+        'meta_query'     => [],
+        'tax_query'      => [],
+        'orderby'        => 'title', // Default sorting by title (product name)
+        'order'          => $order === 'asc' ? 'ASC' : 'DESC',  // Sort by name (A-Z or Z-A)
+    ];
+
+    // Filter by product slug if passed
+    if ( $slug ) {
+        $args['name'] = $slug;  // Filter by product slug
+    }
+
+    // Handle sorting by name
+    if ( $sort_by === 'name' ) {
+        $args['orderby'] = 'title'; // Sort by title (product name)
+        $args['order'] = $order === 'desc' ? 'DESC' : 'ASC'; // Sort A-Z or Z-A based on `order`
+    }
+
+    // Handle sorting by price
+    if ( $sort_by === 'price' ) {
+        $args['orderby'] = 'meta_value_num'; // Sort by numerical value (for price)
+        $args['meta_key'] = '_price'; // Meta key for product price
+        $args['order'] = $order === 'desc' ? 'DESC' : 'ASC'; // Sort by price ascending or descending
+    }
+
+    // Handle multiple meta_values for custom meta key filtering
+    if ( $meta_key && !empty($meta_values) ) {
+        $meta_query = [];
+        foreach ( $meta_values as $meta_value ) {
+            $meta_query[] = [
+                'key'     => $meta_key,
+                'value'   => $meta_value,
+                'compare' => 'LIKE'  // Use 'LIKE' for partial matches (e.g., color:red)
+            ];
+        }
+
+        // Combine the meta_query with OR relation to allow multiple values
+        $args['meta_query'][] = [
+            'relation' => 'OR',
+            ...$meta_query
+        ];
+    }
+
+    // Add price range filter if min_price or max_price is provided
+    if ( $min_price || $max_price ) {
+        $price_query = [
+            'relation' => 'AND',
+        ];
+
+        if ( $min_price ) {
+            $price_query[] = [
+                'key'     => '_price',
+                'value'   => $min_price,
+                'type'    => 'NUMERIC',
+                'compare' => '>='
+            ];
+        }
+
+        if ( $max_price ) {
+            $price_query[] = [
+                'key'     => '_price',
+                'value'   => $max_price,
+                'type'    => 'NUMERIC',
+                'compare' => '<='
+            ];
+        }
+
+        $args['meta_query'] = array_merge( $args['meta_query'], $price_query );
+    }
+
+    // Filter by featured status (if provided)
+    if ( ! is_null( $featured ) ) {
+        $args['meta_query'][] = [
+            'key'     => '_featured',  // Correct meta key for featured status in WooCommerce
+            'value'   => $featured,    // 1 for featured, 0 for not featured
+            'compare' => '='
+        ];
+    }
+
+    // Perform the query
+    $query = new WP_Query( $args );
+
+    $products = [];
+    foreach ( $query->posts as $post ) {
+        $product = wc_get_product( $post->ID );
+
+        // Manually build the response data with images and ACF fields
+        $product_data = $product->get_data();
+
+        // Featured Image
+        $featured_image_id = $product->get_image_id();
+        if ( $featured_image_id ) {
+            $featured_image_data = wp_get_attachment_image_src( $featured_image_id, 'full' );
+            if ( $featured_image_data ) {
+                $product_data['images']['featured'] = [
+                    'id'         => $featured_image_id,
+                    'url'        => $featured_image_data[0],
+                    'width'      => $featured_image_data[1],
+                    'height'     => $featured_image_data[2],
+                    'alt'        => get_post_meta( $featured_image_id, '_wp_attachment_image_alt', true )
+                ];
+            }
+        }
+
+        // Gallery Images
+        $gallery_image_ids = $product->get_gallery_image_ids();
+        if ( $gallery_image_ids ) {
+            $gallery_images = [];
+            foreach ( $gallery_image_ids as $gallery_image_id ) {
+                $gallery_image_data = wp_get_attachment_image_src( $gallery_image_id, 'full' );
+                if ( $gallery_image_data ) {
+                    $gallery_images[] = [
+                        'id'         => $gallery_image_id,
+                        'url'        => $gallery_image_data[0],
+                        'width'      => $gallery_image_data[1],
+                        'height'     => $gallery_image_data[2],
+                        'alt'        => get_post_meta( $gallery_image_id, '_wp_attachment_image_alt', true )
+                    ];
+                }
+            }
+            $product_data['images']['gallery'] = $gallery_images;
+        }
+
+        // Add ACF Fields to the product data
+        $acf_fields = get_fields($product->get_id()); // Fetch all ACF fields
+        if ($acf_fields) {
+            $product_data['acf'] = $acf_fields; // Add ACF data to the response
+        }
+
+        // Add price to the product data
+        $product_data['price'] = $product->get_price();
+
+        $products[] = $product_data;
+    }
+
+    return $products;
+}
+
+
+
+
+// add_action( 'rest_api_init', function() {
+//     register_rest_route( 'wc/v3', '/products/filter/', [
+//         'methods'  => 'GET',
+//         'callback' => 'custom_wc_meta_filter',
+//         'permission_callback' => '__return_true',
+//         'args' => [
+//             'meta_key' => [
+//                 'required' => false,
+//                 'validate_callback' => function( $param, $request, $key ) {
+//                     return is_string( $param );
+//                 }
+//             ],
+//             'meta_value' => [
+//                 'required' => false,
+//                 'validate_callback' => function( $param, $request, $key ) {
+//                     return is_array( $param ) || is_string( $param );
+//                 }
+//             ],
+//             'min_price' => [
+//                 'required' => false,
+//                 'validate_callback' => function( $param, $request, $key ) {
+//                     return is_numeric( $param );
+//                 }
+//             ],
+//             'max_price' => [
+//                 'required' => false,
+//                 'validate_callback' => function( $param, $request, $key ) {
+//                     return is_numeric( $param );
+//                 }
+//             ],
+//             'per_page' => [
+//                 'required' => false,
+//                 'validate_callback' => function( $param, $request, $key ) {
+//                     return is_numeric( $param ) && $param > 0;
+//                 },
+//                 'default' => 10 // Default per page if not set
+//             ],
+//             'featured' => [
+//                 'required' => false,
+//                 'validate_callback' => function( $param, $request, $key ) {
+//                     return in_array($param, ['1', '0']);
+//                 },
+//             ],
+//             'sort_by' => [
+//                 'required' => false,
+//                 'validate_callback' => function( $param, $request, $key ) {
+//                     return in_array($param, ['name', 'price']);
+//                 },
+//                 'default' => 'name' // Default sorting by title
+//             ],
+//             'order' => [
+//                 'required' => false,
+//                 'validate_callback' => function( $param, $request, $key ) {
+//                     return in_array($param, ['asc', 'desc']);
+//                 },
+//                 'default' => 'asc' // Default sorting order (A-Z)
+//             ],
+//         ]
+//     ]);
+// });
+
+// // Custom product filtering by meta key, value, price range, per_page, featured status, and sorting
+// function custom_wc_meta_filter( $data ) {
+//     $meta_key = isset( $data['meta_key'] ) ? $data['meta_key'] : '';
+//     $meta_values = isset( $data['meta_value'] ) ? (array)$data['meta_value'] : []; // Convert to array if multiple values
+//     $min_price = isset( $data['min_price'] ) ? floatval( $data['min_price'] ) : '';
+//     $max_price = isset( $data['max_price'] ) ? floatval( $data['max_price'] ) : '';
+//     $per_page = isset( $data['per_page'] ) ? intval( $data['per_page'] ) : 10;
+//     $featured = isset( $data['featured'] ) ? $data['featured'] : null;  // Check for featured filter
+//     $sort_by = isset( $data['sort_by'] ) ? $data['sort_by'] : 'name';  // Default sorting by title
+//     $order = isset( $data['order'] ) ? $data['order'] : 'asc'; // Default sorting order
+
+//     // Set up the query args for filtering products
+//     $args = [
+//         'post_type'      => 'product',
+//         'posts_per_page' => $per_page, // Use the per_page value
+//         'meta_query'     => [],
+//         'tax_query'      => [],
+//         'orderby'        => 'title', // Default sorting by title (product name)
+//         'order'          => $order === 'asc' ? 'ASC' : 'DESC',  // Sort by name (A-Z or Z-A)
+//     ];
+
+//     // Handle sorting by name
+//     if ( $sort_by === 'name' ) {
+//         $args['orderby'] = 'title'; // Sort by title (product name)
+//         $args['order'] = $order === 'desc' ? 'DESC' : 'ASC'; // Sort A-Z or Z-A based on `order`
+//     }
+
+//     // Handle sorting by price
+//     if ( $sort_by === 'price' ) {
+//         $args['orderby'] = 'meta_value_num'; // Sort by numerical value (for price)
+//         $args['meta_key'] = '_price'; // Meta key for product price
+//         $args['order'] = $order === 'desc' ? 'DESC' : 'ASC'; // Sort by price ascending or descending
+//     }
+
+//     // Handle multiple meta_values for custom meta key filtering
+//     if ( $meta_key && !empty($meta_values) ) {
+//         $meta_query = [];
+//         foreach ( $meta_values as $meta_value ) {
+//             $meta_query[] = [
+//                 'key'     => $meta_key,
+//                 'value'   => $meta_value,
+//                 'compare' => 'LIKE'  // Use 'LIKE' for partial matches (e.g., color:red)
+//             ];
+//         }
+
+//         // Combine the meta_query with OR relation to allow multiple values
+//         $args['meta_query'][] = [
+//             'relation' => 'OR',
+//             ...$meta_query
+//         ];
+//     }
+
+//     // Add price range filter if min_price or max_price is provided
+//     if ( $min_price || $max_price ) {
+//         $price_query = [
+//             'relation' => 'AND',
+//         ];
+
+//         if ( $min_price ) {
+//             $price_query[] = [
+//                 'key'     => '_price',
+//                 'value'   => $min_price,
+//                 'type'    => 'NUMERIC',
+//                 'compare' => '>='
+//             ];
+//         }
+
+//         if ( $max_price ) {
+//             $price_query[] = [
+//                 'key'     => '_price',
+//                 'value'   => $max_price,
+//                 'type'    => 'NUMERIC',
+//                 'compare' => '<='
+//             ];
+//         }
+
+//         $args['meta_query'] = array_merge( $args['meta_query'], $price_query );
+//     }
+
+//     // Filter by featured status (if provided)
+//     if ( ! is_null( $featured ) ) {
+//         $args['meta_query'][] = [
+//             'key'     => '_featured',  // Correct meta key for featured status in WooCommerce
+//             'value'   => $featured,    // 1 for featured, 0 for not featured
+//             'compare' => '='
+//         ];
+//     }
+
+//     // Perform the query
+//     $query = new WP_Query( $args );
+
+//     $products = [];
+//     foreach ( $query->posts as $post ) {
+//         $product = wc_get_product( $post->ID );
+
+//         // Manually build the response data with images and ACF fields
+//         $product_data = $product->get_data();
+
+//         // Featured Image
+//         $featured_image_id = $product->get_image_id();
+//         if ( $featured_image_id ) {
+//             $featured_image_data = wp_get_attachment_image_src( $featured_image_id, 'full' );
+//             if ( $featured_image_data ) {
+//                 $product_data['images']['featured'] = [
+//                     'id'         => $featured_image_id,
+//                     'url'        => $featured_image_data[0],
+//                     'width'      => $featured_image_data[1],
+//                     'height'     => $featured_image_data[2],
+//                     'alt'        => get_post_meta( $featured_image_id, '_wp_attachment_image_alt', true )
+//                 ];
+//             }
+//         }
+
+//         // Gallery Images
+//         $gallery_image_ids = $product->get_gallery_image_ids();
+//         if ( $gallery_image_ids ) {
+//             $gallery_images = [];
+//             foreach ( $gallery_image_ids as $gallery_image_id ) {
+//                 $gallery_image_data = wp_get_attachment_image_src( $gallery_image_id, 'full' );
+//                 if ( $gallery_image_data ) {
+//                     $gallery_images[] = [
+//                         'id'         => $gallery_image_id,
+//                         'url'        => $gallery_image_data[0],
+//                         'width'      => $gallery_image_data[1],
+//                         'height'     => $gallery_image_data[2],
+//                         'alt'        => get_post_meta( $gallery_image_id, '_wp_attachment_image_alt', true )
+//                     ];
+//                 }
+//             }
+//             $product_data['images']['gallery'] = $gallery_images;
+//         }
+
+//         // Add ACF Fields to the product data
+//         $acf_fields = get_fields($product->get_id()); // Fetch all ACF fields
+//         if ($acf_fields) {
+//             $product_data['acf'] = $acf_fields; // Add ACF data to the response
+//         }
+
+//         // Add price to the product data
+//         $product_data['price'] = $product->get_price();
+
+//         $products[] = $product_data;
+//     }
+
+//     return $products;
+// }
+
+
+
+// /wp-json/wc/v3/products/filter/
+// 
+// /meta_key=custom_field
+// /meta_value[]=value1&meta_value[]=value2
+// /min_price=10
+// /max_price=50
+// /per_page=10
+// /featured=1
+// /sort_by=name
+// /order=desc
+
+
+
+
+//CUSTOM FIELD FOR COUPON CODE
+// Add Maximum Amount Field to Coupon Admin Page
+add_action('woocommerce_coupon_options', 'add_maximum_amount_coupon_field', 10, 1);
+function add_maximum_amount_coupon_field($coupon_id) {
+    woocommerce_wp_text_input(array(
+        'id' => 'maximum_amount_field',
+        'label' => __('Maximum Amount', 'your-textdomain'),
+        'description' => __('Enter the maximum amount for this coupon', 'your-textdomain'),
+        'desc_tip' => true,
+    ));
+}
+
+// Save Maximum Amount Field Value
+add_action('woocommerce_coupon_options_save', 'save_maximum_amount_coupon_field', 10, 1);
+function save_maximum_amount_coupon_field($coupon_id) {
+    // Get the value of the maximum amount field from the POST data
+    $maximum_amount = isset($_POST['maximum_amount_field']) ? sanitize_text_field($_POST['maximum_amount_field']) : '';
+    
+    // Save the maximum amount to the coupon's meta data
+    update_post_meta($coupon_id, 'maximum_amount_field', $maximum_amount);
+}
+
+// Register Maximum Amount Field in REST API meta_data
+add_filter('woocommerce_rest_prepare_shop_coupon_object', 'add_maximum_amount_to_coupon_meta_data', 10, 3);
+function add_maximum_amount_to_coupon_meta_data($response, $coupon, $request) {
+    $maximum_amount = get_post_meta($coupon->get_id(), 'maximum_amount_field', true);
+    
+    // Add the 'maximum_amount_field' to the coupon's meta_data in the REST API response
+    if (!empty($maximum_amount)) {
+        $response->data['meta_data'][] = [
+            'key' => 'maximum_amount_field',
+            'value' => $maximum_amount
+        ];
+    }
+    
+    return $response;
+}
+
+// Allow updating Maximum Amount Field via REST API
+add_filter('woocommerce_rest_shop_coupon_object_query', 'allow_maximum_amount_in_coupon_rest_update', 10, 3);
+function allow_maximum_amount_in_coupon_rest_update($args, $request) {
+    $maximum_amount = $request->get_param('maximum_amount_field');
+    
+    // If maximum amount is set in the request, update the coupon's meta field
+    if ($maximum_amount !== null) {
+        $coupon_id = $request->get_param('id');
+        update_post_meta($coupon_id, 'maximum_amount_field', sanitize_text_field($maximum_amount));
+    }
+    
+    return $args;
+}
+
+// Add Refundable Checkbox to Coupon Admin Page
+add_action('woocommerce_coupon_options', 'add_refundable_checkbox_coupon_field', 10, 1);
+function add_refundable_checkbox_coupon_field($coupon_id) {
+    $refundable = get_post_meta($coupon_id, 'refundable_field', true); // Get the current value of the 'refundable_field'
+
+    // If no value is set for refundable_field, default to 'no' (unchecked)
+    if (empty($refundable)) {
+        $refundable = 'no';
+    }
+
+    woocommerce_wp_checkbox(array(
+        'id' => 'refundable_field',
+        'label' => __('Refundable', 'your-textdomain'),
+        'description' => __('Check this box if this coupon is refundable', 'your-textdomain'),
+        'desc_tip' => true,
+        'value' => 'yes', // This is the value when the checkbox is checked
+        'checked' => ($refundable === 'yes'), // Check the box if the value is 'yes'
+    ));
+}
+
+// Save Refundable Checkbox Value
+add_action('woocommerce_coupon_options_save', 'save_refundable_checkbox_coupon_field', 10, 1);
+function save_refundable_checkbox_coupon_field($coupon_id) {
+    // Get the value of the refundable checkbox from the POST data
+    $refundable = isset($_POST['refundable_field']) ? 'yes' : 'no'; // Checkbox is either checked (yes) or unchecked (no)
+    
+    // Save the refundable status to the coupon's meta data
+    update_post_meta($coupon_id, 'refundable_field', $refundable);
+}
+
+// Add Refundable Field to Coupon Meta Data in REST API Response
+add_filter('woocommerce_rest_prepare_shop_coupon_object', 'add_refundable_field_to_coupon_meta_data', 10, 3);
+function add_refundable_field_to_coupon_meta_data($response, $coupon, $request) {
+    $refundable = get_post_meta($coupon->get_id(), 'refundable_field', true);
+    
+    // Add the 'refundable_field' to the coupon's meta_data in the REST API response
+    if (!empty($refundable)) {
+        $response->data['meta_data'][] = [
+            'key' => 'refundable_field',
+            'value' => $refundable,
+        ];
+    }
+    
+    return $response;
+}
+
+// Allow updating Refundable Field via REST API
+add_filter('woocommerce_rest_shop_coupon_object_query', 'allow_refundable_in_coupon_rest_update', 10, 3);
+function allow_refundable_in_coupon_rest_update($args, $request) {
+    $refundable = $request->get_param('refundable_field');
+    
+    // If refundable is set in the request, update the coupon's meta field
+    if ($refundable !== null) {
+        $coupon_id = $request->get_param('id');
+        update_post_meta($coupon_id, 'refundable_field', sanitize_text_field($refundable));
+    }
+    
+    return $args;
+}
+
+
+
+
+//HIDE COUPON FIELDS
+
+
+function hide_woocommerce_coupon_fields() {
+    // Only load the script on the WooCommerce coupon page
+ 
+        ?>
+        <script type="text/javascript">
+            jQuery(document).ready(function($) {
+                // Hide the specified coupon fields
+                $('#woocommerce-coupon-data .free_shipping_field').hide();
+                $('.options_group .minimum_amount_field').hide();
+                $('.options_group .maximum_amount_field').hide();
+                $('.options_group .individual_use_field').hide();
+                $('.options_group .exclude_sale_items_field').hide();
+                $('.options_group .usage_limit_field').hide();
+                $('.options_group .limit_usage_to_x_items_field').hide();
+				 $('#woocommerce-coupon-data  .woocommerce_options_panel .options_group:nth-child(3)').hide();
+				$('#woocommerce-coupon-description').hide();
+            });
+        </script>
+        <?php
+    
+}
+
+// Hook to wp_footer or wp_head depending on your preference
+add_action('admin_footer', 'hide_woocommerce_coupon_fields');
+
+
+
+//MENUS
+add_action('rest_api_init', function() {
+    register_rest_route('custom/v1', '/menus/', [
+        'methods' => 'GET',
+        'callback' => 'get_menus_data',
+        'permission_callback' => '__return_true', // This allows unauthenticated access, change if needed
+    ]);
+
+    // Register a route for fetching a specific menu by slug
+    register_rest_route('custom/v1', '/menus/(?P<slug>[a-zA-Z0-9-_]+)', [
+        'methods' => 'GET',
+        'callback' => 'get_single_menu_data',
+        'permission_callback' => '__return_true',
+    ]);
+});
+
+// Callback function to retrieve all menus
+function get_menus_data(WP_REST_Request $request) {
+    // Get all registered menus
+    $locations = get_nav_menu_locations();
+    $menus = [];
+    
+    // Loop through all the registered locations
+    foreach ($locations as $location => $menu_id) {
+        $menu = wp_get_nav_menu_object($menu_id);
+        $menus[] = [
+            'id' => $menu->term_id,
+            'name' => $menu->name,
+            'slug' => $menu->slug,
+            'location' => $location,
+            'acf' => get_acf_data_for_menu($menu->term_id), // Add ACF fields for menu
+        ];
+    }
+
+    return rest_ensure_response($menus);
+}
+
+// Callback function to retrieve a specific menu by slug
+function get_single_menu_data(WP_REST_Request $request) {
+    $slug = $request->get_param('slug');
+    $menu = wp_get_nav_menu_object($slug);
+    
+    if (!$menu) {
+        return new WP_Error('menu_not_found', 'Menu not found', ['status' => 404]);
+    }
+
+    // Get menu items
+    $menu_items = wp_get_nav_menu_items($menu->term_id);
+    $items = [];
+
+    foreach ($menu_items as $item) {
+        $items[] = [
+            'id' => $item->ID,
+            'title' => $item->title,
+            'url' => $item->url,
+            'parent' => $item->menu_item_parent,
+            'acf' => get_acf_data_for_menu_item($item->ID), // Add ACF fields for menu item
+        ];
+    }
+
+    return rest_ensure_response([
+        'id' => $menu->term_id,
+        'name' => $menu->name,
+        'slug' => $menu->slug,
+        'items' => $items,
+        'acf' => get_acf_data_for_menu($menu->term_id), // Add ACF fields for menu
+    ]);
+}
+
+// Function to retrieve ACF data for a menu (if any)
+function get_acf_data_for_menu($menu_id) {
+    $acf_data = [];
+
+    // Get ACF fields for the menu term
+    if (function_exists('get_field')) {
+        $acf = get_fields('term_' . $menu_id);
+        if ($acf) {
+            $acf_data = $acf; // Assuming this returns an array of ACF fields
+        }
+    }
+
+    return $acf_data;
+}
+
+// Function to retrieve ACF data for a menu item (if any)
+function get_acf_data_for_menu_item($menu_item_id) {
+    $acf_data = [];
+
+    // Get ACF fields for the menu item
+    if (function_exists('get_field')) {
+        $acf = get_fields($menu_item_id);
+        if ($acf) {
+            $acf_data = $acf; // Assuming this returns an array of ACF fields
+        }
+    }
+
+    return $acf_data;
+}
+
+
+
+
+//TOTAL PAY API
+
+// Register the custom REST API endpoint
+add_action('rest_api_init', function () {
+    register_rest_route('custom/v1', '/totalpay-checkout', [
+        'methods' => 'POST',
+        'callback' => 'handle_totalpay_checkout_session',
+        'permission_callback' => '__return_true', // Adjust for security in production
+    ]);
+});
+
+// Function to handle the POST request to the TotalPay API
+function handle_totalpay_checkout_session(WP_REST_Request $request) {
+    // Capture the incoming data
+    $order = $request->get_param('order');
+    $customer = $request->get_param('customer');
+    $billing_address = $request->get_param('billing_address');
+    $card_token = $request->get_param('card_token');
+    
+    // Merchant credentials (replace with your actual keys)
+    $merchant_key = 'cb6b074c-7b0f-11ee-9995-5af3283cdfeb'; // Test Key
+    $merchant_pass = 'be80eebd9f33e214ad7019a70ffd86f9'; // Merchant password
+    $payment_public_id = 'public-id-xyz'; // Replace with actual public ID
+    
+    // Step 1: Construct the hash string exactly as required
+    // Concatenate payment_public_id + order.number + order.amount + order.currency + order.description + merchant.pass
+    $hash_string = $payment_public_id . $order['number'] . $order['amount'] . $order['currency'] . $order['description'] . $merchant_pass;
+    
+    // Step 2: Generate the SHA1 hash and convert it to uppercase
+    $hash = strtoupper(sha1($hash_string)); // SHA1 hash of the concatenated string, then uppercased
+    
+    // Log the hash for debugging (only in development!)
+    error_log('Generated Hash: ' . $hash); // Make sure the hash looks correct in your log
+
+    // Prepare the request data for TotalPay API
+    $data = [
+        'merchant_key' => $merchant_key,
+        'operation' => 'purchase',
+        'methods' => ['card'], // Adjust methods as needed
+        'parameters' => [
+            'card' => [
+                'param1' => 'val-1', // Replace with actual card params
+                'param2' => 'val-2'
+            ]
+        ],
+        'session_expiry' => 60, // Session expiry in minutes
+        'order' => $order,
+        'cancel_url' => 'https://example.domain.com/cancel',
+        'success_url' => 'https://example.domain.com/success',
+        'expiry_url' => 'https://example.domain.com/expiry',
+        'url_target' => '_self', // Ensure this is a valid value (_self, _blank, etc.)
+        'customer' => $customer,
+        'billing_address' => $billing_address,
+        'card_token' => $card_token,
+        'req_token' => true,
+        'recurring_init' => true,
+        'schedule_id' => '9d0f5cc4-f07b-11ec-abf4-0242ac120006', // Example, replace as needed
+        'hash' => $hash, // The dynamically generated hash
+    ];
+    
+    // Make the API request using wp_remote_post
+    $response = wp_remote_post('https://checkout.totalpay.global/api/v1/session', [
+        'method'    => 'POST',
+        'body'      => json_encode($data), // Convert the data to JSON
+        'headers'   => [
+            'Content-Type' => 'application/json',
+        ],
+    ]);
+
+    // Check for errors
+    if (is_wp_error($response)) {
+        return new WP_REST_Response('Error connecting to TotalPay checkout', 500);
+    }
+
+    // Retrieve the response body from TotalPay API
+    $response_body = wp_remote_retrieve_body($response);
+
+    // Log the response for debugging (only in development!)
+    error_log('TotalPay API Response: ' . $response_body);
+
+    // Return the response to the client
+    return new WP_REST_Response($response_body, 200);
+}
+
+
+
+//RETURN
+
+
+// Hook to initialize the custom REST API endpoint
+add_action('rest_api_init', function() {
+    register_rest_route('custom/v1', '/returns/', [
+        'methods' => 'POST',
+        'callback' => 'create_return_post',
+        'permission_callback' => '__return_true', // Change this to proper capability check if needed
+    ]);
+});
+
+// Callback function to create a new "returns" post
+function create_return_post(WP_REST_Request $request) {
+    // Get the post data from the request
+    $title = $request->get_param('title');
+    $content = $request->get_param('content');
+    $status = $request->get_param('status') ? $request->get_param('status') : 'publish'; // Default status to 'publish'
+    $order_id = $request->get_param('order_id'); // ACF field: order_id
+    $amount = $request->get_param('amount'); // ACF field: amount
+    $transition_id = $request->get_param('transition_id'); // ACF field: transition_id
+
+    // Validate required parameters
+    if (empty($title) || empty($content) || empty($order_id) || empty($amount) || empty($transition_id)) {
+        return new WP_REST_Response('Missing required parameters.', 400);
+    }
+
+    // Create the post array
+    $post_data = array(
+        'post_title'   => sanitize_text_field($title),
+        'post_content' => sanitize_textarea_field($content),
+        'post_status'  => sanitize_text_field($status),
+        'post_type'    => 'returns', // Custom post type "returns"
+    );
+
+    // Insert the post into the database
+    $post_id = wp_insert_post($post_data);
+
+    // Check if the post was created successfully
+    if (is_wp_error($post_id)) {
+        return new WP_REST_Response($post_id->get_error_message(), 500);
+    }
+
+    // Save ACF fields
+    update_field('order_id', sanitize_text_field($order_id), $post_id);  // Save 'order_id' ACF field
+    update_field('amount', sanitize_text_field($amount), $post_id);      // Save 'amount' ACF field
+    update_field('transition_id', sanitize_text_field($transition_id), $post_id); // Save 'transition_id' ACF field
+
+    // Return a response with the post ID and success message
+    return new WP_REST_Response(array(
+        'message' => 'Post created successfully!',
+        'post_id' => $post_id
+    ), 201);
+}
+
+//https://admin.wellness4u.in/wp-json/custom/v1/returns/
+
+
+
+
+
+
+
+//POLYLANG ISSUE WITH LOGIN PAGE
+function disable_polylang_on_login_page() {
+    if ( is_login() ) {
+        // Disable the Polylang language switcher on the login page
+        remove_filter( 'pll_the_languages', 'pll_the_languages_filter' );
+    }
+}
+add_action( 'init', 'disable_polylang_on_login_page' );
+
+
+
+//TRANSALATE
+
+
+// Prevent direct access to this file
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Register a custom REST API endpoint
+function libre_translate_register_routes() {
+    register_rest_route('libre-translate/v1', '/translate', [
+        'methods' => 'POST',
+        'callback' => 'libre_translate_translate_text',
+        'permission_callback' => '__return_true', // Allow all users for now, you can secure it later
+    ]);
+}
+
+add_action('rest_api_init', 'libre_translate_register_routes');
+
+// The function that will handle the translation
+function libre_translate_translate_text(WP_REST_Request $request) {
+    // Get the parameters from the request
+    $text = $request->get_param('text');
+    $target_language = $request->get_param('target_language');
+    
+    // Validate the parameters
+    if (empty($text) || empty($target_language)) {
+        return new WP_REST_Response('Missing text or target language.', 400);
+    }
+
+    // Define the LibreTranslate API URL
+    $url = "https://libretranslate.com/translate";
+
+    // Prepare the data for the API request
+    $data = array(
+        'q' => $text,
+        'source' => 'en',  // Assuming the source is English. You can modify this to auto-detect or use another field.
+        'target' => $target_language
+    );
+
+    // Make the API request to LibreTranslate
+    $response = wp_remote_post($url, array(
+        'body' => http_build_query($data),
+        'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+    ));
+
+    // Check if the request was successful
+    if (is_wp_error($response)) {
+        return new WP_REST_Response('Error: Unable to contact translation service.', 500);
+    }
+
+    // Parse the response body
+    $body = wp_remote_retrieve_body($response);
+    $responseData = json_decode($body, true);
+
+    // Return the translated text or an error message if not available
+    if (isset($responseData['translatedText'])) {
+        return new WP_REST_Response($responseData['translatedText'], 200);
+    } else {
+        return new WP_REST_Response('Error: Translation failed.', 500);
+    }
+}
+
+
+
+
+//PAYMENT API
+
+// Register custom REST API endpoint for TotalPay
+
+
+add_action('rest_api_init', function() {
+    register_rest_route('totalpay/v1', '/process-payment/', [
+        'methods' => 'POST',
+        'callback' => 'handle_payment_request',
+        'permission_callback' => '__return_true', // Update this for real security if needed
+    ]);
+});
+
+// Callback function to handle the payment request
+function handle_payment_request(WP_REST_Request $request) {
+    // Get payment data from the request
+    $data = $request->get_json_params();
+    
+    // Log the received data for debugging (optional)
+    error_log(print_r($data, true));
+    
+    // Validate necessary fields (excluding hash since it's provided in the request)
+    if (!isset($data['merchant_key']) || !isset($data['password']) || !isset($data['card']['number']) || !isset($data['card']['expiry']) || !isset($data['order_number']) || !isset($data['amount']) || !isset($data['currency']) || !isset($data['hash'])) {
+        return new WP_REST_Response(['error' => 'Invalid payment data'], 400);
+    }
+
+    // TotalPay API URL
+    $totalpay_api_url = 'https://checkout.totalpay.global/api/v1/session';
+
+    // Prepare the data to send to TotalPay API
+    $request_data = [
+        'merchant_key' => $data['merchant_key'],
+        'password' => $data['password'],
+        'operation' => 'purchase',
+        'methods' => ['card'],
+        'parameters' => [
+            'card' => $data['card'],
+        ],
+        'session_expiry' => 60,
+        'order' => [
+            'number' => $data['order_number'],
+            'amount' => $data['amount'],
+            'currency' => $data['currency'],
+            'description' => $data['description'],
+        ],
+        'cancel_url' => $data['cancel_url'],
+        'success_url' => $data['success_url'],
+        'expiry_url' => $data['expiry_url'],
+        'url_target' => '_parent',
+        'customer' => [
+            'name' => $data['customer']['name'],
+            'email' => $data['customer']['email'],
+        ],
+       // 'billing_address' => $data['billing_address'],
+      //  'payee_billing_address' => $data['payee_billing_address'], // Additional field for payee's billing address
+       // 'custom_data' => $data['custom_data'], // Additional custom data
+        'card_token' => $data['card_token'],
+        'req_token' => true,
+        'recurring_init' => true,
+        'hash' => $data['hash'], // Use the provided hash directly
+    ];
+
+    // Send the request to TotalPay API using wp_remote_post()
+    $response = wp_remote_post($totalpay_api_url, [
+        'method'    => 'POST',
+        'body'      => json_encode($request_data),
+        'headers'   => [
+            'Content-Type' => 'application/json',
+        ],
+    ]);
+
+    // Check for errors in the response
+    if (is_wp_error($response)) {
+        return new WP_REST_Response(['error' => 'Failed to process payment'], 500);
+    }
+
+    // Decode the response body
+    $response_body = wp_remote_retrieve_body($response);
+    $response_data = json_decode($response_body, true);
+
+    // Return the API response data back to the client
+    return new WP_REST_Response($response_data, 200);
+}
+
+
+
+
+
+
+
+//TOTALPAY PAYMENT SATUS
+
+// Hook to initialize the custom REST API endpoint
+add_action('rest_api_init', function() {
+    register_rest_route('totalpay/v1', '/payment-status/', [
+        'methods' => 'POST',
+        'callback' => 'totalpay_payment_status',
+        'permission_callback' => '__return_true', // You can restrict permissions as needed
+    ]);
+});
+
+// Function that handles the request to the external TotalPay API
+function totalpay_payment_status(WP_REST_Request $request) {
+    // Retrieve parameters from the request
+    $merchant_key = sanitize_text_field($request->get_param('merchant_key'));
+    $hash = sanitize_text_field($request->get_param('hash'));
+    $order_id = sanitize_text_field($request->get_param('order_id'));
+
+    // Set up the API URL and the body data
+    $api_url = 'https://checkout.totalpay.global/api/v1/payment/status';
+    $body = json_encode([
+        'merchant_key' => $merchant_key,
+        'hash' => $hash,
+        'order_id' => $order_id,
+    ]);
+
+    // Set up arguments for the request to the API
+    $response = wp_remote_post($api_url, [
+        'method'    => 'POST',
+        'body'      => $body,
+        'headers'   => [
+            'Content-Type' => 'application/json',
+        ],
+    ]);
+
+    // Check for errors in the response
+    if (is_wp_error($response)) {
+        return new WP_Error('totalpay_error', 'Unable to reach TotalPay API', ['status' => 500]);
+    }
+
+    // Get the response body
+    $response_body = wp_remote_retrieve_body($response);
+
+    // Return the API response
+    return rest_ensure_response(json_decode($response_body));
+}
+
+
+
+//TRANSALATION FIELD
+// Register 'translation' custom post type
+function create_translation_post_type() {
+    $args = array(
+        'label' => 'Translations',
+        'public' => true,
+        'has_archive' => true,
+        'supports' => array( 'title', 'custom-fields' ),
+        'rewrite' => array( 'slug' => 'translations' ),
+        'show_in_rest' => true, // Enable REST API support for this post type
+        'rest_base' => 'translations', // Custom REST API endpoint base
+    );
+    register_post_type( 'translation', $args );
+}
+add_action( 'init', 'create_translation_post_type' );
+
+// Register custom fields for REST API (English, Arabic, Label)
+function register_translation_custom_fields_rest() {
+    // Register 'translation_groups' custom field for REST API
+    register_meta( 'post', '_translation_groups', array(
+        'type'         => 'array',
+        'description'  => 'Translation Groups',
+        'single'       => true,
+        'show_in_rest' => true,
+    ) );
+}
+add_action( 'rest_api_init', 'register_translation_custom_fields_rest' );
+
+// Add custom meta box for 'translation' post type
+function translation_custom_meta_box() {
+    add_meta_box(
+        'translation_meta_box', // Meta box ID
+        'Translation Groups', // Title of the meta box
+        'translation_meta_box_callback', // Callback function to display the fields
+        'translation', // Post type
+        'normal', // Position of the box
+        'high' // Priority
+    );
+}
+add_action( 'add_meta_boxes', 'translation_custom_meta_box' );
+
+// Callback function to display the custom fields (English & Arabic, Label) in the meta box
+function translation_meta_box_callback( $post ) {
+    // Add a nonce for security
+    wp_nonce_field( 'translation_meta_box_nonce', 'meta_box_nonce' );
+
+    // Get the existing values for English, Arabic, and Label translations (if any)
+    $translations = get_post_meta( $post->ID, '_translation_groups', true );
+
+    // If no existing values, initialize an empty array
+    if ( ! is_array( $translations ) ) {
+        $translations = array();
+    }
+
+    // Add a search field for Label above the table
+    ?>
+    <label for="translation_label_search">Search by Label:</label>
+    <input type="text" id="translation_label_search" name="translation_label_search" value="" placeholder="Search by Label" style="margin-bottom: 10px; width: 100%;" />
+
+    <table id="translation_groups" style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Label</th>
+                <th>English Translation</th>
+                <th>Arabic Translation</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="translation_groups_list">
+            <?php
+            foreach ( $translations as $index => $pair ) {
+                echo '<tr class="translation_group" data-index="' . $index . '">';
+                echo '<td><input type="text" name="translation_label[' . $index . ']" value="' . esc_attr( $pair['label'] ) . '" class="translation_label" /></td>';
+                echo '<td><input type="text" name="translation_english[' . $index . ']" value="' . esc_attr( $pair['english'] ) . '" /></td>';
+                echo '<td><input type="text" name="translation_arabic[' . $index . ']" value="' . esc_attr( $pair['arabic'] ) . '" /></td>';
+                echo '<td><button type="button" class="remove_translation_group">Remove Group</button></td>';
+                echo '<input type="hidden" name="translation_removed[' . $index . ']" value="0" />'; // Hidden field to track removed groups
+                echo '</tr>';
+            }
+            ?>
+        </tbody>
+    </table>
+
+    <button type="button" id="add_translation_group">Add Translation Group</button>
+
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Add Translation Group (Label, English & Arabic)
+            $('#add_translation_group').on('click', function() {
+                var index = $('#translation_groups_list .translation_group').length;
+                var new_group = '<tr class="translation_group" data-index="' + index + '">';
+                new_group += '<td><input type="text" name="translation_label[' + index + ']" value="" class="translation_label" /></td>';
+                new_group += '<td><input type="text" name="translation_english[' + index + ']" value="" /></td>';
+                new_group += '<td><input type="text" name="translation_arabic[' + index + ']" value="" /></td>';
+                new_group += '<td><button type="button" class="remove_translation_group">Remove Group</button></td>';
+                new_group += '<input type="hidden" name="translation_removed[' + index + ']" value="0" />'; // Hidden field to track removed groups
+                new_group += '</tr>';
+                
+                $('#translation_groups_list').append(new_group);
+            });
+
+            // Remove a Translation Group
+            $(document).on('click', '.remove_translation_group', function() {
+                var group = $(this).closest('.translation_group');
+                var index = group.data('index'); // Get the index of the group to be removed
+
+                // Mark the group as removed by changing the hidden field value
+                $('input[name="translation_removed[' + index + ']"]').val('1');
+
+                // Fade out and then remove the group from the DOM
+                group.fadeOut(300, function() {
+                    $(this).remove(); // Remove the group (row) from the DOM
+                });
+            });
+
+            // Implementing the search functionality for the Label field
+            $('#translation_label_search').on('input', function() {
+                var searchValue = $(this).val().toLowerCase();
+
+                // Loop through each row and hide those that don't match the search value
+                $('#translation_groups_list .translation_group').each(function() {
+                    var labelText = $(this).find('.translation_label').val().toLowerCase();
+
+                    if (labelText.includes(searchValue)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        });
+    </script>
+
+    <style>
+        /* Style the Add and Remove buttons */
+        #add_translation_group, .remove_translation_group {
+            color: white;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            background: #988644;
+            padding: 4px;
+        }
+
+        /* Add hover effect */
+        #add_translation_group:hover, .remove_translation_group:hover {
+            background-color: #005f8d; /* Darker blue on hover */
+        }
+
+        /* Style for the table and its cells */
+        #translation_groups {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #translation_groups th, #translation_groups td {
+            padding: 0;
+            border: 1px solid #ddd;
+        }
+
+        #translation_groups th {
+            text-align: left;
+        }
+
+        /* Style for the input fields inside the table */
+        #translation_groups input[type="text"] {
+            width: 100%;
+            padding: 0 5px;
+            margin: 0;
+            border: 0;
+            border-radius: 0;
+            font-size: 13px;
+        }
+
+        /* Style for the 'Remove Group' button */
+        .remove_translation_group:hover {
+            background-color: #c9302c;
+        }
+    </style>
+<?php }
+
+// Save the custom field data
+function save_translation_custom_field( $post_id ) {
+    // Check if nonce is set and verify it
+    if ( ! isset( $_POST['meta_box_nonce'] ) || ! wp_verify_nonce( $_POST['meta_box_nonce'], 'translation_meta_box_nonce' ) ) {
+        return $post_id;
+    }
+
+    // Prevent autosave and revision
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return $post_id;
+    }
+
+    // Check user permission
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return $post_id;
+    }
+
+    // Save the custom fields (Label, English & Arabic pairs) as an array of groups
+    if ( isset( $_POST['translation_english'] ) && isset( $_POST['translation_arabic'] ) && isset( $_POST['translation_label'] ) ) {
+        $translation_groups = array();
+        foreach ( $_POST['translation_english'] as $index => $english ) {
+            if ( isset( $_POST['translation_removed'][$index] ) && $_POST['translation_removed'][$index] == '1' ) {
+                continue; // Skip this group if it was marked for removal
+            }
+
+            $translation_groups[] = array(
+                'label'   => sanitize_text_field( $_POST['translation_label'][ $index ] ),
+                'english' => sanitize_text_field( $english ),
+                'arabic'  => sanitize_text_field( $_POST['translation_arabic'][ $index ] ),
+            );
+        }
+        update_post_meta( $post_id, '_translation_groups', $translation_groups );
+    }
+}
+add_action( 'save_post', 'save_translation_custom_field' );
+
+// Register custom REST API endpoint to fetch translations
+function register_translation_rest_api() {
+    register_rest_route( 'custom/v1', '/translations', array(
+        'methods' => 'GET',
+        'callback' => 'get_all_translations',
+        'permission_callback' => '__return_true', // Optional: Set permission based on your needs
+    ) );
+}
+add_action( 'rest_api_init', 'register_translation_rest_api' );
+
+// Callback function to fetch all translations
+function get_all_translations( $data ) {
+    // Query the custom post type 'translation'
+    $args = array(
+        'post_type' => 'translation', // The custom post type
+        'posts_per_page' => -1, // Get all posts
+    );
+    
+    $translations_query = new WP_Query( $args );
+    
+    // Prepare the response
+    $translations = array();
+    if ( $translations_query->have_posts() ) {
+        while ( $translations_query->have_posts() ) {
+            $translations_query->the_post();
+            
+            // Get the custom fields for each translation
+            $translation_groups = get_post_meta( get_the_ID(), '_translation_groups', true );
+
+            // Prepare each translation group to return the fields (English, Arabic, Label)
+            $translation_data = array();
+            foreach ( $translation_groups as $group ) {
+                $translation_data[] = array(
+                    'label'   => $group['label'],
+                    'english' => $group['english'],
+                    'arabic'  => $group['arabic'],
+                );
+            }
+
+            $translations[] = array(
+                'title' => get_the_title(),
+                'translations' => $translation_data,
+            );
+        }
+    }
+    
+    // Reset post data
+    wp_reset_postdata();
+    
+    // Return the translated data
+    return new WP_REST_Response( $translations, 200 );
+}
+
+
+
+
+
+
+//DISABLE CONTENT PART OF TRANSALATION
+// Disable the Gutenberg block editor for the 'translation' post type
+function disable_gutenberg_for_translation($is_enabled, $post_type) {
+    if ('translation' === $post_type) {
+        return false; // Disable the block editor
+    }
+    return $is_enabled;
+}
+add_filter('use_block_editor_for_post_type', 'disable_gutenberg_for_translation', 10, 2);
+
+// Remove the default WYSIWYG (Classic Editor) for 'translation' post type
+function remove_translation_editor_support() {
+    remove_post_type_support('translation', 'editor');
+}
+add_action('init', 'remove_translation_editor_support');
+
+
+
+
+
+//ADDRESS ADD, UPDATE, DELETE NEW
+add_action('rest_api_init', function() {
+    // Register custom route for getting all addresses
+    register_rest_route('custom/v1', '/customer/(?P<id>\d+)/get-addresses', [
+        'methods' => 'GET',
+        'callback' => 'get_customer_addresses',
+        'permission_callback' => '__return_true',  // For demonstration, adjust according to permission needs
+    ]);
+
+    // Register custom route for getting a specific address by address_id
+    register_rest_route('custom/v1', '/customer/(?P<id>\d+)/get-address/(?P<address_id>\d+)', [
+        'methods' => 'GET',
+        'callback' => 'get_customer_address_by_id',
+        'permission_callback' => '__return_true',  // For demonstration, adjust according to permission needs
+    ]);
+
+    // Register custom route for adding a new address
+    register_rest_route('custom/v1', '/customer/(?P<id>\d+)/add-address', [
+        'methods' => 'POST',
+        'callback' => 'add_customer_address',
+        'permission_callback' => '__return_true',  // For demonstration, adjust according to permission needs
+    ]);
+
+    // Register custom route for updating an address
+    register_rest_route('custom/v1', '/customer/(?P<id>\d+)/update-address', [
+        'methods' => 'PUT',
+        'callback' => 'update_customer_address',
+        'permission_callback' => '__return_true',  // For demonstration, adjust according to permission needs
+    ]);
+
+    // Register custom route for deleting an address
+    register_rest_route('custom/v1', '/customer/(?P<id>\d+)/delete-address', [
+        'methods' => 'DELETE',
+        'callback' => 'delete_customer_address',
+        'permission_callback' => '__return_true',  // For demonstration, adjust according to permission needs
+    ]);
+});
+
+// Callback function to get all addresses
+function get_customer_addresses(WP_REST_Request $request) {
+    $customer_id = $request->get_param('id');
+    
+    // Get the existing customer
+    $customer = new WC_Customer($customer_id);
+    if (!$customer->get_id()) {
+        return new WP_REST_Response('Customer not found', 404);
+    }
+    
+    // Get current meta data (addresses)
+    $meta_data = $customer->get_meta('additional_addresses', true);
+
+    // If no addresses are found, return an empty array or a message
+    if (empty($meta_data)) {
+        return new WP_REST_Response('No addresses found', 200);
+    }
+
+    // Return the addresses
+    return new WP_REST_Response($meta_data, 200);
+}
+
+// Callback function to get a specific address by address_id
+function get_customer_address_by_id(WP_REST_Request $request) {
+    $customer_id = $request->get_param('id');
+    $address_id = $request->get_param('address_id');  // Get the specific address ID
+    
+    // Get the existing customer
+    $customer = new WC_Customer($customer_id);
+    if (!$customer->get_id()) {
+        return new WP_REST_Response('Customer not found', 404);
+    }
+    
+    // Get current meta data (addresses)
+    $meta_data = $customer->get_meta('additional_addresses', true);
+
+    // Find the address with the given address ID
+    foreach ($meta_data as $address) {
+        if ($address['id'] == $address_id) {
+            // If found, return the address data
+            return new WP_REST_Response($address, 200);
+        }
+    }
+
+    // If the address is not found
+    return new WP_REST_Response('Address not found', 404);
+}
+
+// Callback function to add a new address
+function add_customer_address(WP_REST_Request $request) {
+    $customer_id = $request->get_param('id');
+    $new_address = $request->get_json_params()['meta_data'][0]['value'];
+    
+    if (!is_array($new_address) || empty($new_address)) {
+        return new WP_REST_Response('Invalid address data', 400);
+    }
+    
+    // Get the existing customer
+    $customer = new WC_Customer($customer_id);
+    if (!$customer->get_id()) {
+        return new WP_REST_Response('Customer not found', 404);
+    }
+    
+    // Get current meta data (addresses)
+    $meta_data = $customer->get_meta('additional_addresses', true);
+    
+    // If no addresses exist, initialize the meta_data as an empty array
+    if (!is_array($meta_data)) {
+        $meta_data = [];
+    }
+    
+    // Set the ID for the new address (incrementing the highest existing ID or starting at 1)
+    if (empty($meta_data)) {
+        $new_address['id'] = 1; // If no addresses exist, start with ID 1
+    } else {
+        $new_address['id'] = max(array_column($meta_data, 'id')) + 1; // Increment the highest ID
+    }
+    
+    // Add the new address to the existing addresses
+    $meta_data[] = $new_address;
+    
+    // Save the updated addresses
+    $customer->update_meta_data('additional_addresses', $meta_data);
+    $customer->save();
+    
+    return new WP_REST_Response('Address added successfully', 200);
+}
+
+// Callback function to update an address
+function update_customer_address(WP_REST_Request $request) {
+    $customer_id = $request->get_param('id');
+    $updated_address = $request->get_json_params()['meta_data'][0]['value'];
+    $address_id = $request->get_param('address_id'); // Get the address ID to update
+    
+    if (!is_array($updated_address) || empty($updated_address)) {
+        return new WP_REST_Response('Invalid address data', 400);
+    }
+    
+    // Get the existing customer
+    $customer = new WC_Customer($customer_id);
+    if (!$customer->get_id()) {
+        return new WP_REST_Response('Customer not found', 404);
+    }
+    
+    // Get current meta data (addresses)
+    $meta_data = $customer->get_meta('additional_addresses', true);
+    
+    // Check if the address ID exists in the current data
+    $address_found = false;
+    
+    // Loop through the addresses and update the one with the matching ID
+    foreach ($meta_data as &$address) {
+        if ($address['id'] == $address_id) {
+            // Update the address with the new data
+            $address = array_merge($address, $updated_address);
+            $address_found = true;
+            break;
+        }
+    }
+    
+    // If the address was not found, return an error
+    if (!$address_found) {
+        return new WP_REST_Response('Address not found', 404);
+    }
+    
+    // Save the updated addresses
+    $customer->update_meta_data('additional_addresses', $meta_data);
+    $customer->save();
+    
+    return new WP_REST_Response('Address updated successfully', 200);
+}
+
+// Callback function to delete an address
+function delete_customer_address(WP_REST_Request $request) {
+    $customer_id = $request->get_param('id');
+    $address_id = $request->get_param('address_id');  // Get the address ID to delete
+    
+    // Get the existing customer
+    $customer = new WC_Customer($customer_id);
+    if (!$customer->get_id()) {
+        return new WP_REST_Response('Customer not found', 404);
+    }
+    
+    // Get current meta data
+    $meta_data = $customer->get_meta('additional_addresses', true);
+    
+    // Find and remove the address with the specified ID
+    $updated_meta_data = array_filter($meta_data, function($address) use ($address_id) {
+        return $address['id'] != $address_id;
+    });
+    
+    // Re-index the array to avoid gaps in indices
+    $updated_meta_data = array_values($updated_meta_data);
+    
+    // Save the updated addresses
+    $customer->update_meta_data('additional_addresses', $updated_meta_data);
+    $customer->save();
+    
+    return new WP_REST_Response('Address deleted successfully', 200);
+}
+
+
+
+//SEND NOTIFICATION BY ORDER STATUS
+add_action('woocommerce_order_status_changed', 'send_custom_email_notifications', 10, 4 );
+function send_custom_email_notifications( $order_id, $old_status, $new_status, $order ){
+    if ( $new_status == 'cancelled' || $new_status == 'failed' ){
+        $wc_emails = WC()->mailer()->get_emails(); // Get all WC_emails objects instances
+        $customer_email = $order->get_billing_email(); // The customer email
+    }
+
+    if ( $new_status == 'cancelled' ) {
+        // change the recipient of this instance
+        $wc_emails['WC_Email_Cancelled_Order']->recipient = $customer_email;
+        // Sending the email from this instance
+        $wc_emails['WC_Email_Cancelled_Order']->trigger( $order_id );
+    } 
+    elseif ( $new_status == 'failed' ) {
+        // change the recipient of this instance
+        $wc_emails['WC_Email_Failed_Order']->recipient = $customer_email;
+        // Sending the email from this instance
+        $wc_emails['WC_Email_Failed_Order']->trigger( $order_id );
+    } 
+}
+
+
+//REMOVE UNWANTED STATUS OF ORDERS
+
+function remove_custom_order_status( $order_statuses ) {
+    // Remove unwanted order statuses
+    unset( $order_statuses['wc-on-hold'] );   // Removes the "On Hold" status
+   // unset( $order_statuses['wc-pending'] );    // Removes the "Pending Payment" status
+   // unset( $order_statuses['wc-refunded'] );   // Removes the "Refunded" status
+    unset( $order_statuses['wc-failed'] );     // Removes the "Failed" status
+    unset( $order_statuses['draft'] );      // Removes the "Draft" status
+
+    return $order_statuses;
+}
+add_filter( 'wc_order_statuses', 'remove_custom_order_status' );
+
