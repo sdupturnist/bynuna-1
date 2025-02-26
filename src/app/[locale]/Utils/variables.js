@@ -26,8 +26,8 @@ export let woocommerceKey =
 export let returnDays = 24; //24 hours
 
 //.ENV
-export let homeUrl = `http://localhost:3000/`;
-//export let homeUrl = `https://bynuna.vercel.app/`;
+//export let homeUrl = `http://localhost:3000/`;
+export let homeUrl = `https://bynuna-chi.vercel.app/`;
 export let apiUrl = `https://ardalmarmoom.com/`;
 //export let apiUrl = `https://admin.bynuna.ae/`;
 
