@@ -111,12 +111,19 @@ export let accountMenus = [
 //EMAIL CONFIG
 
 // GMAIL
+// export let hostName = "smtp.gmail.com";
+// export let portNumber = 587;
+// export let emailUsername = "jaseerali2012@gmail.com";
+// export let emailPassword = "thmqawimjxglferj";
+// export let siteEmail = "jaseerali2012@gmail.com";
+// export let siteFromEmail = "jaseerali2012@gmail.com";
+
 export let hostName = "smtp.gmail.com";
 export let portNumber = 587;
 export let emailUsername = "jaseerali2012@gmail.com";
 export let emailPassword = "thmqawimjxglferj";
-export let siteEmail = "jaseerali2012@gmail.com";
-export let siteFromEmail = "jaseerali2012@gmail.com";
+export let siteEmail = "shamnadnk936@gmail.com";
+export let siteFromEmail = "shamnadnk936@gmail.com";
 
 //MAILEROO
 
