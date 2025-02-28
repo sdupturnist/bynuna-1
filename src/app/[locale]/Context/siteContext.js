@@ -43,6 +43,7 @@ export const SiteProvider = ({ children }) => {
   const [mainCatMenues, setMainCatMenues] = useState([]);
   const [searchMobileVisible, setSearchMobileVisible] = useState(false);
   const [queryUpdated, setQueryUpdated] = useState(false);
+ const [savedAddress, setSavedAddress] = useState([]);
 
   //CATEGORIES MENUS
 
@@ -383,6 +384,7 @@ if(localStorage.getItem(`${siteName}_menu`)){
         queryUpdated,
         setQueryUpdated,
         loading,
+        savedAddress, setSavedAddress,
         error, // Pass loading and error to context
       }}
     >

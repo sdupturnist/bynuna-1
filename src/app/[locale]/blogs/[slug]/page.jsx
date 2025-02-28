@@ -1,4 +1,3 @@
-
 import Card from "../../Components/Card";
 import Images from "../../Components/Images";
 import SectionHeader from "../../Components/SectionHeader";
@@ -10,10 +9,8 @@ import {
 } from "../../Utils/variables";
 import BlogInfo from "../../Components/BlogInfo";
 
-
 export default async function BlogSingle({ params, params: { locale } }) {
   const { slug } = params;
-
 
   let blogData = await fetch(
     `${apiUrl}wp-json/wp/v2/posts?slug=${slug}&lang=${locale || "en"}`,
@@ -24,22 +21,18 @@ export default async function BlogSingle({ params, params: { locale } }) {
 
   let blog_ = await blogData.json();
 
-
-  
-
   const blog = blog_[0];
 
   let blogsData = await fetch(
-    `${apiUrl}wp-json/wp/v2/posts?per_page=4&exclude=${blog?.id}&lang=${locale || "en"}`,
+    `${apiUrl}wp-json/wp/v2/posts?per_page=4&exclude=${blog?.id}&lang=${
+      locale || "en"
+    }`,
     {
       next: { revalidate: 60 },
     }
   );
 
   let blogs = await blogsData.json();
-
-
-
 
   return (
     <div>
@@ -61,22 +54,23 @@ export default async function BlogSingle({ params, params: { locale } }) {
                 {blog?.title?.rendered}
               </h1>
               <BlogInfo postDate={blog?.date} />
-            {blog?.content?.rendered &&   <div
-                className={`blog-content border-black ${
-                  blogs && blogs.length >= 1 && "border-b pb-8"
-                }`}
-                dangerouslySetInnerHTML={{
-                  __html: blog && blog?.content?.rendered,
-                }}
-              />
-              }
+              {blog?.content?.rendered && (
+                <div
+                  className={`blog-content border-black ${
+                    blogs && blogs.length >= 1 && "border-b pb-8"
+                  }`}
+                  dangerouslySetInnerHTML={{
+                    __html: blog && blog?.content?.rendered,
+                  }}
+                />
+              )}
               {blogs && blogs.length >= 1 && (
                 <>
                   <SectionHeader title="More blogs" titleCenter />
                   <div className="grid sm:grid-cols-2 sm:gap-8 gap-5">
                     {blogs &&
                       blogs.map((item, index) => (
-                        <Card key={index} data={item} blog locale={locale}/>
+                        <Card key={index} data={item} blog locale={locale} />
                       ))}
                   </div>
                 </>
@@ -89,16 +83,15 @@ export default async function BlogSingle({ params, params: { locale } }) {
   );
 }
 
-
 export async function generateMetadata({ params, searchParams }, parent) {
   const staticData = metaStaticData;
 
-
   const slug = params.slug;
+  const locale = params.locale;
 
   try {
     const page = await fetch(
-      `${apiUrl}wp-json/wp/v2/posts?slug=${slug}`,
+      `${apiUrl}wp-json/wp/v2/posts?slug=${slug}&lang=${locale}`,
 
       {
         next: { revalidate: 60 },
@@ -106,7 +99,6 @@ export async function generateMetadata({ params, searchParams }, parent) {
     );
 
     const [pageData] = await page.json();
-
 
     // Return metadata object with dynamic values, or fall back to static values
     return {
@@ -121,7 +113,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       viewport: "width=device-width, initial-scale=1",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
-        canonical: homeUrl +'blogs/'+pageData?.slug,
+        canonical: `${homeUrl}${locale}/blogs/${pageData?.slug}`,
       },
       og_locale: pageData?.yoast_head_json?.og_locale || staticData.og_locale,
       og_type: pageData?.yoast_head_json?.og_type || staticData.og_type,
@@ -139,11 +131,13 @@ export async function generateMetadata({ params, searchParams }, parent) {
         pageData?.yoast_head_json?.twitter_misc || staticData.twitter_misc,
       twitter_site: staticData.twitter_site,
       twitter_creator: staticData.twitter_creator,
-    twitter_image:
+      twitter_image:
         pageData?.yoast_head_json?.og_image?.[0]?.url ||
         staticData.twitter_image,
- openGraph: {
-        images: [pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.openGraph?.images],
+      openGraph: {
+        images: [
+          pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.ogImage,
+        ],
       },
     };
   } catch (error) {

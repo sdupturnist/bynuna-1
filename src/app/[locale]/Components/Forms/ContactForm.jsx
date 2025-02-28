@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  getTranslation,
-  siteEmail,
-  siteName,
-} from "../../Utils/variables";
+import { getTranslation, siteEmail, siteName } from "../../Utils/variables";
 import { useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import { useLanguageContext } from "../../Context/LanguageContext";
@@ -15,10 +11,9 @@ import { useParams, useRouter } from "next/navigation";
 import LoadingItem from "../LoadingItem";
 
 export default function ContactForm() {
-
   const router = useRouter();
-  const params = useParams();  
-  const locale = params.locale; 
+  const params = useParams();
+  const locale = params.locale;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,7 +22,6 @@ export default function ContactForm() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
 
   const { translation } = useLanguageContext();
 
@@ -44,11 +38,19 @@ export default function ContactForm() {
       });
       setLoading(false);
       setSuccess(
-        getTranslation(translation[0]?.translations,  "Thanks for contacting us! Our team is reviewing your submission and will get back to you soon.", locale || 'en')
+        getTranslation(
+          translation[0]?.translations,
+          "Thanks for contacting us! Our team is reviewing your submission and will get back to you soon.",
+          locale || "en"
+        )
       );
+
       setName("");
       setEmail("");
+      setSubject("");
       setMessage("");
+
+      router.refresh();
     } catch (error) {
       console.error("Error sending email:", error);
       setError(error);
@@ -56,85 +58,90 @@ export default function ContactForm() {
   };
 
   return (
-   <>
-    <h3 className="text-center heading-lg sm:mb-10 mb-5">
-    {getTranslation(
-                      translation[0]?.translations,
-                      "Get In Touch",
-                      locale || 'en'
-                    )}
-    </h3>
-    <div className="grid gap-5">
-      {success && <Alerts title={success} status="green" />}
-      {error && <Alerts title={error} status="red" />}
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-5">
-          <FloatingLabelInput
-            type="text"
-            className="input"
-            label={getTranslation(
-              translation[0]?.translations,
-              "Name",
-              locale || 'en'
-            )}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-
-          <FloatingLabelInput
-            type="email"
-            className="input"
-            label={getTranslation(
-              translation[0]?.translations,
-              "Email",
-              locale || 'en'
-            )}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <FloatingLabelInput
-            type="text"
-            className="input"
-            label={getTranslation(
-              translation[0]?.translations,
-              "Subject",
-              locale || 'en'
-            )}
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            required
-          />
-
-          <FloatingLabelInput
-            textarea
-            className="input"
-            label={getTranslation(
-              translation[0]?.translations,
-              "Message",
-              locale || 'en'
-            )}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-
-          <div>
-            <button
-              className="btn btn-primary btn-mobile-full w-full"
-              type="submit"
-              disabled={loading && true}
-            >
-              {loading ? (
-                <LoadingItem dot classes="!text-dark opacity-[0.5] size-5" />
-              ) : (
-                getTranslation(translation[0]?.translations, "Submit", locale || 'en')
+    <>
+      <h3 className="text-center heading-lg sm:mb-10 mb-5">
+        {getTranslation(
+          translation[0]?.translations,
+          "Get In Touch",
+          locale || "en"
+        )}
+      </h3>
+      <div className="grid gap-5">
+        {success && <Alerts title={success} status="green" />}
+        {error && <Alerts title={error} status="red" />}
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-5">
+            <FloatingLabelInput
+              type="text"
+              className="input"
+              label={getTranslation(
+                translation[0]?.translations,
+                "Name",
+                locale || "en"
               )}
-            </button>
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+
+            <FloatingLabelInput
+              type="email"
+              className="input"
+              label={getTranslation(
+                translation[0]?.translations,
+                "Email",
+                locale || "en"
+              )}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            <FloatingLabelInput
+              type="text"
+              className="input"
+              label={getTranslation(
+                translation[0]?.translations,
+                "Subject",
+                locale || "en"
+              )}
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              required
+            />
+
+            <FloatingLabelInput
+              textarea
+              className="input"
+              label={getTranslation(
+                translation[0]?.translations,
+                "Message",
+                locale || "en"
+              )}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+
+            <div>
+              <button
+                className="btn btn-primary btn-mobile-full w-full"
+                type="submit"
+                disabled={loading && true}
+              >
+                {/* {loading && (
+                
+                  <LoadingItem dot classes="!text-dark opacity-[0.5] size-5" /> 
+                    ) } */}
+                {getTranslation(
+                  translation[0]?.translations,
+                  "Submit",
+                  locale || "en"
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      </form>
-    </div>
-   </>
+        </form>
+      </div>
+    </>
   );
 }

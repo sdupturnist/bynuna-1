@@ -26,10 +26,14 @@ import Alerts from "../Alerts";
 import { useParams, useRouter } from "next/navigation";
 import LoadingItem from "../LoadingItem";
 
-export default function AddNewAddressForm({ onAddressAdded }) {
+export default function AddNewAddressForm({onAddressAdded}) {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale;
+
+  
+
+  const {showNewAddress, setShowNewAddress,  savedAddress, setSavedAddress} = useSiteContext()
 
   const mapRef = useRef(null); // Reference for the map container
   const [coordinates, setCoordinates] = useState({
@@ -47,7 +51,7 @@ export default function AddNewAddressForm({ onAddressAdded }) {
 
   const { translation } = useLanguageContext();
 
-  const { setShowNewAddress } = useSiteContext();
+
 
   const [searchQuery, setSearchQuery] = useState("");
   const [map, setMap] = useState(null);
@@ -73,10 +77,17 @@ export default function AddNewAddressForm({ onAddressAdded }) {
 
   const { token } = useJwt();
 
+
+
   const handleSubmit = async (e) => {
+
+    
+
     e.preventDefault();
 
     setLoading(true);
+
+  
 
     const requestData = {
       meta_data: [
@@ -117,7 +128,7 @@ export default function AddNewAddressForm({ onAddressAdded }) {
     try {
       // Submit the review
       const response = await fetch(
-        `${apiUrl}wp-json/custom/v1/customer/${userId}/add-address`,
+        `${apiUrl}wp-json/custom/v1/customer/${userData && userData?.id}/add-address`,
         {
           method: "POST",
           headers: {
@@ -129,13 +140,24 @@ export default function AddNewAddressForm({ onAddressAdded }) {
       );
 
       if (response.ok) {
-        onAddressAdded();
+ 
+     
         setLoading(false);
         setStatus(true);
-
-        setTimeout(() => {
+        
+    
           setStatus(false);
-        }, 1000);
+        // onAddressAdded
+          window.scrollTo(0, 0);
+          setShowAddNewAddress(false)
+          setShowNewAddress(false)
+         // router.push(`${homeUrl}${locale}/account/address`)
+          router.refresh(); 
+      
+
+
+
+
 
         setCountry("");
         setstate("");
@@ -145,10 +167,25 @@ export default function AddNewAddressForm({ onAddressAdded }) {
         setStreet("");
         setHousename("");
 
-        setTimeout(() => {
-          setShowAddNewAddress(false);
-          setShowNewAddress(false);
-        }, 1000);
+
+          try {
+            const addressResponse = await fetch(
+              `${apiUrl}wp-json/custom/v1/customer/${userId}/get-addresses`,
+              {
+                next: { revalidate: 60 },
+              }
+            );
+            const addressResponseData = await addressResponse.json();
+            setSavedAddress(addressResponseData);
+            setLoading(false);
+          } catch (error) {
+            console.error("Error fetching data:", error);
+          }
+     
+      
+        
+
+ 
       } else {
         const errorResponse = await response.json();
         console.error("Failed to save address", response.status, errorResponse);
@@ -157,10 +194,10 @@ export default function AddNewAddressForm({ onAddressAdded }) {
         setStatus(false);
       }
     } catch (error) {
-      setError(true);
-      setLoading(false);
-      setStatus(false);
-      console.error("An error occurred:", error);
+      // setError(true);
+      // setLoading(false);
+      // setStatus(false);
+      // console.error("An error occurred:", error);
     } finally {
     }
   };
@@ -639,7 +676,7 @@ export default function AddNewAddressForm({ onAddressAdded }) {
             )}
           </small>
 
-          <div className="relative z-20 flex w-full">
+          <div className="relative flex w-full z-10">
             <div className="w-full">
               <ReactSearchAutocomplete
                 items={places}
@@ -674,7 +711,7 @@ export default function AddNewAddressForm({ onAddressAdded }) {
           <div
             id="map"
             ref={mapRef}
-            className="w=full min-h-[50vh] border border-border"
+            className="w-full min-h-[50vh] border border-border relative"
           ></div>
         </div>
         <FloatingLabelInput

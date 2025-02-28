@@ -44,11 +44,9 @@ export default function Filter({
     setValue(newValues); // Update the state with the new values
   };
 
-
   // useLayoutEffect(() => {
   //   console.log("layout effect");
   // });
-
 
   useEffect(() => {
     if (isInitialRender.current) {
@@ -135,6 +133,7 @@ export default function Filter({
 
   const closeFilter = () => {
     setShowFilter(!showFilter);
+    document.body.style.overflow = 'auto';
     //setSelectedFilters([]);
     //setQueryUpdated(true);
     //localStorage.removeItem(`${siteName}_selectedFilters`);
@@ -163,10 +162,12 @@ export default function Filter({
                   locale || "en"
                 )}
               </h4>
-              <i
+              <div
+                className="size-7 flex items-center justify-center"
                 onClick={closeFilter}
-                className="bi bi-x-lg cursor-pointer"
-              ></i>
+              >
+                <i className="bi bi-x-lg cursor-pointer"></i>
+              </div>
             </div>
           </div>
           <div className="max-h-screen min-h-screen overflow-auto p-5">
@@ -338,10 +339,12 @@ export default function Filter({
                   locale || "en"
                 )}
               </h4>
-              <i
+              <div
+                className="size-7 flex items-center justify-center"
                 onClick={closeFilter}
-                className="bi bi-x-lg cursor-pointer"
-              ></i>
+              >
+                <i className="bi bi-x-lg cursor-pointer"></i>
+              </div>
             </div>
           </div>
           <div className="max-h-screen min-h-screen overflow-auto p-5">

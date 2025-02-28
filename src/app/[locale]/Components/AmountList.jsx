@@ -17,7 +17,7 @@ import { useParams, useRouter } from "next/navigation";
 
 export default function AmountList({ data, forOrderDetails, tableView,  }) {
 
-    const router = useRouter();
+  
        const params = useParams();  
        const locale = params.locale; 
 

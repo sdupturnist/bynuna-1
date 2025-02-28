@@ -117,7 +117,7 @@ export default function CancelOrderForm({ userInfo, data }) {
           setStatus(false);
 
           router.push(`${homeUrl}${locale}/account/orders`); // Redirect to account page
-        }, 3000);
+        }, 1000);
       }
 
       setLoading(false);

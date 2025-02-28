@@ -78,7 +78,7 @@ export default function PaymentOptionsList({ data,  }) {
       id: "Total pay",
       title: getTranslation(
         translation[0]?.translations,
-        "Total pay",
+        "Credit or Debit Card",
         locale || 'en'
       ),
     },

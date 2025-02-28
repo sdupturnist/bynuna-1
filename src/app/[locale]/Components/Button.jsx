@@ -64,7 +64,7 @@ export default function Button({
   if (primary && action) {
     return (
       <button onClick={action} className={`btn ${classes} btn-primary`}>
-        {label}
+        {label}sdf
       </button>
     );
   }

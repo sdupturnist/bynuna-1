@@ -182,6 +182,7 @@ export default async function Home({
 export async function generateMetadata({ params, searchParams }, parent) {
   const staticData = metaStaticData;
 
+ 
   try {
     const page = await fetch(
       `${apiUrl}wp-json/wp/v2/pages?slug=home-en`,
@@ -192,6 +193,8 @@ export async function generateMetadata({ params, searchParams }, parent) {
     );
 
     const [pageData] = await page.json();
+
+    console.log(pageData?.yoast_head_json)
 
     // Return metadata object with dynamic values, or fall back to static values
     return {
@@ -206,7 +209,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       viewport: "width=device-width, initial-scale=1",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
-        canonical: homeUrl,
+        canonical: homeUrl+'en',
       },
       og_locale: pageData?.yoast_head_json?.og_locale || staticData.og_locale,
       og_type: pageData?.yoast_head_json?.og_type || staticData.og_type,
@@ -231,7 +234,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       openGraph: {
         images: [
           pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.openGraph?.images,
+            staticData.ogImage,
         ],
       },
     };

@@ -87,7 +87,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       openGraph: {
         images: [
           pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.openGraph?.images,
+            staticData.ogImage,
         ],
       },
     };

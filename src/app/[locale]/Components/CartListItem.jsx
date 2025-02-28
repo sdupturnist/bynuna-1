@@ -6,6 +6,7 @@ import AddToCart from "./AddToCart";
 import {
   convertStringToJSON,
   getTranslation,
+  homeUrl,
   siteName,
 } from "../Utils/variables";
 import Link from "next/link";
@@ -14,24 +15,20 @@ import Price from "./Price";
 import { useLanguageContext } from "../Context/LanguageContext";
 import { useParams, useRouter } from "next/navigation";
 
-
-
-
 export default function CartListItem({}) {
-
-    const router = useRouter();
-   const params = useParams();  
-   const locale = params.locale; 
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale;
 
   const { cartItems, setCartItems, cartListedItems } = useCartContext();
 
-
-    const { translation } = useLanguageContext();
+  const { translation } = useLanguageContext();
 
   // Load items from localStorage on component mount
   useEffect(() => {
     // Get the cart items from localStorage
-    const storedItems = typeof window !== "undefined" && localStorage.getItem(`${siteName}_cart`);
+    const storedItems =
+      typeof window !== "undefined" && localStorage.getItem(`${siteName}_cart`);
 
     // Ensure cartItems is always an array
     setCartItems(storedItems ? JSON.parse(storedItems) : []);
@@ -55,6 +52,9 @@ export default function CartListItem({}) {
         categories: product?.categories,
         image: product?.images[0]?.src, // Get the first image if available
         isNeedLicence: item?.isNeedLicence,
+        category: item?.category,
+        sub_category: item?.sub_category,
+        child_category: item?.child_category,
       };
     });
 
@@ -77,7 +77,7 @@ export default function CartListItem({}) {
                 <div className="flex items-center justify-start w-full gap-5 mb-7 lg:mb-0">
                   <Link
                     className="flex items-center sm:h-[60px] sm:w-[60px] h-[80px] w-[80px] min-h-[80px] min-w-[80px] sm:p-3 p-1"
-                    href={`/product/${item?.slug}`} // Assuming slug is a product-specific URL
+                    href={`${homeUrl}${locale}/products/${item?.category}/${item?.sub_category}/${item?.child_category}/${item?.slug}`}
                   >
                     <Images
                       imageurl={item?.image}
@@ -104,11 +104,10 @@ export default function CartListItem({}) {
                               <Price small regular={item?.price} sale="" />x{" "}
                               {item?.quantity}
                               {getTranslation(
-                    translation[0]?.translations,
-                    "items",
-                    locale || 'en'
-                  )}
-                            
+                                translation[0]?.translations,
+                                "items",
+                                locale || "en"
+                              )}
                             </div>
                           </span>
                         </div>
@@ -129,6 +128,9 @@ export default function CartListItem({}) {
                         convertStringToJSON(item && item?.option)) ||
                       item?.price
                     }
+                    category={item?.acf?.main_categories[0]?.post_name}
+                    subCategory={item?.acf?.sub_categories[0]?.post_name}
+                    childCategory={item?.acf?.child_categories[0]?.post_name}
                   />
                 )}
               </div>
@@ -136,19 +138,17 @@ export default function CartListItem({}) {
                 <div className="border-t border-red-300 bg-red-300 bg-opacity-10 text-xs p-2">
                   <i className="bi bi-exclamation-triangle-fill text-red-500 mr-1 text-[11px] mb-1"></i>
                   <span className="uppercase text-red-500 font-medium px-2">
-                  {getTranslation(
-                    translation[0]?.translations,
-                    "Before You Buy.",
-                    locale || 'en'
-                  )}
-                   
+                    {getTranslation(
+                      translation[0]?.translations,
+                      "Before You Buy.",
+                      locale || "en"
+                    )}
                   </span>
                   {getTranslation(
                     translation[0]?.translations,
                     "I understand that identification will be required for collection of this restricted item.",
-                    locale || 'en'
+                    locale || "en"
                   )}
-                 
                 </div>
               )}
             </li>

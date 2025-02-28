@@ -114,6 +114,9 @@ export default function ProductCard({
                   image={data?.images[0]?.src || data?.images}
                   slug={data?.slug}
                   isNeedLicence={parseInt(isNeedLicence?.value)}
+                  category={data?.acf?.main_categories[0]?.post_name}
+                  subCategory={data?.acf?.sub_categories[0]?.post_name}
+                  childCategory={data?.acf?.child_categories[0]?.post_name}
                 />
               )}
             </div>
@@ -195,6 +198,9 @@ export default function ProductCard({
                   image={data?.images[0]?.src || data?.images}
                   slug={data?.slug}
                   isNeedLicence={parseInt(isNeedLicence?.value)}
+                  category={data?.acf?.main_categories[0]?.post_name}
+                  subCategory={data?.acf?.sub_categories[0]?.post_name}
+                  childCategory={data?.acf?.child_categories[0]?.post_name}
                 />
               )}
             </div>
@@ -278,6 +284,9 @@ export default function ProductCard({
                   image={data?.images[0]?.src || data?.images}
                   slug={data?.slug}
                   isNeedLicence={parseInt(isNeedLicence?.value)}
+                  category={data?.acf?.main_categories[0]?.post_name}
+                  subCategory={data?.acf?.sub_categories[0]?.post_name}
+                  childCategory={data?.acf?.child_categories[0]?.post_name}
                 />
               )}
             </div>
@@ -377,6 +386,9 @@ export default function ProductCard({
                   image={data?.images[0]?.src || data?.images}
                   slug={data?.slug}
                   isNeedLicence={parseInt(isNeedLicence?.value)}
+                  category={data?.acf?.main_categories[0]?.post_name}
+                  subCategory={data?.acf?.sub_categories[0]?.post_name}
+                  childCategory={data?.acf?.child_categories[0]?.post_name}
                 />
               )}
             </div>
@@ -459,6 +471,9 @@ export default function ProductCard({
                   image={data?.images[0]?.src || data?.images}
                   slug={data?.slug}
                   isNeedLicence={parseInt(isNeedLicence?.value)}
+                  category={data?.acf?.main_categories[0]?.post_name}
+                  subCategory={data?.acf?.sub_categories[0]?.post_name}
+                  childCategory={data?.acf?.child_categories[0]?.post_name}
                 />
               )}
             </div>

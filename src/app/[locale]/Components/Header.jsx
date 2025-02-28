@@ -37,6 +37,10 @@ export default function Header({ locale }) {
 
   const [visibleDiv, setVisibleDiv] = useState("");
 
+  const [isVisible, setIsVisible] = useState(true); // To track header visibility
+  const [lastScrollY, setLastScrollY] = useState(0); // To track last scroll position
+  const [isSticky, setIsSticky] = useState(false); // To track if header is sticky
+
   const [headerHeight, setHeaderHeight] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -61,6 +65,35 @@ export default function Header({ locale }) {
       window.removeEventListener("resize", updateHeight);
     };
   }, [headerMenu]); // Empty dependency array means this effect runs only once on mount
+
+  const handleScroll = () => {
+    if (window.scrollY > lastScrollY && window.scrollY > 200) {
+      setIsVisible(false);
+    } else {
+      // Scrolling up
+      setIsVisible(true);
+    }
+
+    if (window.scrollY > 400) {
+      setIsSticky(true);
+    } else {
+      setIsSticky(false);
+    }
+
+    setLastScrollY(window.scrollY); // Update the last scroll position
+  };
+
+  useEffect(() => {
+    // Add the scroll event listener
+    window.addEventListener("scroll", handleScroll);
+
+    // Clean up the event listener on component unmount
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [lastScrollY]); // Dependency array with lastScrollY to re-trigger on scroll
+
+
 
   const { validUserTocken } = useAuthContext();
   const { cartItems } = useCartContext();
@@ -176,7 +209,15 @@ export default function Header({ locale }) {
   // console.log(`Screen width: ${screenWidth}`);
 
   return (
-    <header className="top-0 left-0 right-0 z-20 relative" ref={headerRef}>
+    <header
+    className={`transition-all z-20 ${
+      isSticky && "sticky-header"
+    } bg-white transition-all sticky top-0 left-0 right-0 z-20`}
+    style={{
+      transform: isVisible ? "translateY(0)" : "translateY(-100%)", // Hide on scroll down
+    }}
+
+    ref={headerRef}>
       <div className="bg-primary uppercase [&>*]:text-xs py-1 sm:py-0">
         <div className="container flex justify-between items-center">
           <small className="block text-white sm:text-xs text-[10px]">

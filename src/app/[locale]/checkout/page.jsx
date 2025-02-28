@@ -26,28 +26,28 @@ import PaymentOptions from "../Components/PaymentOptions";
 import { useAuthContext } from "../Context/authContext";
 import { useLanguageContext } from "../Context/LanguageContext";
 import LoadingItem from "../Components/LoadingItem";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { userId } from "../Utils/UserInfo";
 import { use } from "react";
 import Cookies from "js-cookie";
+import { useSiteContext } from "../Context/siteContext";
 
-function Checkout({ params }) {
-  const resolvedParams = use(params); // Unwrap the params Promise
+function Checkout() {
+  const params = useParams();
+  const locale = params.locale;
 
-  // Now you can access the `locale` property
-  const { locale } = resolvedParams;
-
-  // const router = useRouter();
-  //  //  const { locale } = router;
-
-  //    console.log('-----', locale)
+  const router = useRouter();
 
   const { guestUser, setGuestUser } = useCartContext();
 
+  const { userData } = useAuthContext();
+
   const { validUserTocken } = useAuthContext();
+  const { savedAddress, setSavedAddress } = useSiteContext();
 
   const {
     setBillingAddress,
+    billingAddress,
     validateAddress,
     setValidateAddress,
     showAddNewAddress,
@@ -57,11 +57,10 @@ function Checkout({ params }) {
   // State to store the fetched data
   const [paymentOptions, setPaymentOptions] = useState(null);
   const [couponCodes, setCouponCodes] = useState(null);
-  const [savedAddress, setAdditionalsavedAddress] = useState([]);
+  const [selectAddressFromList, setSelectAddressFromList] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const { translation } = useLanguageContext();
-
 
   // Fetch data on component mount
   useEffect(() => {
@@ -94,35 +93,59 @@ function Checkout({ params }) {
     fetchData();
   }, []); // Empty dependency array ensures this runs only once when the component mounts
 
-  const userId = Cookies.get(`${siteName}_u_id`);
-
-if(!guestUser){
-  if (!userId) return;
-}
-   // Don't run the fetch if userId is not available yet
+  // if (!guestUser) {
+  //   if (userId) return;
+  // }
+  // Don't run the fetch if userId is not available yet
 
   const fetchCustomerData = async () => {
-    try {
-      const addressResponse = await fetch(
-        `${apiUrl}wp-json/custom/v1/customer/${userId}/get-addresses`,
-        {
-          next: { revalidate: 60 },
-        }
-      );
-      const addressResponseData = await addressResponse.json();
-      setAdditionalsavedAddress(addressResponseData);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    if (userData?.id) {
+      try {
+        const addressResponse = await fetch(
+          `${apiUrl}wp-json/custom/v1/customer/${userData?.id}/get-addresses`,
+          {
+            next: { revalidate: 60 },
+          }
+        );
+        const addressResponseData = await addressResponse.json();
+        setSavedAddress(addressResponseData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     }
   };
 
   // Fetch data on component mount
   useEffect(() => {
-    if (userId) {
-      fetchCustomerData();
+    fetchCustomerData();
+
+    if (!guestUser && !selectAddressFromList) {
+      if (
+        userData?.id &&
+        Array.isArray(savedAddress) &&
+        savedAddress.length > 0
+      ) {
+        setValidateAddress(true);
+        setBillingAddress({
+          firstName: savedAddress[0]?.full_name,
+          lastName: "",
+          country: savedAddress[0]?.country,
+          houseName: savedAddress[0]?.address_1,
+          street: savedAddress[0]?.address_2,
+          landmark: savedAddress[0]?.landmark,
+          state: savedAddress[0]?.state,
+          city: savedAddress[0]?.city,
+          pinCode: savedAddress[0]?.pincode,
+          phone: savedAddress[0]?.phone,
+        });
+        setSelectAddressFromList(true);
+      } else {
+        setValidateAddress(false);
+        setBillingAddress("");
+      }
     }
-  }, [userId, savedAddress]); // Re-run when userId or savedAddress changes
+  }, [userData?.id, savedAddress, router]); // Re-run when userId or savedAddress changes
 
   const additionalAddresses = useMemo(() => {
     return savedAddress?.meta_data?.find(
@@ -131,7 +154,7 @@ if(!guestUser){
   }, [savedAddress?.meta_data]);
 
   // State to keep track of the active item
-  const [activeId, setActiveId] = useState(null);
+  const [activeId, setActiveId] = useState(savedAddress[0]?.id);
 
   // Function to handle item click
   const handleClick = (id) => {
@@ -141,13 +164,12 @@ if(!guestUser){
   const handleSelectAddress = (selectedBillingAddress) => {
     setBillingAddress(selectedBillingAddress);
     setValidateAddress(!validateAddress);
-  };
-
-  const handleEditClick = () => {
-    setEditData(savedAddress); // Update the state before navigating
+    setSelectAddressFromList(true);
   };
 
   const deleteAddress = (id) => {
+    setLoading(true);
+
     const swalWithBootstrapButtons = Swal.mixin({
       customClass: {
         confirmButton: "btn btn-success",
@@ -184,7 +206,7 @@ if(!guestUser){
       .then((result) => {
         if (result.isConfirmed) {
           fetch(
-            `${apiUrl}wp-json/custom/v1/customer/${userId}/delete-address`,
+            `${apiUrl}wp-json/custom/v1/customer/${userData?.id}/delete-address`,
             {
               method: "DELETE",
               headers: {
@@ -193,18 +215,25 @@ if(!guestUser){
               body: JSON.stringify({
                 address_id: id,
               }),
-            }
+            },
+            setLoading(false)
           )
             .then((res) => res.json())
-            .then((data) => {
-              setAdditionalsavedAddress(data); // Update state with the response data
-            })
+
+            // .then((data) => {
+            //   setSavedAddress(data); // Update state with the response data
+            // })
             .catch((error) => {
+              setLoading(false);
               console.error("Error deleting address:", error);
             });
         }
       });
   };
+
+  // if (!guestUser && !loading && savedAddress !== 0) {
+  //   return <LoadingItem fullscreen />;
+  // }
 
   return (
     <main className="bg-light lg:bg-white">
@@ -232,122 +261,116 @@ if(!guestUser){
                         card
                       />
 
-                      {savedAddress?.length !== 0 && userId ? (
-                        <>
-                          {savedAddress?.length === 0 && userId && (
-                            <LoadingItem spinner />
-                          )}
+                      {loading ? (
+                        <LoadingItem spinner />
+                      ) : userData?.id &&
+                        Array.isArray(savedAddress) &&
+                        savedAddress.length > 0 ? (
+                        <ul className="grid gap-5">
+                          {savedAddress.map((item) => (
+                            <li
+                              key={item.id}
+                              onClick={() => {
+                                handleClick(item.id);
+                                handleSelectAddress({
+                                  firstName: item?.full_name,
+                                  lastName: "",
+                                  country: item?.country,
+                                  houseName: item?.address_1,
+                                  street: item?.address_2,
+                                  landmark: item?.landmark,
+                                  state: item?.state,
+                                  city: item?.city,
+                                  pinCode: item?.pincode,
+                                  phone: item?.phone,
+                                });
+                              }}
+                              className={`${
+                                (selectAddressFromList &&
+                                  item.id === activeId) ||
+                                item.id === activeId
+                                  ? "bg-light border-primary"
+                                  : "border-border"
+                              } border sm:p-7 p-5 text-start cursor-pointer`}
+                            >
+                              <div className="!grid gap-1 [&>*]:text-base [&>*]:opacity-70 sm:max-w-[60%]">
+                                <h4 className="secondary-font text-black font-semibold">
+                                  {item?.full_name || "No name available"}
+                                </h4>
 
-                          <ul className="grid gap-5">
-                            {savedAddress?.length !== 0 &&
-                              userId &&
-                              savedAddress.map((item) => (
-                                <li
-                                  key={item.id}
-                                  onClick={() => {
-                                    handleClick(item.id),
-                                      handleSelectAddress({
-                                        firstName: item?.full_name,
-                                        lastName: "",
-                                        country: item?.country,
-                                        houseName: item?.address_1,
-                                        street: item?.address_2,
-                                        landmark: item?.landmark,
-                                        state: item?.state,
-                                        city: item?.city,
-                                        pinCode: item?.pincode,
-                                        phone: item?.phone,
-                                      });
-                                  }}
-                                  className={`${
-                                    item.id === activeId
-                                      ? "bg-light border-primary"
-                                      : "border-border"
-                                  } border sm:p-7 p-5 text-start cursor-pointer`}
-                                >
-                                  <div
-                                    className={`!grid gap-1 [&>*]:text-base [&>*]:opacity-70 sm:max-w-[60%]`}
-                                  >
-                                    <h4 className="secondary-font text-black font-semibold">
-                                      {item?.full_name && item?.full_name}
-                                    </h4>
-                                    {item?.address_1 && (
-                                      <span>{item?.address_1}</span>
-                                    )}
-                                    {item?.address_2 && (
-                                      <span>{item?.address_2}</span>
-                                    )}
-                                    {item?.company && (
-                                      <span>{item?.company}</span>
-                                    )}
-                                    {item?.city && (
-                                      <>
-                                        {item?.city && (
-                                          <span>{item?.city}, </span>
-                                        )}
-                                        {item?.state && (
-                                          <span>{item?.state}, </span>
-                                        )}
-                                        {item?.country && (
-                                          <span>{item?.country}, </span>
-                                        )}
+                                {item?.address_1 && (
+                                  <span>{item?.address_1}</span>
+                                )}
+                                {item?.address_2 && (
+                                  <span>{item?.address_2}</span>
+                                )}
+                                {item?.company && <span>{item?.company}</span>}
 
-                                        {item?.pincode && (
-                                          <span>
-                                            {getTranslation(
-                                              translation[0]?.translations,
-                                              "Pin.",
-                                              locale || "en"
-                                            )}
-                                            . {item?.pincode}
-                                          </span>
-                                        )}
-
-                                        {item?.phone && (
-                                          <span>
-                                            {" "}
-                                            {getTranslation(
-                                              translation[0]?.translations,
-                                              "Ph.",
-                                              locale || "en"
-                                            )}{" "}
-                                            {item?.phone}
-                                          </span>
-                                        )}
-                                      </>
+                                {(item?.city ||
+                                  item?.state ||
+                                  item?.country ||
+                                  item?.pincode ||
+                                  item?.phone) && (
+                                  <>
+                                    {item?.city && <span>{item?.city}</span>}
+                                    {item?.state && item?.city && (
+                                      <span>, {item?.state}</span>
                                     )}
+                                    {item?.country &&
+                                      (item?.city || item?.state) && (
+                                        <span>, {item?.country}</span>
+                                      )}
+                                    {item?.pincode && (
+                                      <span>
+                                        {getTranslation(
+                                          translation[0]?.translations,
+                                          "Pin.",
+                                          locale || "en"
+                                        )}
+                                        . {item?.pincode}
+                                      </span>
+                                    )}
+                                    {item?.phone && (
+                                      <span>
+                                        {getTranslation(
+                                          translation[0]?.translations,
+                                          "Ph.",
+                                          locale || "en"
+                                        )}{" "}
+                                        {item?.phone}
+                                      </span>
+                                    )}
+                                  </>
+                                )}
 
-                                    <div>
-                                      <div className="join mt-4 !gap-0">
-                                        <Link
-                                          href={`${homeUrl}${locale}/account/address/edit/${item?.id}`}
-                                          className="btn btn-light btn-medium join-item min-w-20 flex justify-center"
-                                        >
-                                          {getTranslation(
-                                            translation[0]?.translations,
-                                            "Edit",
-                                            locale || "en"
-                                          )}
-                                        </Link>
-                                        <button
-                                          className="btn btn-light btn-medium join-item min-w-20 flex justify-center"
-                                          onClick={() =>
-                                            deleteAddress(item?.id)
-                                          }
-                                        >
-                                          {getTranslation(
-                                            translation[0]?.translations,
-                                            "Delete",
-                                            locale || "en"
-                                          )}
-                                        </button>
-                                      </div>
-                                    </div>
+                                <div>
+                                  <div className="join mt-4 !gap-0">
+                                    <Link
+                                      href={`${homeUrl}${locale}/account/address/edit/${item?.id}`}
+                                      className="btn btn-light btn-medium join-item min-w-20 flex justify-center"
+                                    >
+                                      {getTranslation(
+                                        translation[0]?.translations,
+                                        "Edit",
+                                        locale || "en"
+                                      )}
+                                    </Link>
+                                    <button
+                                      className="btn btn-light btn-medium join-item min-w-20 flex justify-center"
+                                      onClick={() => deleteAddress(item?.id)}
+                                    >
+                                      {getTranslation(
+                                        translation[0]?.translations,
+                                        "Delete",
+                                        locale || "en"
+                                      )}
+                                    </button>
                                   </div>
-                                </li>
-                              ))}
-                          </ul>
-                        </>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
                       ) : (
                         <Alerts
                           center
@@ -358,6 +381,7 @@ if(!guestUser){
                             locale || "en"
                           )}
                         />
+                        // <LoadingItem spinner />
                       )}
                     </>
                   ) : (

@@ -39,6 +39,7 @@ const FloatingLabelInput = ({
       {textarea ? (
         <textarea
           id={id}
+          value={value}
           name={name}
           placeholder={focused ? "" : label}
           onChange={onChange}

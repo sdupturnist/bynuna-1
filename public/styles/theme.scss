@@ -73,7 +73,7 @@ h6 {
 
 .heading-md {
   font-family: "Merriweather", serif;
-  @apply sm:text-[16px] leading-[1.8em] text-sm;
+  @apply sm:text-[16px] leading-[1.8em] text-[10px];
 }
 
 .heading-lg {
@@ -83,7 +83,7 @@ h6 {
 
 .heading-xl {
   font-family: "Merriweather", serif;
-  @apply lg:text-[2.5vw] leading-[1.5em] text-2xl;
+  @apply lg:text-[2.5vw] leading-[1.5em] sm:text-2xl text-lg;
 }
 
 .body,
@@ -774,9 +774,9 @@ div:where(.swal2-container) div:where(.swal2-actions) {
 
 //WISHLIST
 .wish-list {
-  @apply grid lg:grid-cols-2 grid-cols-2 justify-around items-start sm:gap-7 gap-5;
+  @apply grid lg:grid-cols-2 grid-cols-2 justify-around items-start sm:gap-7 gap-3;
   a {
-    @apply hover:text-primary transition-all   h-full items-center grid;
+    @apply hover:text-primary transition-all  items-center  ;
   }
   @media only screen and (max-width: 639px) {
     padding-top: 0 !important;
@@ -788,7 +788,7 @@ div:where(.swal2-container) div:where(.swal2-actions) {
 }
 
 .product-item {
-  @apply lg:border-none border border-border border-opacity-55 lg:p-0 p-2 lg:text-center text-start;
+  @apply lg:border-none border border-border border-opacity-55 lg:p-0 p-2 lg:text-center text-start h-full;
   &:hover {
     .card-action {
       @apply opacity-100 h-auto;
@@ -1440,3 +1440,64 @@ html[lang="ar"] {
 
 
 
+
+//SUCCESS TIK
+
+.success-animation { 
+
+  @apply sm:mb-[50px] mb-[10px] mt-[10px]
+}
+
+.checkmark {
+    @apply sm:size-[100px] size-[60px];
+    border-radius: 50%;
+    display: block;
+    stroke-width: 2;
+    stroke: $PRIMARY_COLOR;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px $PRIMARY_COLOR;
+    animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+    position:relative;
+    top: 5px;
+    right: 5px;
+   margin: 0 auto;
+}
+.checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke: $PRIMARY_COLOR;
+    fill: $WHITE;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+ 
+}
+
+.checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scale {
+    0%, 100% {
+        transform: none;
+    }
+
+    50% {
+        transform: scale3d(1.1, 1.1, 1);
+    }
+}
+
+@keyframes fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 30px #4bb71b;
+    }
+}

@@ -54,7 +54,7 @@ export default function Card({
             classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
             placeholder={true}
           />
-          <h3 className="heading-md mt-5 text-center">
+          <h3 className="heading-md mt-5 text-center line-clamp-2">
             {data?.title?.rendered || data?.name}
           </h3>
         </div>
@@ -83,7 +83,7 @@ export default function Card({
             classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
             placeholder={true}
           />
-          <h3 className="heading-md mt-5 text-center">
+          <h3 className="heading-md mt-5 text-center line-clamp-2">
           <ProductName title={data?.title?.rendered} />
           </h3>
         </div>
@@ -112,7 +112,7 @@ export default function Card({
             classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
             placeholder={true}
           />
-          <h3 className="heading-md mt-5 text-center">
+          <h3 className="heading-md mt-5 text-center line-clamp-2">
           <ProductName title={data?.title?.rendered} />
           </h3>
         </div>
@@ -143,7 +143,7 @@ export default function Card({
             classes="block sm:size-[90px] size-[60px] object-contain mx-auto"
             placeholder={true}
           />
-          <h3 className="heading-md mt-5 text-center">
+          <h3 className="heading-md mt-5 text-center line-clamp-2">
           <ProductName title={title} />
           </h3>
         </div>
@@ -188,7 +188,7 @@ export default function Card({
   if (product) {
     return (
       <div className="relative product-item sm:p-3 p-0">
-        <div className="grid gap-[10px]">
+        <div className="grid  gap-[10px] h-full">
           <div className="img-box">
           {data?.review_count > 0 && (
               <ReviewCount
@@ -204,6 +204,8 @@ export default function Card({
                   itemName={data?.name}
                   productId={data?.id}
                 />
+
+             
                 <AddToCart
                   card
                   itemid={data?.id}
@@ -214,6 +216,9 @@ export default function Card({
                   image={data?.images?.featured?.url || data?.images}
                   slug={data?.slug}
                   isNeedLicence={parseInt(isNeedLicence?.value)}
+                  category={data?.acf?.main_categories[0]?.post_name}
+                  subCategory={data?.acf?.sub_categories[0]?.post_name}
+                  childCategory={data?.acf?.child_categories[0]?.post_name}
                 />
                 <Link
                   href={`${homeUrl}${locale}/products/${
@@ -273,7 +278,7 @@ export default function Card({
               />
             </Link>
           </div>
-          <div className="gap-2 items-center justify-center w-full mt-2">
+          <div className="contents items-center justify-center w-full mt-2 min-h-[115px] sm:min-h-fit">
             
            
             <Link
@@ -304,7 +309,7 @@ export default function Card({
               )}
             </Link>
 
-            <div className=" gap-2 items-center justify-center mt-4 lg:hidden w-full">
+            <div className=" gap-2 items-center justify-center sm:mt-4 mt-2 lg:hidden w-full">
               <AddToCart
                 card
                 itemid={data?.id}
@@ -313,6 +318,9 @@ export default function Card({
                 image={data?.images?.featured?.url || data?.images}
                 slug={data?.slug}
                 isNeedLicence={parseInt(isNeedLicence?.value)}
+                category={data?.acf?.main_categories[0]?.post_name}
+                subCategory={data?.acf?.sub_categories[0]?.post_name}
+                childCategory={data?.acf?.child_categories[0]?.post_name}
               />
             </div>
           </div>

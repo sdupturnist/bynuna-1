@@ -25,6 +25,7 @@ import { OrderPlacedEmailTemplate } from "../Utils/MailTemplates";
 import { useSiteContext } from "../Context/siteContext";
 import { use } from 'react';
 import { useParams } from "next/navigation";
+import { userEmail } from "../Utils/UserInfo";
 
 export default function CashOnDeliveryPayment({ userData}) {
 
@@ -86,6 +87,10 @@ export default function CashOnDeliveryPayment({ userData}) {
 
 
 
+
+
+
+
   const { translation } = useLanguageContext();
 
   const currency = currencies?.find(
@@ -140,6 +145,7 @@ export default function CashOnDeliveryPayment({ userData}) {
   const hasLicenceItems =
     cartItems && cartItems?.some((item) => item?.isNeedLicence === 1);
 
+ 
     
 
   // Handle the payment and order creation logic
@@ -404,7 +410,7 @@ export default function CashOnDeliveryPayment({ userData}) {
                 expires: 1 / 1440,
               });
 
-              router.push(`${homeUrl}${locale}/checkout/success_order`);
+              router.push(`${homeUrl}${locale}/checkout/success_order?user_type=${userEmail === undefined ? 'guest' : 'account'}`)
             } else {
               throw new Error("Failed to create order in WooCommerce");
             }

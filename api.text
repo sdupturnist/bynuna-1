@@ -2576,6 +2576,7 @@ add_action('init', 'remove_translation_editor_support');
 
 
 //ADDRESS ADD, UPDATE, DELETE NEW
+// ADDRESS ADD, UPDATE, DELETE NEW
 add_action('rest_api_init', function() {
     // Register custom route for getting all addresses
     register_rest_route('custom/v1', '/customer/(?P<id>\d+)/get-addresses', [
@@ -2626,9 +2627,9 @@ function get_customer_addresses(WP_REST_Request $request) {
     // Get current meta data (addresses)
     $meta_data = $customer->get_meta('additional_addresses', true);
 
-    // If no addresses are found, return an empty array or a message
+    // If no addresses are found, return 0 instead of a message
     if (empty($meta_data)) {
-        return new WP_REST_Response('No addresses found', 200);
+        return new WP_REST_Response(0, 200);
     }
 
     // Return the addresses
@@ -2665,9 +2666,10 @@ function get_customer_address_by_id(WP_REST_Request $request) {
 function add_customer_address(WP_REST_Request $request) {
     $customer_id = $request->get_param('id');
     $new_address = $request->get_json_params()['meta_data'][0]['value'];
-    
-    if (!is_array($new_address) || empty($new_address)) {
-        return new WP_REST_Response('Invalid address data', 400);
+
+    // Check if the address is 0 (or any other invalid condition you want to set)
+    if ($new_address == 0 || empty($new_address) || !is_array($new_address)) {
+        return new WP_REST_Response('Cannot add an address with invalid data (0 or empty)', 400);
     }
     
     // Get the existing customer
@@ -2773,6 +2775,8 @@ function delete_customer_address(WP_REST_Request $request) {
     
     return new WP_REST_Response('Address deleted successfully', 200);
 }
+
+
 
 
 

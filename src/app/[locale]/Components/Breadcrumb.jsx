@@ -25,7 +25,7 @@ export default function Breadcrumb() {
         </li>
 
         {pathSegments.map((segment, index) => {
-          const path = `/${pathSegments.slice(0, index + 1).join("/")}`;
+          const path =   `${homeUrl}${locale}/${pathSegments.slice(0, index + 1).join("/")}`;
 
           return (
             <li key={path}>

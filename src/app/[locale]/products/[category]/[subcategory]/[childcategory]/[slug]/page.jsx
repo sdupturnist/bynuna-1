@@ -240,6 +240,7 @@ export default async function ProductSingle({
                 />
               )}
 
+
               {singleProduct?.price && (
                 <div className="flex gap-3 items-center justify-center bg-white mt-6 sm:mt-7">
                   <AddToCart
@@ -257,6 +258,9 @@ export default async function ProductSingle({
                     singlePage
                     slug={singleProduct?.slug}
                     isNeedLicence={parseInt(isNeedLicence?.value)}
+                    category={singleProduct?.acf?.main_categories[0]?.post_name}
+                    subCategory={singleProduct?.acf?.sub_categories[0]?.post_name}
+                    childCategory={singleProduct?.acf?.child_categories[0]?.post_name}
                   />
                 </div>
               )}
@@ -330,6 +334,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
   const staticData = metaStaticData;
 
   const slug = params.slug;
+  const locale = params.locale;
 
   try {
     const page = await fetch(
@@ -341,6 +346,9 @@ export async function generateMetadata({ params, searchParams }, parent) {
     );
 
     const [pageData] = await page.json();
+
+
+    console.log(pageData?.acf?.main_categories[0]?.post_name)
 
     // Return metadata object with dynamic values, or fall back to static values
     return {
@@ -355,7 +363,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       viewport: "width=device-width, initial-scale=1",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
-        canonical: homeUrl + "blogs/" + pageData?.slug,
+        canonical: `${homeUrl}${locale}/products/${pageData?.acf?.main_categories[0]?.post_name}/${pageData?.acf?.sub_categories[0]?.post_name}/${pageData?.acf?.child_categories[0]?.post_name}/${pageData?.slug}`,
       },
       og_locale: pageData?.yoast_head_json?.og_locale || staticData.og_locale,
       og_type: pageData?.yoast_head_json?.og_type || staticData.og_type,
@@ -379,7 +387,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       openGraph: {
         images: [
           pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.openGraph?.images,
+            staticData.ogImage,
         ],
       },
     };

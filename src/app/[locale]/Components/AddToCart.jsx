@@ -31,7 +31,12 @@ export default function AddToCart({
   active,
   singlePage,
   isNeedLicence,
+  category,
+  subCategory,
+  childCategory
 }) {
+
+
 
   const router = useRouter();
     const params = useParams();  
@@ -133,7 +138,7 @@ export default function AddToCart({
   //const isInCart = safeCartItems.some((cartItem) => cartItem.id === itemid);
   const isInCart = safeCartItems.some((cartItem) => cartItem.slug === slug);
 
-  const addToCart = (seletedOption, image, price, name, isNeedLicence) => {
+  const addToCart = (seletedOption, image, price, name, isNeedLicence, category, subCategory, childCategory) => {
     setCartAddQty(true);
 
     if (isInCart) {
@@ -159,6 +164,9 @@ export default function AddToCart({
         option: seletedOption || null,
         slug: slug,
         isNeedLicence: isNeedLicence,
+        category:category, 
+        sub_category:subCategory, 
+        child_category:childCategory
       };
 
       const updatedCartItems = [...safeCartItems, newObject];
@@ -188,7 +196,10 @@ export default function AddToCart({
     image,
     price,
     name,
-    isNeedLicence
+    isNeedLicence,
+category, 
+subCategory, 
+   childCategory
   ) => {
     if (!isInCart && isNeedLicence === 1) {
       const swalWithBootstrapButtons = Swal.mixin({
@@ -241,7 +252,7 @@ export default function AddToCart({
         .then((result) => {
           if (result.isConfirmed) {
             // If confirmed, add to cart
-            addToCart(seletedOption, image, price, name, isNeedLicence);
+            addToCart(seletedOption, image, price, name, isNeedLicence, category, subCategory, childCategory);
             return true;
           } else if (result.isDenied || result.isDismissed) {
             // If canceled or dismissed, return false and close
@@ -252,7 +263,7 @@ export default function AddToCart({
       return false; // Prevent default action
     }
 
-    addToCart(seletedOption, image, price, name, isNeedLicence);
+    addToCart(seletedOption, image, price, name, isNeedLicence, category, subCategory, childCategory);
   };
 
   // Function to increase item quantity
@@ -275,6 +286,9 @@ export default function AddToCart({
         // option: seletedOption || null,
         slug: slug,
         isNeedLicence: isNeedLicence,
+        category:category, 
+        sub_category:subCategory, 
+        child_category:childCategory
       });
     }
 
@@ -409,7 +423,7 @@ export default function AddToCart({
               isInCart ? "bg-primary text-white" : "bg-white"
             }  hover:bg-primary hover:text-white lg:rounded-full lg:size-[60px] size-auto lg:min-w-fit min-w-[60px] w-full sm:py-2 py-1 px-3 sm:px-5 gap-[5px] uppercase primary-font transition-all text-[10px] lg:text-base items-center justify-center flex lg:pt-1 border border-border`}
             onClick={(e) =>
-              handleCartAction(name, image, price, name, isNeedLicence)
+              handleCartAction(name, image, price, name, isNeedLicence, category, subCategory, childCategory)
             }
           >
             <i className="bi bi-bag mb-1 mt-1 lg:mb-0"></i>
@@ -495,7 +509,7 @@ export default function AddToCart({
                 {!isInCart && (
                   <button
                     onClick={() => {
-                      handleCartAction(name, image, price, name, isNeedLicence);
+                      handleCartAction(name, image, price, name, isNeedLicence, category, subCategory, childCategory);
                       setShowGotoCartBtn(true);
                     }}
                     className="btn !min-h-14 px-8 w-fit"

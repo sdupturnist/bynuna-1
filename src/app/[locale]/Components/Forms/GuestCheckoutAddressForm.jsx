@@ -576,7 +576,7 @@ export default function GuestCheckoutAddressForm() {
           {getTranslation(translation[0]?.translations,"Select address from map",locale || 'en')}
           </small>
 
-         <div className="relative z-20 flex w-full">
+         <div className="relative flex w-full z-10">
                     <div className="w-full">
                       <ReactSearchAutocomplete
                         items={places}
@@ -611,7 +611,7 @@ export default function GuestCheckoutAddressForm() {
           <div
             id="map"
             ref={mapRef}
-            className="w=full min-h-[50vh] border border-border"
+            className="w-full min-h-[50vh] border border-border relative"
           ></div>
         </div>
         <FloatingLabelInput

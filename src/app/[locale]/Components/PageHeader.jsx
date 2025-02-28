@@ -16,14 +16,12 @@ export default function PageHeader({
   sortProducts,
   filterData,
   activeFilterMetas,
-  
 }) {
   const router = useRouter();
-  const params = useParams();  
-  const locale = params.locale; 
+  const params = useParams();
+  const locale = params.locale;
 
   const { showFilter, setShowFilter } = useSiteContext();
-
 
   const { translation } = useLanguageContext();
 
@@ -73,7 +71,7 @@ export default function PageHeader({
                         {getTranslation(
                           translation[0]?.translations,
                           "Sort",
-                          locale || 'en'
+                          locale || "en"
                         )}
 
                         <i className="bi bi-chevron-down ml-2"></i>
@@ -96,7 +94,7 @@ export default function PageHeader({
                             {getTranslation(
                               translation[0]?.translations,
                               "Alphabetically, A - z",
-                              locale || 'en'
+                              locale || "en"
                             )}
                           </button>
                         </li>
@@ -114,7 +112,7 @@ export default function PageHeader({
                             {getTranslation(
                               translation[0]?.translations,
                               "Alphabetically, z-a",
-                              locale || 'en'
+                              locale || "en"
                             )}
                           </button>
                         </li>
@@ -132,7 +130,7 @@ export default function PageHeader({
                             {getTranslation(
                               translation[0]?.translations,
                               "Price low to high",
-                              locale || 'en'
+                              locale || "en"
                             )}
                           </button>
                         </li>
@@ -150,7 +148,7 @@ export default function PageHeader({
                             {getTranslation(
                               translation[0]?.translations,
                               "Price high to low",
-                              locale || 'en'
+                              locale || "en"
                             )}
                           </button>
                         </li>
@@ -162,20 +160,23 @@ export default function PageHeader({
                   <h1 className="sm:text-lg text-sm font-bold text-center uppercase w-fit px-4 mx-auto">
                     {getTranslation(
                       translation[0]?.translations,
-                      title.replace(/-/g, ' '),
-                      locale || 'en'
+                      title.replace(/-/g, " "),
+                      locale || "en"
                     )}
                   </h1>
                 </div>
                 <div className="order-3">
                   <div
-                    onClick={(e) => setShowFilter(!showFilter)}
+                    onClick={(e) => {
+                      setShowFilter(!showFilter),
+                      document.body.style.overflow = 'hidden';
+                    }}
                     className="primary-font text-xs uppercase cursor-pointer"
                   >
                     {getTranslation(
                       translation[0]?.translations,
                       "Filter",
-                      locale || 'en'
+                      locale || "en"
                     )}
                   </div>
                 </div>
@@ -201,13 +202,19 @@ export default function PageHeader({
       <div className="bg-white border-b border-border sm:py-5 py-3">
         <div className="container flex justify-between">
           <h1 className="sm:text-lg text-lg font-bold text-center uppercase">
-            {getTranslation(translation[0]?.translations, title, locale || 'en')}
+            {getTranslation(
+              translation[0]?.translations,
+              title,
+              locale || "en"
+            )}
           </h1>
           <p className="primary-font">
-            {getTranslation(translation[0]?.translations, "Hello", locale || 'en')}
-            <span className="px-2">
-            {data?.first_name || ""}
-            </span>
+            {getTranslation(
+              translation[0]?.translations,
+              "Hello",
+              locale || "en"
+            )}
+            <span className="px-2">{data?.first_name || ""}</span>
           </p>
         </div>
       </div>
@@ -216,7 +223,7 @@ export default function PageHeader({
     return (
       <div className="bg-white border-b border-border sm:py-7 py-3">
         <h1 className="sm:text-2xl text-lg font-bold text-center uppercase">
-          {getTranslation(translation[0]?.translations, title, locale || 'en')}
+          {getTranslation(translation[0]?.translations, title, locale || "en")}
         </h1>
       </div>
     );

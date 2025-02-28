@@ -1,13 +1,8 @@
-
-
-
-
-'use client'
+"use client";
 
 import React, { useState, useEffect, useRef, Suspense, use } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCartContext } from "../../Context/cartContext";
-
 
 import "react-toastify/dist/ReactToastify.css"; // Ensure CSS is imported
 import CryptoJS from "crypto-js";
@@ -27,19 +22,16 @@ import { useCheckoutContext } from "../../Context/checkoutContext";
 import { useJwt } from "../../Context/jwtContext";
 import { sendMail } from "../../Utils/Mail";
 import { useRouter } from "next/navigation";
+import { userEmail } from "../../Utils/UserInfo";
 
 
 // Define a loading state to handle the suspense boundary
 
-
 const SuccessPageContent = () => {
-
   const router = useRouter();
 
-  const params = useParams();  
-  const locale = params.locale; 
-
-
+  const params = useParams();
+  const locale = params.locale;
 
   const paymentHandled = useRef(false); // Ref to track payment handling
 
@@ -53,6 +45,12 @@ const SuccessPageContent = () => {
     setGuestUser,
   } = useCartContext();
 
+  const { guestUser } = useCartContext();
+
+
+
+
+
   const {
     setValidateAddress,
     setUpdatePaymentStatus,
@@ -65,17 +63,18 @@ const SuccessPageContent = () => {
   const [orderData, setOrderData] = useState(null);
   const [emailData, setEmailData] = useState(null);
 
-
   const searchParams = useSearchParams();
   const orderId = typeof window !== "undefined" && searchParams.get("orderId");
 
   useEffect(() => {
-  
-      const storedOrderData = typeof window !== "undefined" && sessionStorage.getItem(`${siteName}_order_data`);
-      const storedEmailData = typeof window !== "undefined" && sessionStorage.getItem(`${siteName}_email_data`);
-      if (storedOrderData) setOrderData(JSON.parse(storedOrderData));
-      if (storedEmailData) setEmailData(JSON.parse(storedEmailData));
-   
+    const storedOrderData =
+      typeof window !== "undefined" &&
+      sessionStorage.getItem(`${siteName}_order_data`);
+    const storedEmailData =
+      typeof window !== "undefined" &&
+      sessionStorage.getItem(`${siteName}_email_data`);
+    if (storedOrderData) setOrderData(JSON.parse(storedOrderData));
+    if (storedEmailData) setEmailData(JSON.parse(storedEmailData));
   }, []);
 
   const handlePayment = async (orderInfo) => {
@@ -183,7 +182,11 @@ const SuccessPageContent = () => {
             setPaymentTerms(false);
             setGuestUser(false);
 
-            router.push(`${homeUrl}${locale}/checkout/success_order`);
+            router.push(
+              `${homeUrl}${locale}/checkout/success_order?user_type=${
+                userEmail === undefined ? "guest" : "account"
+              }`
+            );
           } else {
             throw new Error("Failed to create order in WooCommerce");
           }
@@ -211,7 +214,6 @@ const SuccessPageContent = () => {
   }, [orderId, orderData]);
 
   return (
-  
     <Alerts
       loading={loading}
       noLogo
@@ -220,26 +222,17 @@ const SuccessPageContent = () => {
       noPageUrl
       desc={`Your order is being processed. This may take a few minutes. Please don't refresh the page or go back while we complete it.`}
     />
-  
   );
 };
 
-export default function SuccessPage({params}) {
+export default function SuccessPage({ params }) {
+  const resolvedParams = use(params); // Unwrap the params Promise
 
-    const resolvedParams = use(params);  // Unwrap the params Promise
-  
-    // Now you can access the `locale` property
-    const { locale } = resolvedParams;
+  // Now you can access the `locale` property
+  const { locale } = resolvedParams;
 
-
-  return (
-
-      <SuccessPageContent locale={locale}/>
-   
-  );
+  return <SuccessPageContent locale={locale} />;
 }
-
-
 
 // import React, { useState, useLayoutEffect, useEffect, useRef, Suspense } from "react";
 // import { useSearchParams } from "next/navigation";

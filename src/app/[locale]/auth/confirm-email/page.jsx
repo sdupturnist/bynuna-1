@@ -8,20 +8,19 @@ import LoadingItem from "../../Components/LoadingItem";
 import { sendMail } from "../../Utils/Mail";
 import Alerts from "../../Components/Alerts";
 import { useLanguageContext } from "../../Context/LanguageContext";
-import {  
-   apiUrl,
+import {
+  apiUrl,
   getTranslation,
   homeUrl,
   siteName,
-  woocommerceKey, } from "../../Utils/variables";
+  woocommerceKey,
+} from "../../Utils/variables";
 
 // Component to handle email confirmation
 const ConfirmEmailContent = () => {
-
-
-      const router = useRouter();
-       const params = useParams();  
-       const locale = params.locale; 
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale;
 
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [error, setError] = useState(null);
@@ -31,7 +30,6 @@ const ConfirmEmailContent = () => {
   const password = searchParams.get("password");
   const subscribe = searchParams.get("subscribe");
   const token = searchParams.get("token");
-
 
   const { translation } = useLanguageContext();
 
@@ -82,10 +80,10 @@ const ConfirmEmailContent = () => {
               username
             ),
           });
-        }
 
-        setIsConfirmed(true);
-        router.push(`${homeUrl}${locale}/auth/login?confirmEmailLogin=true`);
+          setIsConfirmed(true);
+          router.push(`${homeUrl}${locale}/auth/login?confirmEmailLogin=true`);
+        }
       } catch (err) {
         // console.log(err);
         // setError(
@@ -119,7 +117,7 @@ const ConfirmEmailContent = () => {
           buttonLabel={getTranslation(
             translation[0]?.translations,
             "Go to login",
-            locale || 'en'
+            locale || "en"
           )}
           url={`${homeUrl}${locale}/auth/login`}
           desc={`Your email has been successfully confirmed. You can now access your account `}
@@ -133,7 +131,7 @@ const ConfirmEmailContent = () => {
                 {getTranslation(
                   translation[0]?.translations,
                   "Confirming your email...",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </h2>
             </div>
@@ -145,9 +143,5 @@ const ConfirmEmailContent = () => {
 };
 
 export default function ConfirmEmail() {
-  return (
- 
-      <ConfirmEmailContent />
-
-  );
+  return <ConfirmEmailContent />;
 }

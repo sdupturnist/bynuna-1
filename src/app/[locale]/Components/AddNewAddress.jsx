@@ -6,7 +6,7 @@ import { useLanguageContext } from "../Context/LanguageContext";
 import { getTranslation, siteName } from "../Utils/variables";
 import { useParams, useRouter } from "next/navigation";
 
-export default function AddNewAddress({ onAddressAdded,  }) {
+export default function AddNewAddress({ onAddressAdded  }) {
 
     const router = useRouter();
    const params = useParams();  

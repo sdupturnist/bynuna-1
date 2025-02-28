@@ -18,7 +18,7 @@ export default function Price({ regular, sale, isCard, small }) {
   return (
     <div>
       {parseInt(regular) >= parseInt(sale) ? (
-        <div className="gap-2 flex items-center w-full justify-center">
+        <div className="gap-2 sm:flex items-center w-full justify-center">
           <span
             className={`block text-center line-through  opacity-30 ${
               isCard

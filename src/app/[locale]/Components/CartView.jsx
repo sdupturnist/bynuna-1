@@ -12,11 +12,13 @@ import Swal from "sweetalert2";
 import PaymentOptions from "./PaymentOptions";
 import Alerts from "./Alerts";
 import { useLanguageContext } from "../Context/LanguageContext";
+import { useParams } from "next/navigation";
 
-export default function CartView({locale}) {
+export default function CartView() {
 
   const router = useRouter();
 
+  const { locale } = useParams();
 
 
 

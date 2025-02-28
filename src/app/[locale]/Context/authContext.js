@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
           console.error("Error fetching data:", error);
         });
     }
-  }, [validUserTocken, user_email]);
+  }, [validUserTocken, user_email, router]);
 
   return (
     <AuthContext.Provider

@@ -8,7 +8,12 @@ import { useCheckoutContext } from "../../Context/checkoutContext";
 import { homeUrl, siteName } from "../../Utils/variables";
 import { useEffect } from "react";
 
-export default function SuccessOrder() {
+export default function SuccessOrder({ searchParams }) {
+
+  const userType = searchParams.user_type;
+
+
+
   const {
     setCartItems,
     setCartSubTotal,
@@ -39,12 +44,23 @@ export default function SuccessOrder() {
   }, []);
 
   return (
+    <>
+
+
+
     <Alerts
+    check
       noLogo
       title="Thank you for your Order!"
       large
       url={homeUrl}
-      desc={`We will keep you updated on your order status via the given email address. Alternatively, you can check your order status at My Account > Orders`}
+      desc={`We will keep you updated on your order status via the given email address. ${
+        userType === "account"
+          ? "Alternatively, you can check your order status at My Account > Orders"
+          : ""
+      } `}
     />
+
+    </>
   );
 }

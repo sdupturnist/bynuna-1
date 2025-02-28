@@ -22,7 +22,10 @@ export default function Orders() {
       .then((data) => {
         // Ensure that data is an array before setting it to orders
         setOrders(Array.isArray(data) ? data : []);
-        setLoading(false);
+        
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -39,19 +42,24 @@ export default function Orders() {
 
   return (
     <div>
-      {loading ? (
+      {loading && (
         <div className="flex items-center justify-center sm:min-h-[50vh] min-h-[50vh]">
           <LoadingItem spinner />
         </div>
-      ) : !orders ? (
-        <Alerts status="red" noPageUrl title="You have no orders" />
-      ) : (
-        <ul className="general-list">
-          {orders.map((item, index) => (
-            <MyOrder data={item} key={index} userInfo={userData} />
-          ))}
-        </ul>
       )}
-  </div>
+
+      {!loading && orders?.length !== 0 ? (
+        <>
+          <ul className="general-list">
+            {orders &&
+              orders.map((item, index) => (
+                <MyOrder data={item} key={index} userInfo={userData} />
+              ))}
+          </ul>
+        </>
+      ) : (
+        !loading && <Alerts status="red" noPageUrl title="You have no orders" />
+      )}
+    </div>
   );
 }
