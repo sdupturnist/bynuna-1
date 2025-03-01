@@ -28,7 +28,8 @@ export default function WriteReview({ productId,  }) {
           router,
           null,
           "Log in to Write a Review",
-          "Please log in to your account to share your feedback and write a review"
+          "Please log in to your account to share your feedback and write a review",
+          params
         )
       : document.getElementById("modal_all").showModal();
   };

@@ -29,7 +29,7 @@ export default function WriteReviewForm({ productId}) {
   const locale = params.locale; 
 
   const [rating, setRating] = useState(5);
-  const [review, setReview] = useState("");
+  const [review, setReview] = useState();
 
   const [status, setStatus] = useState(false);
   const [loading, setLoading] = useState(false);

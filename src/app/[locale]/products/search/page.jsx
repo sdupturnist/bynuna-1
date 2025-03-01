@@ -19,7 +19,6 @@ export default async function SearchPage({ params, searchParams, params: { local
   const searchTerm = searchParams.search || 'No search term';
 
 
-  console.log(searchTerm)
 
   
 

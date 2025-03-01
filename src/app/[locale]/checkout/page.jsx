@@ -38,12 +38,12 @@ function Checkout() {
 
   const router = useRouter();
 
-  const { guestUser, setGuestUser } = useCartContext();
+  const { guestUser } = useCartContext();
 
   const { userData } = useAuthContext();
 
   const { validUserTocken } = useAuthContext();
-  const { savedAddress, setSavedAddress } = useSiteContext();
+  const [savedAddress, setSavedAddress] = useState([]);
 
   const {
     setBillingAddress,
@@ -54,13 +54,14 @@ function Checkout() {
     setShowAddNewAddress,
   } = useCheckoutContext();
 
+  const { translation } = useLanguageContext();
+
   // State to store the fetched data
   const [paymentOptions, setPaymentOptions] = useState(null);
   const [couponCodes, setCouponCodes] = useState(null);
   const [selectAddressFromList, setSelectAddressFromList] = useState(false);
+  const [activeId, setActiveId] = useState(0);
   const [loading, setLoading] = useState(true);
-
-  const { translation } = useLanguageContext();
 
   // Fetch data on component mount
   useEffect(() => {
@@ -91,12 +92,7 @@ function Checkout() {
     };
 
     fetchData();
-  }, []); // Empty dependency array ensures this runs only once when the component mounts
-
-  // if (!guestUser) {
-  //   if (userId) return;
-  // }
-  // Don't run the fetch if userId is not available yet
+  }, []);
 
   const fetchCustomerData = async () => {
     if (userData?.id) {
@@ -127,6 +123,7 @@ function Checkout() {
         savedAddress.length > 0
       ) {
         setValidateAddress(true);
+        setActiveId(savedAddress[0]?.id);
         setBillingAddress({
           firstName: savedAddress[0]?.full_name,
           lastName: "",
@@ -145,16 +142,9 @@ function Checkout() {
         setBillingAddress("");
       }
     }
-  }, [userData?.id, savedAddress, router]); // Re-run when userId or savedAddress changes
-
-  const additionalAddresses = useMemo(() => {
-    return savedAddress?.meta_data?.find(
-      (item) => item.key === "additional_addresses"
-    )?.value;
-  }, [savedAddress?.meta_data]);
+  }, [userData?.id, savedAddress, router, activeId]); // Re-run when userId or savedAddress changes
 
   // State to keep track of the active item
-  const [activeId, setActiveId] = useState(savedAddress[0]?.id);
 
   // Function to handle item click
   const handleClick = (id) => {
@@ -230,10 +220,6 @@ function Checkout() {
         }
       });
   };
-
-  // if (!guestUser && !loading && savedAddress !== 0) {
-  //   return <LoadingItem fullscreen />;
-  // }
 
   return (
     <main className="bg-light lg:bg-white">
@@ -411,12 +397,7 @@ function Checkout() {
                     card
                   />
 
-                  <AddNewAddressForm
-                    onAddressAdded={fetchCustomerData}
-                    addressCount={
-                      additionalAddresses ? additionalAddresses?.length : 0
-                    }
-                  />
+                  <AddNewAddressForm onAddressAdded={fetchCustomerData} />
                 </div>
               )}
 

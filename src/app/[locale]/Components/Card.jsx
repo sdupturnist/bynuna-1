@@ -309,7 +309,7 @@ export default function Card({
               )}
             </Link>
 
-            <div className=" gap-2 items-center justify-center sm:mt-4 mt-2 lg:hidden w-full">
+            <div className="flex gap-2 items-center justify-center sm:mt-4 mt-2 lg:hidden w-full">
               <AddToCart
                 card
                 itemid={data?.id}

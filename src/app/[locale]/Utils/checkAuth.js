@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { homeUrl } from "./variables";
 import Swal from "sweetalert2";
 
-export const isLoggined = (validUserTocken, router, url, heading, desc, login, cancel) => {
+export const isLoggined = (validUserTocken, router, url, heading, desc, login, cancel, params) => {
 
 
-  const router_ = useRouter();
-  const { locale } = router_; 
+
+       const locale = params.locale; 
 
 
   if (validUserTocken) {

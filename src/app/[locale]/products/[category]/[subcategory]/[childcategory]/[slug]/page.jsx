@@ -348,8 +348,6 @@ export async function generateMetadata({ params, searchParams }, parent) {
     const [pageData] = await page.json();
 
 
-    console.log(pageData?.acf?.main_categories[0]?.post_name)
-
     // Return metadata object with dynamic values, or fall back to static values
     return {
       title:

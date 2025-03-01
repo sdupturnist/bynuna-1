@@ -52,6 +52,7 @@ export default function AddToWishList({
         getTranslation(translation[0]?.translations,   "Please log in to your account to add this item to your wishlist.", locale || 'en'),
         getTranslation(translation[0]?.translations,   "Login", locale || 'en'),
         getTranslation(translation[0]?.translations,   "Cancel", locale || 'en'),
+        params
       );
       return false;
     }
@@ -106,7 +107,7 @@ export default function AddToWishList({
         getTranslation(translation[0]?.translations,   "Please log in to your account to add this item to your wishlist.", locale || 'en'),
         getTranslation(translation[0]?.translations,   "Login", locale || 'en'),
         getTranslation(translation[0]?.translations,   "Cancel", locale || 'en'),
-        
+        params
       );
       return false;
     }
