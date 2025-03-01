@@ -22,14 +22,14 @@ export default function Address() {
   const locale = params.locale;
 
   const { userData } = useAuthContext();
-  const [savedAddress, setSavedAddress ] = useState([]);
+ // const [savedAddress, setSavedAddress ] = useState([]);
   
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const { translation } = useLanguageContext();
-  const { setEditData } = useSiteContext();
+  const { setEditData, savedAddress, setSavedAddress  } = useSiteContext();
  
 
 
