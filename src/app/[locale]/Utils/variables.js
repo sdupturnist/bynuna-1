@@ -31,8 +31,8 @@ export let returnDays = 24; //24 hours
 //.ENV
 //export let homeUrl = `http://localhost:3000/`;
 export let homeUrl = `https://bynuna-chi.vercel.app/`;
-//export let apiUrl = `https://ardalmarmoom.com/`;
-export let apiUrl = `https://admin.bynuna.ae/`;
+export let apiUrl = `https://ardalmarmoom.com/`;
+//export let apiUrl = `https://admin.bynuna.ae/`;
 
 //RAZORPAY CONFIG
 export let publicKey = `rzp_live_npbJa6vH2XzXnt`;
