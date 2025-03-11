@@ -22,7 +22,7 @@ export default async function Cart({params: { locale }}) {
      <PageHeader title={page?.title?.rendered} />
         <div className="mobile-container-fixed">
           <div className="lg:pt-5 max-w-[999px] mx-auto grid sm:gap-12 gap-5">
-            <CartView  locale={locale}/>
+            <CartView locale={locale}/>
           </div>
         </div>
       </div>

@@ -71,7 +71,7 @@ export default async function BrandPage({ params, searchParams, params: { locale
   let products = await fetch(
     `${apiUrl}wp-json/wc/v3/products/filter?meta_value=${
       brands[0]?.id
-    }&meta_key=brands&lang=${locale || 'en'}${resultFilterParams}&min_price=${
+    }&meta_key=brands${resultFilterParams}&min_price=${
       min_price || 0
     }&max_price=${max_price || 0}&per_page=${itemsShowPerPage}&sort_by=${
       sortby || "name"
@@ -87,7 +87,7 @@ export default async function BrandPage({ params, searchParams, params: { locale
   let productsGetFilters = await fetch(
     `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${
       brand[0]?.id
-    }&meta_key=sub_categories&lang=${locale|| "en"}`,
+    }&meta_key=sub_categories`,
     {
       next: { revalidate: 60 },
     }

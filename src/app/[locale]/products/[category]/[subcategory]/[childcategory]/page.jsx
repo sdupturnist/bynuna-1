@@ -15,10 +15,13 @@ import Pagination from "@/app/[locale]/Components/Pagination";
 import Alerts from "@/app/[locale]/Components/Alerts";
 import LoadingItem from "@/app/[locale]/Components/LoadingItem";
 
-export default async function childcategoryPage({ params, searchParams, params: { locale }}) {
-
-
+export default async function childcategoryPage({
+  params,
+  searchParams,
+  params: { locale },
+}) {
   const { childcategory } = await params;
+  const decodeUrl = decodeURIComponent(childcategory);
 
   const { meta_key } = await searchParams;
   const { meta_value } = await searchParams;
@@ -30,9 +33,6 @@ export default async function childcategoryPage({ params, searchParams, params: 
   const { per_page } = await searchParams;
 
   const itemsShowPerPage = per_page || 32;
-
-
-
 
   let resultFilterParams = "";
 
@@ -62,7 +62,9 @@ export default async function childcategoryPage({ params, searchParams, params: 
 
   //SUB CATEGORY
   let childCat = await fetch(
-    `${apiUrl}wp-json/wp/v2/child-categories?slug=${childcategory}&lang=${locale || 'en'}`,
+    `${apiUrl}wp-json/wp/v2/child-categories?slug=${childcategory}&lang=${
+      locale || "en"
+    }`,
     {
       next: { revalidate: 60 },
     }
@@ -74,13 +76,11 @@ export default async function childcategoryPage({ params, searchParams, params: 
   let products = await fetch(
     `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${
       childCat[0]?.id
-    }&meta_key=child_categories&lang=${
-    locale || 'en'
-    }${resultFilterParams}&min_price=${min_price || 0}&max_price=${
-      max_price || 0
-    }&per_page=${itemsShowPerPage}&sort_by=${sortby || "name"}&order=${
-      sortVal || "asc"
-    }`,
+    }&meta_key=child_categories${resultFilterParams}&min_price=${
+      min_price || 0
+    }&max_price=${max_price || 0}&per_page=${itemsShowPerPage}&sort_by=${
+      sortby || "name"
+    }&order=${sortVal || "asc"}`,
     {
       next: { revalidate: 60 },
     }
@@ -90,9 +90,7 @@ export default async function childcategoryPage({ params, searchParams, params: 
 
   //PRODUCTS FILTERS || LENGTH
   let productsGetFilters = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${
-      childCat[0]?.id
-    }&meta_key=child_categories&lang=${locale || "en"}`,
+    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${childCat[0]?.id}&meta_key=child_categories`,
     {
       next: { revalidate: 60 },
     }
@@ -105,24 +103,41 @@ export default async function childcategoryPage({ params, searchParams, params: 
       (item) => item.key === "_filter_items" && item.value
     );
 
-    if (!filteredMetaData) return []; // Return empty if no metadata
+    if (!filteredMetaData || filteredMetaData.length === 0) return []; // Return empty if no metadata or no matching items
 
     const labelAccumulator = {};
 
     // Process each metadata entry
     filteredMetaData.forEach((item) => {
-      item.value.split(",").forEach((pair) => {
-        const [label, value] = pair.split(":").map((str) => str.trim());
-        if (!labelAccumulator[label]) labelAccumulator[label] = new Set();
-        labelAccumulator[label].add(value);
+      item.value.forEach((valueItem) => {
+        const label_en = valueItem.label_en;
+        const label_ar = valueItem.label_ar;
+        const value_en = valueItem.value_en;
+        const value_ar = valueItem.value_ar;
+
+        if (label_en && value_en) {
+          // Accumulate the results under the label
+          if (!labelAccumulator[label_en]) {
+            labelAccumulator[label_en] = new Set();
+          }
+
+          labelAccumulator[label_en].add({
+            en: value_en,
+            ar: value_ar || "default_ar_name", // Default if no Arabic value
+          });
+        }
       });
     });
 
     // Convert labelAccumulator to the desired structure
-    return Object.keys(labelAccumulator).map((label) => ({
-      label,
-      items: Array.from(labelAccumulator[label]).map((value) => ({
-        item: value,
+    return Object.keys(labelAccumulator).map((label_en) => ({
+      label: label_en, // Use label_en as the label
+      ar_name:
+        labelAccumulator[label_en].values().next().value.ar ||
+        "default_ar_name", // Get the Arabic label, or default
+      items: Array.from(labelAccumulator[label_en]).map((value) => ({
+        item: value, // Include the value pair (English and Arabic)
+        ar_name: value.ar, // Default Arabic name if no Arabic value
       })),
     }));
   });
@@ -135,11 +150,15 @@ export default async function childcategoryPage({ params, searchParams, params: 
     if (existing) {
       existing.items.push(...entry.items); // Spread operator to add items
     } else {
-      result.push({ label: entry.label, items: entry.items }); // Add new label
+      result.push({
+        label: entry.label,
+        items: entry.items,
+        ar_name: entry.ar_name,
+      }); // Add new label
     }
   });
 
-  // Filter by matching labels in childCat
+  // Filter by matching labels in subCat
   const filteredProductFilters = result.filter(
     (productFilter) =>
       childCat[0]?.acf?.Filters &&
@@ -151,46 +170,59 @@ export default async function childcategoryPage({ params, searchParams, params: 
   return (
     <div className="bg-bggray">
       <section className="p-0">
-        <Suspense fallback={<LoadingItem fullscreen />}>
-          <PageHeader
-            activeFilterMetas={meta_value}
-            shopPageLevel={1}
-            title={childcategory}
-            filter="childcategory"
-            filterData={filteredProductFilters}
-            sortProducts
-          />
-        </Suspense>
-        {!products?.length > 0 ? (
-          <Alerts
-            noLogo
-            title="Sorry, no products found!"
-            large
-            url={homeUrl}
-            //desc={`Thanks for signing up! Please check your email for a confirmation link to finish your registration.`}
-          />
-        ) : (
-          <div
-            className={`${products?.length > 0 && "sm:py-10 py-5"} container`}
-          >
-            <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-0 gap-3">
-              {products?.length > 0 &&
-                products.map((item, index) => (
-                  <Card key={index} data={item} product locale={locale}/>
-                ))}
-            </div>
-            <Suspense fallback={<LoadingItem fullscreen />}>
-              <div className="sm:pt-5 pt-2 w-full">
-                <Pagination
-                  currentPage={parseInt(1, 10)}
-                  totalActiveData={products && products?.length}
-                  totalPages={productsGetFilters && productsGetFilters?.length}
-                  baseUrl={`${homeUrl}`}
-                  itemsShowPerPage={itemsShowPerPage}
-                />
-              </div>
+      <Suspense fallback={<LoadingItem fullscreen />}>
+              <PageHeader
+                activeFilterMetas={meta_value}
+                shopPageLevel={1}
+                title={
+                  locale === "en"
+                    ? childCat[0]?.title?.rendered
+                    : childCat[0]?.acf?.title_arabic
+                    ? childCat[0]?.acf?.title_arabic
+                    : childCat[0]?.title?.rendered
+                }
+                filter="childcategory"
+                filterData={filteredProductFilters}
+                sortProducts
+              />
             </Suspense>
-          </div>
+
+        {!products?.length ? (
+          // When no products are available, show a loading fallback or an alert.
+          <Suspense fallback={<LoadingItem fullscreen />}>
+            <Alerts
+              noLogo
+              title="Sorry, no products found!"
+              large
+              url={homeUrl}
+              //desc={`Thanks for signing up! Please check your email for a confirmation link to finish your registration.`}
+            />
+          </Suspense>
+        ) : (
+          <>
+           
+            <div
+              className={`${products?.length > 0 && "sm:py-10 py-5"} container`}
+            >
+              <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-0 gap-3">
+                {products.map((item, index) => (
+                  <Card key={index} data={item} product locale={locale} />
+                ))}
+              </div>
+
+              <Suspense fallback={<LoadingItem fullscreen />}>
+                <div className="sm:pt-5 pt-2 w-full">
+                  <Pagination
+                    currentPage={1} // Assuming you want to start at page 1
+                    totalActiveData={products?.length}
+                    totalPages={productsGetFilters?.length}
+                    baseUrl={homeUrl}
+                    itemsShowPerPage={itemsShowPerPage}
+                  />
+                </div>
+              </Suspense>
+            </div>
+          </>
         )}
       </section>
     </div>
@@ -248,8 +280,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
         staticData.twitter_image,
       openGraph: {
         images: [
-          pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.ogImage,
+          pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.ogImage,
         ],
       },
     };

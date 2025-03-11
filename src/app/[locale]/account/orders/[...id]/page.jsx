@@ -356,6 +356,7 @@ export default function OrderItem() {
                       order?.status === "order-delivered") && (
                       <button
                         className="btn btn-primary"
+                        onTouchStart={(e) => setShowReturnOrder(!showReturnOrder)}
                         onClick={(e) => setShowReturnOrder(!showReturnOrder)}
                       >
                         {getTranslation(

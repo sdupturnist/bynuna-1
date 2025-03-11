@@ -61,7 +61,7 @@ export default function PasswordResetRequest() {
         setMessage(
           getTranslation(
             translation[0]?.translations,
-            "Your password reset request has been successfully submitted! Please note that the reset link will remain valid for only 1 minute.",
+            "Your password reset request has been successfully submitted! Please note that the reset link will remain valid for only 30 minutes.",
             locale || 'en'
           )
         );

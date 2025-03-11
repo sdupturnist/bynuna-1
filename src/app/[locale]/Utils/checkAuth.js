@@ -33,7 +33,7 @@ export const isLoggined = (validUserTocken, router, url, heading, desc, login, c
       })
       .then((result) => {
         if (result.isConfirmed) {
-          router.push(`${homeUrl}auth/login`);
+          router.push(`${homeUrl}${locale}/auth/login?mainLogin=true`);
         }
       });
   }

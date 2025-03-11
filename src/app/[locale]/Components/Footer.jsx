@@ -39,8 +39,8 @@ export default function Footer({ locale }) {
           <div className="container">
             <div className="mx-auto max-w-[767px]">
               <div className="flex items-center justify-between sm:gap-5 gap-3">
-                <div className="w-full  items-center sm:gap-0 gap-4 sm:inline-flex grid text-center">
-                  <div className="sm:w-[60px] sm:h-[60px] w-[50px] h-[50px] mx-auto rounded-[100px] border border-white/20 justify-center items-center gap-2.5 flex">
+                <div className="w-full  items-center sm:gap-3 gap-4 sm:inline-flex grid text-center">
+                  <div className="sm:min-w-[60px] sm:min-h-[60px] min-w-[50px] min-h-[50px] mx-auto sm:m-0 rounded-[100px] border border-white/20 justify-center items-center gap-2.5 flex">
                     <Images
                       imageurl="/images/fast_shipping.png"
                       quality="100"
@@ -60,8 +60,8 @@ export default function Footer({ locale }) {
                     )}
                   </div>
                 </div>
-                <div className="w-full  items-center sm:gap-0 gap-4 sm:inline-flex grid text-center">
-                  <div className="sm:w-[60px] sm:h-[60px] w-[50px] h-[50px] mx-auto rounded-[100px] border border-white/20 justify-center items-center gap-2.5 flex">
+                <div className="w-full  items-center sm:gap-3 gap-4 sm:inline-flex grid text-center">
+                  <div className="sm:min-w-[60px] sm:min-h-[60px] min-w-[50px] min-h-[50px] mx-auto sm:m-0 rounded-[100px] border border-white/20 justify-center items-center gap-2.5 flex">
                     <Images
                       imageurl="/images/100k.png"
                       quality="100"
@@ -81,8 +81,8 @@ export default function Footer({ locale }) {
                     )}
                   </div>
                 </div>
-                <div className="w-full  items-center sm:gap-0 gap-4 sm:inline-flex grid text-center">
-                  <div className="sm:w-[60px] sm:h-[60px] w-[50px] h-[50px] mx-auto rounded-[100px] border border-white/20 justify-center items-center gap-2.5 flex">
+                <div className="w-full  items-center sm:gap-3 gap-4 sm:inline-flex grid text-center">
+                  <div className="sm:min-w-[60px] sm:min-h-[60px] min-w-[50px] min-h-[50px] mx-auto sm:m-0 rounded-[100px] border border-white/20 justify-center items-center gap-2.5 flex">
                     <Images
                       imageurl="/images/gcc_map.png"
                       quality="100"
@@ -97,7 +97,7 @@ export default function Footer({ locale }) {
                   <div className="sm:text-start text-center text-white sm:text-[13px] text-[11px] font-normal  uppercase leading-snug tracking-widest">
                     {getTranslation(
                       translation[0]?.translations,
-                      "gcc latest",
+                      "Latest in GCC",
                       locale || "en"
                     )}
                   </div>

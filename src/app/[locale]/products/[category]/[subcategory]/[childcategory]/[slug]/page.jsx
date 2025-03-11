@@ -15,18 +15,19 @@ import ReviewCount from "@/app/[locale]/Components/ReviewCount";
 import Reviews from "@/app/[locale]/Components/Reviews";
 import ReviewStatus from "@/app/[locale]/Components/ReviewStatus";
 import SectionHeader from "@/app/[locale]/Components/SectionHeader";
-
 import {
   apiUrl,
   convertStringToJSON,
   homeUrl,
   metaStaticData,
   siteAuthor,
+  siteName,
   woocommerceKey,
 } from "@/app/[locale]/Utils/variables";
 
 import Link from "next/link";
 import { Suspense } from "react";
+import Image from "next/image";
 
 export default async function ProductSingle({
   params,
@@ -36,18 +37,14 @@ export default async function ProductSingle({
   const { slug } = params;
 
   let singleProductData = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&slug=${slug}&lang=${
-      locale || "en"
-    }`,
+    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&slug=${slug}`,
     {
       next: { revalidate: 60 },
     }
   );
 
   let allProductsData = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&slug=${slug}&per_page=99&lang=${
-      locale || "en"
-    }`,
+    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&slug=${slug}&per_page=99`,
     {
       next: { revalidate: 60 },
     }
@@ -61,6 +58,24 @@ export default async function ProductSingle({
       next: { revalidate: 60 },
     }
   );
+
+  let deliveryreturnsData = await fetch(
+    `${apiUrl}wp-json/wp/v2/delivery-and-returns?lang=${locale || "en"}`,
+    {
+      next: { revalidate: 60 },
+    }
+  );
+
+  const [deliveryreturns] = await deliveryreturnsData.json();
+
+  let securitypaymentsData = await fetch(
+    `${apiUrl}wp-json/wp/v2/security-payments?lang=${locale || "en"}`,
+    {
+      next: { revalidate: 60 },
+    }
+  );
+
+  const [securitypayments] = await securitypaymentsData.json();
 
   const primarySpecifications = singleProduct?.meta_data.filter(
     (item) => item.key === "_filter_items"
@@ -92,50 +107,63 @@ export default async function ProductSingle({
       (product) => upsellsIds && upsellsIds.includes(product.id)
     );
 
+ 
+
   const accordianItems = [
-    singleProduct?.description && {
-      title: "Description",
-      content: singleProduct?.description && (
-        <div
-          className="py-4"
-          dangerouslySetInnerHTML={{
-            __html: singleProduct?.description,
-          }}
-        />
-      ),
-    },
-    primarySpecifications[0]?.value !== ""
+    singleProduct?.description || singleProduct?.acf?.arabic?.description
       ? {
-          title: "Primary specifications",
+          title: "Description",
           content: (
-            <div className="py-4">
-              <GenerateTable tableData={primarySpecifications} />
-            </div>
+            <div
+              className="py-4"
+              dangerouslySetInnerHTML={{
+                __html: singleProduct?.acf?.arabic?.description
+                  ? singleProduct?.acf?.arabic?.description
+                  : singleProduct?.description,
+              }}
+            />
           ),
         }
       : null,
-    singleProduct?.acf?.additional_info?.delivery_returns && {
+
+    // Primary specifications: Show if valid primarySpecifications
+    primarySpecifications &&
+      primarySpecifications[0]?.value !== "" && {
+        title: "Primary specifications",
+        content: (
+          <div className="py-4">
+            <GenerateTable tableData={primarySpecifications} />
+          </div>
+        ),
+      },
+
+    // Delivery & Returns: Show if valid deliveryreturns
+    deliveryreturns && {
       title: "Delivery & Returns",
       content: (
         <div
           className="content"
           dangerouslySetInnerHTML={{
-            __html: singleProduct?.acf?.additional_info?.delivery_returns,
+            __html: deliveryreturns?.content?.rendered,
           }}
         />
       ),
     },
-    singleProduct?.acf?.additional_info?.security_payments && {
+
+    // Security & Payments: Show if valid securitypayments
+    securitypayments && {
       title: "Security & Payments",
       content: (
         <div
           className="content"
           dangerouslySetInnerHTML={{
-            __html: singleProduct?.acf?.additional_info?.security_payments,
+            __html: securitypayments?.content?.rendered,
           }}
         />
       ),
     },
+
+    // Reviews section
     {
       title: "Reviews",
       content: (
@@ -171,11 +199,19 @@ export default async function ProductSingle({
     },
   ];
 
+
+
   return (
     <main className="bg-light lg:bg-white product-single">
       <div className="mobile-container-fixed">
         <div className="bg-white px-5 lg:px-0 py-3 sm:py-0">
-          <Breadcrumb />
+          <Breadcrumb
+          title={locale === "en"
+            ? singleProduct?.name
+            : singleProduct?.acf?.arabic?.title
+            ? singleProduct?.acf?.arabic?.title
+            : singleProduct?.name}
+          data={singleProduct?.acf}  />
         </div>
         <section className="grid lg:gap-0 gap-2 pb-0 lg:pt-10 pt-0">
           <div className="bg-white grid grid-cols-1 lg:gap-7 gap-5 items-center lg:grid-cols-[50%_50%] product-single lg:py-0 pb-10  px-5 lg:px-0">
@@ -201,8 +237,18 @@ export default async function ProductSingle({
                 )}
 
                 <Suspense fallback={<LoadingItem spinner />}>
-                  {singleProduct?.images?.gallery?.length > 0 && (
+                  {singleProduct?.images?.gallery?.length > 0 ? (
                     <ProductGallery data={singleProduct?.images?.gallery} />
+                  ) : (
+                    <Image
+                      width="600"
+                      height="600"
+                      quality="100"
+                      src="/images/placeholder_brand.jpg"
+                      className="block w-full"
+                      alt={siteName}
+                      title={siteName}
+                    />
                   )}
                 </Suspense>
               </div>
@@ -210,7 +256,11 @@ export default async function ProductSingle({
             <div className="text-center items-center w-full mt-4 md:mt-0">
               <div className="grid sm:gap-5 gap-3 mb-5">
                 <h1 className="sm:text-2xl text-lg">
-                  {singleProduct && singleProduct?.name}
+                  {locale === "en"
+                    ? singleProduct?.name
+                    : singleProduct?.acf?.arabic?.title
+                    ? singleProduct?.acf?.arabic?.title
+                    : singleProduct?.name}
                 </h1>
                 {productReview.length > 0 && (
                   <Link
@@ -231,15 +281,22 @@ export default async function ProductSingle({
                   sale={singleProduct?.sale_price}
                 />
               </div>
-              {singleProduct?.short_description && (
-                <div
-                  className="content mb-5 [&>*]:text-sm"
-                  dangerouslySetInnerHTML={{
-                    __html: singleProduct && singleProduct?.short_description,
-                  }}
-                />
-              )}
-
+              {singleProduct?.short_description &&
+                (locale === "en" ? (
+                  <div
+                    className="content mb-5 [&>*]:text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: singleProduct?.short_description,
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="content mb-5 [&>*]:text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: singleProduct?.acf?.arabic?.short_description,
+                    }}
+                  />
+                ))}
 
               {singleProduct?.price && (
                 <div className="flex gap-3 items-center justify-center bg-white mt-6 sm:mt-7">
@@ -259,8 +316,12 @@ export default async function ProductSingle({
                     slug={singleProduct?.slug}
                     isNeedLicence={parseInt(isNeedLicence?.value)}
                     category={singleProduct?.acf?.main_categories[0]?.post_name}
-                    subCategory={singleProduct?.acf?.sub_categories[0]?.post_name}
-                    childCategory={singleProduct?.acf?.child_categories[0]?.post_name}
+                    subCategory={
+                      singleProduct?.acf?.sub_categories[0]?.post_name
+                    }
+                    childCategory={
+                      singleProduct?.acf?.child_categories[0]?.post_name
+                    }
                   />
                 </div>
               )}
@@ -277,17 +338,6 @@ export default async function ProductSingle({
           </div>
           <div className="bg-white lg:mb-14">
             <div className="px-5 lg:px-0 grid gap-5 more-info">
-              {/* <div className="join join-vertical w-full general-content">
-      {accordianItems.map((item, index) =>
-        item ? (
-          <div key={index} className="collapse collapse-arrow join-item">
-            <input type="radio" name="my-accordion-4" defaultChecked={index === 0} />
-            <div className="collapse-title font-bold border-b px-0 primary-font sm:text-[14px] text-sm">{item.title}</div>
-            <div className="collapse-content px-0">{item.content}</div>
-          </div>
-        ) : null
-      )}
-    </div> */}
               <Accordion general noHtml items={accordianItems} />
             </div>
           </div>
@@ -347,7 +397,6 @@ export async function generateMetadata({ params, searchParams }, parent) {
 
     const [pageData] = await page.json();
 
-
     // Return metadata object with dynamic values, or fall back to static values
     return {
       title:
@@ -384,8 +433,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
         staticData.twitter_image,
       openGraph: {
         images: [
-          pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.ogImage,
+          pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.ogImage,
         ],
       },
     };

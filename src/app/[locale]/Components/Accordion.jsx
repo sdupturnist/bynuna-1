@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PlusIcon, MinusIcon } from "@heroicons/react/20/solid"; // Import icons from Heroicons
 import {
   apiUrl,
@@ -51,49 +51,55 @@ const Accordion = ({
 
   //==========SELETED FILTERS=============
 
+  const [isUpdating, setIsUpdating] = useState(false);
+  // Use a ref to handle the updating state without triggering rerenders
+  const isUpdatingRef = useRef(false);
 
-
-
-
-  useEffect(() => {
-
-
-    if (!queryUpdated) return;
-
+  // Function to update the URL with selected filters
+  const updateURL = (filters) => {
     const currentQuery = new URLSearchParams(window.location.search);
 
-if(Array.isArray(selectedFilters)){
-
+    // Remove previous filters
     currentQuery.delete("meta_key");
     currentQuery.delete("meta_value");
 
-    selectedFilters &&
-      selectedFilters?.forEach((filter) => {
-        currentQuery.append("meta_key", "_filter_items");
-        currentQuery.append("meta_value", filter);
-      });
-    }
+    // Append the new filters
+    filters.forEach((filter) => {
+      currentQuery.append("meta_key", "_filter_items");
+      currentQuery.append("meta_value", filter?.text?.en);
+    });
 
-    setQueryUpdated(false);
-  }, [queryUpdated, selectedFilters, router]);
+    //Push the updated URL to the router
+    router.push(
+      `${window.location.pathname}?${currentQuery.toString()}`,
+      undefined,
+      { shallow: true }
+    );
+  };
 
+  // Function to handle adding/removing filters
   const activeFilters = (item) => {
-    setQueryUpdated(true);
-
     setSelectedFilters((prevFilters) => {
-      // Update selected filters and localStorage outside of the setter to avoid triggering re-renders during render phase
-      const updatedFilters = setSelectedFilters && prevFilters.includes(item)
-        ? prevFilters.filter((filter) => filter !== item)
+      const isItemSelected = prevFilters.some(
+        (filter) => filter?.text?.en === item?.text?.en
+      );
+      const updatedFilters = isItemSelected
+        ? prevFilters.filter((filter) => filter?.text?.en !== item?.text?.en)
         : [...prevFilters, item];
+
+      // Avoid setting state during render, use ref to delay URL update
+      if (!isUpdatingRef.current) {
+        isUpdatingRef.current = true; // Mark the update as in progress
+
+        setTimeout(() => {
+          updateURL(updatedFilters);
+          isUpdatingRef.current = false; // Reset the flag after the update
+        }, 300); // Wait for 300ms before updating the URL
+      }
 
       return updatedFilters;
     });
   };
-
-  useEffect(() => {
-    if (selectedFilters.length === 0) return;
-    setQueryUpdated(true);
-  }, [selectedFilters]);
 
   //FILTER END
 
@@ -129,19 +135,27 @@ if(Array.isArray(selectedFilters)){
               }/${title && title?.toLowerCase()?.replace(/ /g, "-")}/`}
               className="w-full uppercase primary-font text-primary  text-left font-medium transition-all rounded-t-lg flex items-center justify-between"
             >
-              {getTranslation(
-                translation[0]?.translations,
-                title,
-                locale || "en"
-              )}
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: getTranslation(
+                    translation[0]?.translations,
+                    title,
+                    locale || "en"
+                  ),
+                }}
+              />
             </Link>
           ) : (
             <h4 className="w-full uppercase primary-font text-primary  text-left font-medium transition-all rounded-t-lg flex items-center justify-between">
-              {getTranslation(
-                translation[0]?.translations,
-                title,
-                locale || "en"
-              )}
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: getTranslation(
+                    translation[0]?.translations,
+                    title,
+                    locale || "en"
+                  ),
+                }}
+              />
             </h4>
           )}
           <div onClick={onClick} className={`${navigation && "lg:hidden"}`}>
@@ -160,6 +174,13 @@ if(Array.isArray(selectedFilters)){
           }  font-semibold transition-all rounded-t-lg flex items-center justify-between`}
         >
           <span
+            dangerouslySetInnerHTML={{
+              __html: getTranslation(
+                translation[0]?.translations,
+                title,
+                locale || "en"
+              ),
+            }}
             className={`${
               general || filter
                 ? `primary-font sm:text-[14px] text-sm ${
@@ -167,13 +188,7 @@ if(Array.isArray(selectedFilters)){
                   }`
                 : ""
             }`}
-          >
-            {getTranslation(
-              translation[0]?.translations,
-              title,
-              locale || "en"
-            )}
-          </span>
+          />
 
           <div className={`${navigation && "sm:hidden"}`}>
             {isOpen ? (
@@ -188,11 +203,7 @@ if(Array.isArray(selectedFilters)){
       {/* NORMAL */}
       {!navigation && !filter && isOpen && (
         <div className="pb-7 bg-white rounded-b-lg general-content">
-          {getTranslation(
-            translation[0]?.translations,
-            children,
-            locale || "en"
-          )}
+          {children}
         </div>
       )}
 
@@ -228,19 +239,23 @@ if(Array.isArray(selectedFilters)){
                     <input
                       type="checkbox"
                       className="checkbox checkbox-success checkbox-xs rounded-none"
-                      name="selected_address"
-                      onChange={() =>
-                        activeFilters(item?.text || `${item?.text}-${index}`)
-                      }
-                      checked={Array.isArray(selectedFilters) && selectedFilters.includes(item?.text)}
-                    />
-                    <label className="text-sm">
-                      {getTranslation(
-                        translation[0]?.translations,
-                        item?.text,
-                        locale || "en"
+                      onChange={() => activeFilters(item)} // Pass the full item to the handler
+                      checked={selectedFilters.some(
+                        (filter) => filter?.text?.en === item?.text?.en
                       )}
-                    </label>
+                    />
+
+                    <label
+                      className="text-sm"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          ocale === "en"
+                            ? item?.text?.en
+                            : item?.text?.ar
+                            ? item?.text?.ar
+                            : item?.text?.en,
+                      }}
+                    />
                   </div>
                 ))}
           </div>
@@ -250,20 +265,22 @@ if(Array.isArray(selectedFilters)){
       {filter && filterGraphic && !filterLink && !filterComponent && isOpen && (
         <div className="bg-white rounded-b-lg grid grid-cols-8 items-center gap-3 pb-5">
           {children?.map((item, index) => {
-            const itemKey = item?.item?.item || `${index}`;
-            const isSelected = selectedFilters.includes(item?.item?.item);
+            const itemKey = item?.item?.en || `${index}`;
+            const isSelected = selectedFilters.some(
+              (filter) => filter?.text?.en === item?.text?.en
+            );
 
-            const backgroundStyle = hasExtension(item?.item?.item)
+            const backgroundStyle = hasExtension(item?.item?.en)
               ? {
-                  background: `url(${apiUrl}wp-content/uploads/${item?.item?.item}) no-repeat center`,
+                  background: `url(${apiUrl}wp-content/uploads/${item?.item?.en}) no-repeat center`,
                 }
-              : { background: item?.item?.item };
+              : { background: item?.item?.en };
 
             return (
               <div key={itemKey}>
                 <div
                   className={`select-graphic rounded-full tooltip tooltip-primary tooltip-xs !bg-contain `}
-                  data-tip={item?.item?.item}
+                  data-tip={item?.item?.en}
                   style={{
                     ...backgroundStyle,
                   }}
@@ -271,8 +288,7 @@ if(Array.isArray(selectedFilters)){
                   <input
                     type="checkbox"
                     className="absolute z-10 top-[5px] right-[5px] size-4 rounded-full opacity-0"
-                    name="selected_address"
-                    onChange={() => activeFilters(item?.item?.item)}
+                    onChange={() => activeFilters(item)}
                     checked={isSelected}
                   />
                   {isSelected ? (
@@ -296,14 +312,10 @@ if(Array.isArray(selectedFilters)){
           {children.map((item, index) => (
             <Link
               key={index}
-              href={`${homeUrl}${locale}/products/${linkSlug(item?.text)}`}
+              href={`${homeUrl}${locale}/products/${item?.link}`}
               className="text-sm block transition-all hover:text-primary"
             >
-              {getTranslation(
-                translation[0]?.translations,
-                item?.text,
-                locale || "en"
-              )}
+              {item?.text}
             </Link>
           ))}
         </div>
@@ -339,7 +351,11 @@ if(Array.isArray(selectedFilters)){
                 }}
               >
                 {noHtml ? (
-                  item?.content
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: item?.content,
+                    }}
+                  />
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{

@@ -43,7 +43,7 @@ function Checkout() {
   const { userData } = useAuthContext();
 
   const { validUserTocken } = useAuthContext();
-  const {savedAddress, setSavedAddress} = useSiteContext();
+  const { savedAddress, setSavedAddress } = useSiteContext();
 
   const {
     setBillingAddress,
@@ -143,7 +143,6 @@ function Checkout() {
       }
     }
   }, [userData?.id, savedAddress, router, activeId]); // Re-run when userId or savedAddress changes
-
 
   // State to keep track of the active item
 

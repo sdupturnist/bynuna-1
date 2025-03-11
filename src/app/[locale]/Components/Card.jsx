@@ -32,7 +32,7 @@ export default function Card({
   subcategoryLarge,
   childcategoryLarge,
   subcategoryFromUrl,
-  locale
+  locale,
 }) {
   //CHECK NEED LICENCE FOR BUY THIS PRODUCT
   const isNeedLicence =
@@ -41,53 +41,53 @@ export default function Card({
 
   if (categoryLarge) {
     return (
-     <li>
-       <Link href={`${homeUrl}${locale}/products/${data?.slug}`} className="">
-      <div>
-          <Images
-            imageurl={`${data?.featured_image_details?.src}`}
-            quality="100"
-            width="250"
-            height="250"
-            alt="Powering Your Tactical Needs"
-            title="Powering Your Tactical Needs"
-            classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
-            placeholder={true}
-          />
-          <h3 className="heading-md mt-5 text-center line-clamp-2">
-            {data?.title?.rendered || data?.name}
-          </h3>
-        </div>
-      </Link>
-     </li>
+      <li>
+        <Link href={`${homeUrl}${locale}/products/${data?.slug}`} className="">
+          <div>
+            <Images
+              imageurl={`${data?.featured_image_details?.src}`}
+              quality="100"
+              width="250"
+              height="250"
+              alt={`${data?.featured_image_details?.alt}`}
+              title={`${data?.featured_image_details?.alt}`}
+              classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
+              placeholder={true}
+            />
+            <h3 className="heading-md mt-5 text-center line-clamp-2">
+              {data?.title?.rendered || data?.name}
+            </h3>
+          </div>
+        </Link>
+      </li>
     );
   }
 
   if (subcategoryLarge) {
     return (
       <li>
-      <Link
-        href={`${homeUrl}${locale}/products/${data?.acf?.main_categories[0]?.post_title
-          .toLowerCase()
-          .replace(/ /g, "-")}/${data?.slug}/`}
-        className="hover:text-primary transition-all"
-      >
-        <div>
-          <Images
-            imageurl={`${data?.featured_image_details?.src}`}
-            quality="100"
-            width="250"
-            height="250"
-            alt="Powering Your Tactical Needs"
-            title="Powering Your Tactical Needs"
-            classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
-            placeholder={true}
-          />
-          <h3 className="heading-md mt-5 text-center line-clamp-2">
-          <ProductName title={data?.title?.rendered} />
-          </h3>
-        </div>
-      </Link>
+        <Link
+          href={`${homeUrl}${locale}/products/${data?.acf?.main_categories[0]?.post_title
+            .toLowerCase()
+            .replace(/ /g, "-")}/${data?.slug}/`}
+          className="hover:text-primary transition-all"
+        >
+          <div>
+            <Images
+              imageurl={`${data?.featured_image_details?.src}`}
+              quality="100"
+              width="250"
+              height="250"
+              alt="Powering Your Tactical Needs"
+              title="Powering Your Tactical Needs"
+              classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
+              placeholder={true}
+            />
+            <h3 className="heading-md mt-5 text-center line-clamp-2">
+              <ProductName title={data?.title?.rendered} />
+            </h3>
+          </div>
+        </Link>
       </li>
     );
   }
@@ -95,60 +95,60 @@ export default function Card({
   if (childcategoryLarge) {
     return (
       <li>
-      <Link
-        href={`${homeUrl}${locale}/products/${subcategoryFromUrl}/${data?.acf?.sub_categories[0]?.post_title
-          .toLowerCase()
-          .replace(/ /g, "-")}/${data?.slug}`}
-        className="hover:text-primary transition-all"
-      >
-        <div>
-          <Images
-            imageurl={`${data?.featured_image_details?.src}`}
-            quality="100"
-            width="250"
-            height="250"
-            alt="Powering Your Tactical Needs"
-            title="Powering Your Tactical Needs"
-            classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
-            placeholder={true}
-          />
-          <h3 className="heading-md mt-5 text-center line-clamp-2">
-          <ProductName title={data?.title?.rendered} />
-          </h3>
-        </div>
-      </Link>
+        <Link
+          href={`${homeUrl}${locale}/products/${subcategoryFromUrl}/${data?.acf?.sub_categories[0]?.post_title
+            .toLowerCase()
+            .replace(/ /g, "-")}/${data?.slug}`}
+          className="hover:text-primary transition-all"
+        >
+          <div>
+            <Images
+              imageurl={`${data?.featured_image_details?.src}`}
+              quality="100"
+              width="250"
+              height="250"
+              alt="Powering Your Tactical Needs"
+              title="Powering Your Tactical Needs"
+              classes="block sm:size-[250px] size-[80px] object-contain mx-auto"
+              placeholder={true}
+            />
+            <h3 className="heading-md mt-5 text-center line-clamp-2">
+              <ProductName title={data?.title?.rendered} />
+            </h3>
+          </div>
+        </Link>
       </li>
     );
   }
 
   if (category) {
     return (
-     <li>
-       <Link
-        href={`${homeUrl}${locale}/products/${data?.title
-          .replace(/%20/g, " ")
-          .toLowerCase()
-          .replace(/ /g, "-")}`}
-      >
-        <div>
-          <Images
-            imageurl={`${
-              data?.featured_image_details?.src || data?.acf?.image?.url
-            }`}
-            quality="100"
-            width="100"
-            height="100"
-            alt={data?.title?.rendered || data?.title}
-            title={data?.title?.rendered || data?.title}
-            classes="block sm:size-[90px] size-[60px] object-contain mx-auto"
-            placeholder={true}
-          />
-          <h3 className="heading-md mt-5 text-center line-clamp-2">
-          <ProductName title={title} />
-          </h3>
-        </div>
-      </Link>
-     </li>
+      <li>
+        <Link
+          href={`${homeUrl}${locale}/products/${data?.title
+            .replace(/%20/g, " ")
+            .toLowerCase()
+            .replace(/ /g, "-")}`}
+        >
+          <div>
+            <Images
+              imageurl={`${
+                data?.featured_image_details?.src || data?.acf?.image?.url
+              }`}
+              quality="100"
+              width="100"
+              height="100"
+              alt={data?.title?.rendered || data?.title}
+              title={data?.title?.rendered || data?.title}
+              classes="block sm:size-[90px] size-[60px] object-contain mx-auto"
+              placeholder={true}
+            />
+            <h3 className="heading-md mt-5 text-center line-clamp-2">
+              <ProductName title={title} />
+            </h3>
+          </div>
+        </Link>
+      </li>
     );
   }
 
@@ -174,8 +174,8 @@ export default function Card({
             />
 
             <div className="grid gap-3">
-            <h3 className="heading-sm secondary-font font mt-2 lowercase first-letter:capitalize">
-              <ProductName title={data?.title?.rendered} />
+              <h3 className="heading-sm secondary-font font mt-2 lowercase first-letter:capitalize">
+                <ProductName title={data?.title?.rendered} />
               </h3>
             </div>
           </div>
@@ -190,7 +190,7 @@ export default function Card({
       <div className="relative product-item sm:p-3 p-0">
         <div className="grid  gap-[10px] h-full">
           <div className="img-box">
-          {data?.review_count > 0 && (
+            {data?.review_count > 0 && (
               <ReviewCount
                 average={data?.average_rating}
                 ratingCount={data?.review_count}
@@ -198,14 +198,12 @@ export default function Card({
             )}
             <div className="card-action absolute bg-white bg-opacity-90 inset-0 items-center justify-center hidden lg:flex">
               <div className="flex gap-3 items-center justify-center">
-                
                 <AddToWishList
                   small
                   itemName={data?.name}
                   productId={data?.id}
                 />
 
-             
                 <AddToCart
                   card
                   itemid={data?.id}
@@ -248,7 +246,7 @@ export default function Card({
               />
             </div>
             <Link
-            className="flex"
+              className="flex"
               href={`${homeUrl}${locale}/products/${
                 subcategoryFromUrl ||
                 data?.acf?.main_categories[0]?.post_title
@@ -279,25 +277,31 @@ export default function Card({
             </Link>
           </div>
           <div className="contents items-center justify-center w-full mt-2 min-h-[115px] sm:min-h-fit">
-            
-           
             <Link
-             href={`${homeUrl}${locale}/products/${
-              subcategoryFromUrl ||
-              data?.acf?.main_categories[0]?.post_title
+              href={`${homeUrl}${locale}/products/${
+                subcategoryFromUrl ||
+                data?.acf?.main_categories[0]?.post_title
+                  .toLowerCase()
+                  .replace(/ /g, "-")
+              }/${
+                subcategoryFromUrl ||
+                data?.acf?.sub_categories[0]?.post_title
+                  .toLowerCase()
+                  .replace(/ /g, "-")
+              }/${data?.acf?.child_categories[0]?.post_title
                 .toLowerCase()
-                .replace(/ /g, "-")
-            }/${
-              subcategoryFromUrl ||
-              data?.acf?.sub_categories[0]?.post_title
-                .toLowerCase()
-                .replace(/ /g, "-")
-            }/${data?.acf?.child_categories[0]?.post_title
-              .toLowerCase()
-              .replace(/ /g, "-")}/${data?.slug}`}
+                .replace(/ /g, "-")}/${data?.slug}`}
             >
               <h3 className="sm:text-[14px] text-[12px] sm:mb-3 mb-1 line-clamp-1 text-center">
-              <ProductName title={data?.name} />
+                <ProductName
+                  title={
+                    locale === "en"
+                      ? data?.name
+                      : data?.acf?.arabic?.title
+                      ? data?.acf?.arabic?.title
+                      : data?.name
+                  }
+                />
               </h3>
 
               {data?.price && (

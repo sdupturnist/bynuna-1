@@ -166,6 +166,7 @@ export default function Address() {
                         >
                           <li>
                             <Link
+                             onTouchStart={(e) => setEditData(item)}
                               onClick={(e) => setEditData(item)}
                               href={`${homeUrl}${locale}/account/address/edit/${item?.id}`}
                             >
@@ -177,7 +178,10 @@ export default function Address() {
                             </Link>
                           </li>
                           <li>
-                            <button onClick={(e) => deleteAddress(item?.id)}>
+                            <button 
+                              onTouchStart={(e) => deleteAddress(item?.id)}
+                            onClick={(e) => deleteAddress(item?.id)}
+                            >
                               {getTranslation(
                                 translation[0]?.translations,
                                 "Delete",
@@ -195,7 +199,6 @@ export default function Address() {
 
                       <div className="!grid gap-1 [&>*]:text-base [&>*]:opacity-70 sm:max-w-[60%]">
                         {item?.address_1 && <span>{item?.address_1}</span>}
-                        {item?.address_2 && <span>{item?.address_2}</span>}
                         {item?.company && <span>{item?.company}</span>}
                         {item?.city && (
                           <>

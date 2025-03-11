@@ -65,7 +65,7 @@ export default async function Home({
 
   //PRODUCTS
   let products = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&lang=${locale}`,
+    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}`,
 
     {
       next: { revalidate: 60 },
@@ -194,7 +194,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
 
     const [pageData] = await page.json();
 
-    console.log(pageData?.yoast_head_json)
+ 
 
     // Return metadata object with dynamic values, or fall back to static values
     return {

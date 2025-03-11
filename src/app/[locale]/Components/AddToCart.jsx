@@ -89,19 +89,20 @@ export default function AddToCart({
     }
   }, [safeCartItems, itemid]);
 
-  const checkUser = async () => {
-    fetch(`${apiUrl}wp-json/wishlist/v1/items?user_id=${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  };
+  // const checkUser = async () => {
+  //   fetch(`${apiUrl}wp-json/wishlist/v1/items?user_id=${userId}`)
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       setLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching data:", error);
+  //     });
+  // };
 
   useEffect(() => {
-    validUserTocken && userId && checkUser();
+    validUserTocken && userId 
+    //&& checkUser();
   }, []);
 
   const updateCartLengthCookie = async (updatedCartItems) => {

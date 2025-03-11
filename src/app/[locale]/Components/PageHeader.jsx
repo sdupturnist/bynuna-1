@@ -158,18 +158,14 @@ export default function PageHeader({
                 )}
                 <div className="order-2">
                   <h1 className="sm:text-lg text-sm font-bold text-center uppercase w-fit px-4 mx-auto">
-                    {getTranslation(
-                      translation[0]?.translations,
-                      title.replace(/-/g, " "),
-                      locale || "en"
-                    )}
+                    <span dangerouslySetInnerHTML={{ __html: title }} />
                   </h1>
                 </div>
                 <div className="order-3">
                   <div
                     onClick={(e) => {
                       setShowFilter(!showFilter),
-                      document.body.style.overflow = 'hidden';
+                        (document.body.style.overflow = "hidden");
                     }}
                     className="primary-font text-xs uppercase cursor-pointer"
                   >

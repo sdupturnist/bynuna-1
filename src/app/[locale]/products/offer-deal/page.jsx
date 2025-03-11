@@ -34,7 +34,7 @@ export default async function BrandPage({ params, searchParams, params: { locale
 
   //PRODUCTS
   let products = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=offer_deal&meta_value=1&lang=${locale || 'en'}&per_page=${itemsShowPerPage}`,
+    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=offer_deal&meta_value=1&per_page=${itemsShowPerPage}`,
     {
       next: { revalidate: 60 },
     }
@@ -43,7 +43,7 @@ export default async function BrandPage({ params, searchParams, params: { locale
     .catch((error) => console.error("Error:", error));
 
   let totalProducts = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=offer_deal&meta_value=1&lang=${locale || 'en'}&per_page=1000`,
+    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=offer_deal&meta_value=1&per_page=1000`,
     {
       next: { revalidate: 60 },
     }

@@ -8,7 +8,7 @@ import { useCartContext } from "../Context/cartContext";
 import { useLanguageContext } from "../Context/LanguageContext";
 import { useParams, useRouter } from "next/navigation";
 
-export default function PaymentOptionsList({ data,  }) {
+export default function PaymentOptionsList({ data }) {
   const {
     setPaymentMethodOption,
     setPaymentTerms,
@@ -18,11 +18,10 @@ export default function PaymentOptionsList({ data,  }) {
   } = useCheckoutContext();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
 
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale;
 
-    const router = useRouter();
-  const params = useParams();  
-  const locale = params.locale; 
-    
   const { translation } = useLanguageContext();
 
   const { cartItems } = useCartContext();
@@ -36,7 +35,11 @@ export default function PaymentOptionsList({ data,  }) {
   const [termsContent, setTermsContent] = useState([]);
 
   const terms = () =>
-    fetch(`${apiUrl}wp-json/wp/v2/pages?slug=terms-and-conditions&lang=${locale || 'en'}`)
+    fetch(
+      `${apiUrl}wp-json/wp/v2/pages?slug=terms-and-conditions&lang=${
+        locale || "en"
+      }`
+    )
       .then((res) => res.json())
       .then((data) => {
         setTermsContent(data);
@@ -45,7 +48,6 @@ export default function PaymentOptionsList({ data,  }) {
         console.error("Error fetching data:", error);
       });
 
- 
   useEffect(() => {
     setTermsContent(terms);
   }, []);
@@ -78,8 +80,8 @@ export default function PaymentOptionsList({ data,  }) {
       id: "Total pay",
       title: getTranslation(
         translation[0]?.translations,
-        "Credit or Debit Card",
-        locale || 'en'
+        "Credit or Debit Card (Totalpay)",
+        locale || "en"
       ),
     },
   ];
@@ -90,7 +92,7 @@ export default function PaymentOptionsList({ data,  }) {
         title={getTranslation(
           translation[0]?.translations,
           "Terms and conditions",
-          locale || 'en'
+          locale || "en"
         )}
         item={
           <div
@@ -115,10 +117,10 @@ export default function PaymentOptionsList({ data,  }) {
                 checked={selectedPaymentMethod === item?.id}
               />
               <label>
-               {getTranslation(
+                {getTranslation(
                   translation[0]?.translations,
                   item?.title,
-                  locale || 'en'
+                  locale || "en"
                 )}
               </label>
             </div>
@@ -140,7 +142,7 @@ export default function PaymentOptionsList({ data,  }) {
               {getTranslation(
                 translation[0]?.translations,
                 "I agree to the",
-                locale || 'en'
+                locale || "en"
               )}
               <span
                 className="text-primary cursor-pointer hover:opacity-60 transition-all px-1"
@@ -151,7 +153,7 @@ export default function PaymentOptionsList({ data,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "terms and conditions",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </span>
               .
@@ -171,7 +173,7 @@ export default function PaymentOptionsList({ data,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "I understand that identification will be required for collection of this restricted item.",
-                  locale || 'en'
+                  locale || "en"
                 )}
                 <span
                   className="text-primary cursor-pointer hover:opacity-60 transition-all px-1"
@@ -182,7 +184,7 @@ export default function PaymentOptionsList({ data,  }) {
                   {getTranslation(
                     translation[0]?.translations,
                     "terms and conditions",
-                    locale || 'en'
+                    locale || "en"
                   )}
                 </span>
                 .

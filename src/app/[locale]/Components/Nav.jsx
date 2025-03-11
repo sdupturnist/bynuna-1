@@ -4,17 +4,23 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { homeUrl, siteName } from "../Utils/variables";
 import Skelton from "./Skelton";
+import { usePathname } from "next/navigation";
 
 export default function Nav({ data, locale }) {
+  const pathname = usePathname();
+
   const savedMenuInLocalStorage =
     typeof window !== "undefined"
       ? JSON.parse(localStorage.getItem(`${siteName}_menu`))
       : null;
 
   const [loading, setLoading] = useState(true);
+  const [clicked, setClicked] = useState(false);
   const [menuData, setMenuData] = useState(
     savedMenuInLocalStorage?.items || data
   );
+
+
 
   useEffect(() => {
     // Only update menuData if it has changed
@@ -69,20 +75,33 @@ export default function Nav({ data, locale }) {
   // Function to render the menu dynamically
   const renderMenu = (items, parentUrl = "") => {
     return (
-      <ul className="NavMenu">
+      <ul className={`${clicked ? "clicked" : ""} NavMenu`}>
         {items.map((item) => {
           // Build the URL for each item dynamically
+
+          let url = `${item?.url}/`
+
+
+let cleanUrl = url.replace(/\/+$/, "");
+
+
+let itemName = cleanUrl.split('/').pop();
+
+
+
+
           const itemUrl =
             item?.acf?.custom_url !== ""
               ? `${homeUrl}${locale}${item?.acf?.custom_url}`
-              : `${homeUrl}${locale}/products/${parentUrl}${item?.title
-                  .toLowerCase()
-                  .replace(/ /g, "-")}/`;
+              : `${homeUrl}${locale}/products/${parentUrl}${itemName}/`;
 
           return (
-            <li key={item.id} className="nav-item">
-              <Link href={itemUrl} className="nav-link">
-                {locale === "en" ? item?.title : item?.acf?.arabic}
+            <li key={item.id} className="nav-item" onClick={(e) => setClicked(!clicked)}>
+              <Link
+                href={itemUrl}
+                className="nav-link"
+              >
+                <span dangerouslySetInnerHTML={{ __html: locale === "en" ? item?.title : item?.acf?.arabic }} />
               </Link>
               {/* Render children if they exist, passing the current item URL as the parent */}
               {item.children &&
@@ -97,6 +116,10 @@ export default function Nav({ data, locale }) {
       </ul>
     );
   };
+
+  useEffect(() => {
+    setClicked(false);
+  }, [pathname]);
 
   return <nav>{loading ? <Skelton nav /> : renderMenu(navTree)}</nav>;
 }

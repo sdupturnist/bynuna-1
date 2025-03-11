@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { apiUrl, siteName, woocommerceKey } from "../Utils/variables";
+import { apiUrl, siteName, woocommerceKey, woocommerceKeyAdd } from "../Utils/variables";
 import { userId } from "../Utils/UserInfo";
 import { useParams, useRouter } from "next/navigation";
 
@@ -183,9 +183,7 @@ if(localStorage.getItem(`${siteName}_menu`)){
   const fetchSubCategories = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}wp-json/wp/v2/sub-categories?per_page=99&lang=${
-          locale || "en"
-        }`,
+        `${apiUrl}wp-json/wp/v2/sub-categories?per_page=99`,
         {
           next: { revalidate: 60 },
         }
@@ -240,11 +238,13 @@ if(localStorage.getItem(`${siteName}_menu`)){
     }
   };
 
+ 
+
   //WISH LIST
   const fetchWishlist = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}wp-json/wishlist/v1/items?user_id=${userId || 1}`,
+        `${apiUrl}wp-json/wishlist/v1/get/${userId || 1}${woocommerceKey}`,
         {
           next: { revalidate: 60 },
         }
@@ -258,6 +258,13 @@ if(localStorage.getItem(`${siteName}_menu`)){
       console.error(error);
     }
   };
+
+
+
+  
+  
+
+
 
   //CONTACT INFO
   const fetchContactInfo = async () => {

@@ -682,7 +682,7 @@ export default function UpdateAddressForm({ addressCount }) {
               )}
             </small>
 
-           <div className="relative  flex w-full">
+            <div className="relative flex w-full z-10">
                       <div className="w-full">
                         <ReactSearchAutocomplete
                           items={places}

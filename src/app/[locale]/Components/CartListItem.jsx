@@ -91,7 +91,9 @@ export default function CartListItem({}) {
                     />
                   </Link>
                   <div className="w-full grid items-center">
-                    <Link href={`/product/${item?.slug}`}>
+                    <Link 
+                       href={`${homeUrl}${locale}/products/${item?.category}/${item?.sub_category}/${item?.child_category}/${item?.slug}`}
+                    >
                       <h3 className="product-title font-semibold sm:font-medium mb-1">
                         {item?.name}
                       </h3>

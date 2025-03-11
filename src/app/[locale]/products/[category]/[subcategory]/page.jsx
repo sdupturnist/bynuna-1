@@ -1,17 +1,25 @@
 import { Suspense } from "react";
 import PageHeader from "@/app/[locale]/Components/PageHeader";
-import { apiUrl, homeUrl, metaStaticData, siteLogo, siteName, woocommerceKey } from "@/app/[locale]/Utils/variables";
+import {
+  apiUrl,
+  homeUrl,
+  metaStaticData,
+  siteLogo,
+  siteName,
+  woocommerceKey,
+} from "@/app/[locale]/Utils/variables";
 import Card from "@/app/[locale]/Components/Card";
 import Alerts from "@/app/[locale]/Components/Alerts";
 import Pagination from "@/app/[locale]/Components/Pagination";
 import LoadingItem from "@/app/[locale]/Components/LoadingItem";
 
-
-
-export default async function SubCategoryPage({ params, searchParams, params: { locale }}) {
-
-
+export default async function SubCategoryPage({
+  params,
+  searchParams,
+  params: { locale },
+}) {
   const { subcategory } = await params;
+  const decodeUrl = decodeURIComponent(subcategory);
 
   const { meta_key } = await searchParams;
   const { meta_value } = await searchParams;
@@ -52,7 +60,9 @@ export default async function SubCategoryPage({ params, searchParams, params: { 
 
   //SUB CATEGORY
   let subCat = await fetch(
-    `${apiUrl}wp-json/wp/v2/sub-categories?slug=${subcategory}&lang=${locale || 'en'}`,
+    `${apiUrl}wp-json/wp/v2/sub-categories?slug=${subcategory}&lang=${
+      locale || "en"
+    }`,
     {
       next: { revalidate: 60 },
     }
@@ -64,13 +74,11 @@ export default async function SubCategoryPage({ params, searchParams, params: { 
   let products = await fetch(
     `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${
       subCat[0]?.id
-    }&meta_key=sub_categories&lang=${
-      locale || 'en'
-    }${resultFilterParams}&min_price=${min_price || 0}&max_price=${
-      max_price || 0
-    }&per_page=${itemsShowPerPage}&sort_by=${sortby || "name"}&order=${
-      sortVal || "asc"
-    }`,
+    }&meta_key=sub_categories${resultFilterParams}&min_price=${
+      min_price || 0
+    }&max_price=${max_price || 0}&per_page=${itemsShowPerPage}&sort_by=${
+      sortby || "name"
+    }&order=${sortVal || "asc"}`,
     {
       next: { revalidate: 60 },
     }
@@ -80,9 +88,7 @@ export default async function SubCategoryPage({ params, searchParams, params: { 
 
   //PRODUCTS FILTERS || LENGTH
   let productsGetFilters = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${
-      subCat[0]?.id
-    }&meta_key=sub_categories&lang=${locale || "en"}`,
+    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${subCat[0]?.id}&meta_key=sub_categories`,
     {
       next: { revalidate: 60 },
     }
@@ -90,103 +96,144 @@ export default async function SubCategoryPage({ params, searchParams, params: { 
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
-  const finalFilterItems = productsGetFilters?.flatMap((product) => {
-    const filteredMetaData = product.meta_data?.filter(
-      (item) => item.key === "_filter_items" && item.value
-    );
 
-    if (!filteredMetaData) return []; // Return empty if no metadata
 
-    const labelAccumulator = {};
-
-    // Process each metadata entry
-    filteredMetaData.forEach((item) => {
-      item.value.split(",").forEach((pair) => {
-        const [label, value] = pair.split(":").map((str) => str.trim());
-        if (!labelAccumulator[label]) labelAccumulator[label] = new Set();
-        labelAccumulator[label].add(value);
+    const finalFilterItems = productsGetFilters?.flatMap((product) => {
+      const filteredMetaData = product.meta_data?.filter(
+        (item) => item.key === "_filter_items" && item.value
+      );
+  
+      if (!filteredMetaData || filteredMetaData.length === 0) return []; // Return empty if no metadata or no matching items
+  
+      const labelAccumulator = {};
+  
+      // Process each metadata entry
+      filteredMetaData.forEach((item) => {
+        item.value.forEach((valueItem) => {
+          const label_en = valueItem.label_en;
+          const label_ar = valueItem.label_ar;
+          const value_en = valueItem.value_en;
+          const value_ar = valueItem.value_ar;
+          const acf_arabic = valueItem.acf?.arabic; // Extract the Arabic label from acf
+  
+          if (label_en && value_en) {
+            // Accumulate the results under the label
+            if (!labelAccumulator[label_en]) {
+              labelAccumulator[label_en] = {
+                ar_name: acf_arabic || label_ar || "default_ar_name", // Use acf_arabic for the label's Arabic name
+                items: new Set(),
+              };
+            }
+  
+            labelAccumulator[label_en].items.add({
+              en: value_en,
+              ar: value_ar || acf_arabic || "default_ar_name", // Use acf_arabic for the item's Arabic name if value_ar is missing
+            });
+          }
+        });
       });
+  
+      // Convert labelAccumulator to the desired structure
+      return Object.keys(labelAccumulator).map((label_en) => ({
+        label: label_en, // Use label_en as the label
+        ar_name: labelAccumulator[label_en].ar_name, // Use the Arabic name from acf_arabic
+        items: Array.from(labelAccumulator[label_en].items).map((value) => ({
+          item: value, // Include the value pair (English and Arabic)
+          ar_name: value.ar, // Use the Arabic name for the item
+        })),
+      }));
     });
-
-    // Convert labelAccumulator to the desired structure
-    return Object.keys(labelAccumulator).map((label) => ({
-      label,
-      items: Array.from(labelAccumulator[label]).map((value) => ({
-        item: value,
-      })),
-    }));
-  });
-
-  const result = [];
-
-  // Merge items by label
-  finalFilterItems.forEach((entry) => {
-    const existing = result.find((r) => r.label === entry.label);
-    if (existing) {
-      existing.items.push(...entry.items); // Spread operator to add items
-    } else {
-      result.push({ label: entry.label, items: entry.items }); // Add new label
-    }
-  });
-
-  // Filter by matching labels in subCat
-  const filteredProductFilters = result.filter((productFilter) =>
-    subCat[0]?.acf?.filters && subCat[0]?.acf?.filters.some(
-      (catFilter) => catFilter.post_name === productFilter.label
-    )
-  );
+  
+    const result = [];
+  
+    // Merge items by label
+    finalFilterItems.forEach((entry) => {
+      const existing = result.find((r) => r.label === entry.label);
+      if (existing) {
+        existing.items.push(...entry.items); // Spread operator to add items
+      } else {
+        result.push({
+          label: entry.label,
+          items: entry.items,
+          ar_name: entry.ar_name,
+        }); // Add new label
+      }
+    });
+  
+    // Filter by matching labels in subCat
+    const filteredProductFilters = result.filter(
+      (productFilter) =>
+        subCat[0]?.acf?.filters &&
+        subCat[0]?.acf?.filters.some(
+          (catFilter) => catFilter.post_name === productFilter.label
+        )
+    );
+  
+  
 
   return (
     <div className="bg-bggray">
       <section className="p-0">
-        <Suspense fallback={<LoadingItem fullscreen />}>
-         <PageHeader
-            activeFilterMetas={meta_value}
-            shopPageLevel={1}
-            title={subcategory}
-            filter="subcategory"
-            filterData={filteredProductFilters}
-            sortProducts
-          />
-        </Suspense>
-        {!products?.length > 0 ?
-          <Alerts
-            noLogo
-            title="Sorry, no products found!"
-            large
-            url={homeUrl}
-            //desc={`Thanks for signing up! Please check your email for a confirmation link to finish your registration.`}
-          />
-      :
-        <div className={`${products?.length > 0 && "sm:py-10 py-5"} container`}>
-            <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-0 gap-3">
-            {products?.length > 0 &&
-              products.map((item, index) => (
-                <Card key={index} data={item} product locale={locale} />
-              ))}
-          </div>
-          <Suspense fallback={<LoadingItem fullscreen />}>
-            <div className="sm:pt-5 pt-2 w-full">
-              <Pagination
-                currentPage={parseInt(1, 10)}
-                totalActiveData={products && products?.length}
-                totalPages={productsGetFilters && productsGetFilters?.length}
-                baseUrl={`${homeUrl}`}
-                itemsShowPerPage={itemsShowPerPage}
+      <Suspense fallback={<LoadingItem fullscreen />}>
+              <PageHeader
+                activeFilterMetas={meta_value}
+                shopPageLevel={1}
+                title={
+                  locale === "en"
+                    ? subCat[0]?.title?.rendered
+                    : subCat[0]?.acf?.title_arabic
+                    ? subCat[0]?.acf?.title_arabic
+                    : subCat[0]?.title?.rendered
+                }
+                filter="subcategory"
+                filterData={filteredProductFilters}
+                sortProducts
               />
-            </div>
+            </Suspense>
+        {!products?.length ? (
+          // When no products are available, show a loading fallback or an alert.
+          <Suspense fallback={<LoadingItem fullscreen />}>
+            <Alerts
+              noLogo
+              title="Sorry, no products found!"
+              large
+              url={homeUrl}
+              //desc={`Thanks for signing up! Please check your email for a confirmation link to finish your registration.`}
+            />
           </Suspense>
-        </div>
-}
+        ) : (
+          <>
+    
+
+            <div
+              className={`${products?.length > 0 && "sm:py-10 py-5"} container`}
+            >
+              <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-0 gap-3">
+                {products.map((item, index) => (
+                  <Card key={index} data={item} product locale={locale} />
+                ))}
+              </div>
+
+              <Suspense fallback={<LoadingItem fullscreen />}>
+                <div className="sm:pt-5 pt-2 w-full">
+                  <Pagination
+                    currentPage={1} // Assuming you want to start at page 1
+                    totalActiveData={products?.length}
+                    totalPages={productsGetFilters?.length}
+                    baseUrl={homeUrl}
+                    itemsShowPerPage={itemsShowPerPage}
+                  />
+                </div>
+              </Suspense>
+            </div>
+          </>
+        )}
       </section>
     </div>
   );
 }
 
-
-
 export async function generateMetadata({ params, searchParams }, parent) {
-
   const staticData = metaStaticData;
 
   try {
@@ -200,8 +247,6 @@ export async function generateMetadata({ params, searchParams }, parent) {
 
     const [pageData] = await page.json();
 
-
-
     // Return metadata object with dynamic values, or fall back to static values
     return {
       title:
@@ -211,7 +256,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       description:
         pageData?.yoast_head_json?.og_description || staticData.og_description,
 
-      author: siteName+' Admin',
+      author: siteName + " Admin",
       viewport: "width=device-width, initial-scale=1",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
@@ -239,8 +284,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
         staticData.twitter_image,
       openGraph: {
         images: [
-          pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.ogImage,
+          pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.ogImage,
         ],
       },
     };

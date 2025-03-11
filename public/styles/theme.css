@@ -1094,11 +1094,6 @@ header .NavMenu li ul {
   border-bottom: 1px solid #988643;
   top: 100%;
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-  transition: all 0.5s;
-  -webkit-transition: all 0.5s;
-  -moz-transition: all 0.5s;
-  -ms-transition: all 0.5s;
-  -o-transition: all 0.5s;
   transform: translateY(10px);
   -webkit-transform: translateY(10px);
   -moz-transform: translateY(10px);
@@ -1139,6 +1134,15 @@ header .NavMenu li ul li a:hover {
     -ms-transform: translateY(0);
     -o-transform: translateY(0);
   }
+}
+header .clicked ul {
+  transform: translateY(10px) !important;
+  -webkit-transform: translateY(10px) !important;
+  -moz-transform: translateY(10px) !important;
+  -ms-transform: translateY(10px) !important;
+  -o-transform: translateY(10px) !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 @media (max-width: 991.98px) {
   header .bartoggle {
@@ -1941,6 +1945,14 @@ html[dir=ltr] .label-input {
 html[dir=ltr] .manage-address {
   @apply right-7; /* Left border for LTR */
 }
+.react-slider__imgZoom {
+  background-color: #fff !important;
+}
+
+html[dir=rtl] .react-slider__imgZoom {
+  left: auto;
+  right: 100%;
+}
 html[dir=rtl] .NavMenu li ul li ul {
   position: absolute;
   right: 100%;
@@ -2111,6 +2123,11 @@ html[lang=ar] * {
 
 .react-slider__ul li.active {
   border: solid thin #988643 !important;
+}
+
+.react-slider__ul li.active img {
+  content: normal !important;
+  position: relative !important;
 }
 
 .success-animation {

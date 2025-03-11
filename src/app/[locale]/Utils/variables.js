@@ -26,6 +26,9 @@ const date = new Date();
 //WOOCOMMERECE
 export let woocommerceKey =
   "?consumer_key=ck_2d04135ce56ef79ee425fed2269cc101bea5804f&consumer_secret=cs_588ff4bc83df6125ba5d3e0aa383679ff7eeab11";
+
+
+
 export let returnDays = 24; //24 hours
 
 //.ENV
@@ -184,7 +187,8 @@ export const getTranslation = (translations, englishText, language) => {
   }
 
   if (language === "ar") {
-    const trimmedEnglishText = englishText.trim();
+ 
+    const trimmedEnglishText = englishText && englishText.trim();
 
     const translation = translations.find(
       (item) =>

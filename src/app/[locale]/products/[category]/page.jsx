@@ -11,7 +11,7 @@ import {
 
 export default async function Category({ params, params: { locale } }) {
   const { category } = await params;
-
+  const decodeUrl = decodeURIComponent(category);
   
 
 

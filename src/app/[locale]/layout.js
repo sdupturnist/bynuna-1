@@ -76,7 +76,6 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang={locale} dir={locale === 'en' ? 'ltr' : 'rtl'}>
-   
       <body>
         <ClientProvider>
           <NextTopLoader

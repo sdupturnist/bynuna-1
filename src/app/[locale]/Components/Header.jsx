@@ -35,6 +35,11 @@ export default function Header({ locale }) {
     setSearchMobileVisible,
   } = useSiteContext();
 
+  const { validUserTocken } = useAuthContext();
+  const { cartItems } = useCartContext();
+
+  const { translation } = useLanguageContext();
+
   const [visibleDiv, setVisibleDiv] = useState("");
 
   const [isVisible, setIsVisible] = useState(true); // To track header visibility
@@ -67,20 +72,23 @@ export default function Header({ locale }) {
   }, [headerMenu]); // Empty dependency array means this effect runs only once on mount
 
   const handleScroll = () => {
-    if (window.scrollY > lastScrollY && window.scrollY > 200) {
-      setIsVisible(false);
-    } else {
-      // Scrolling up
-      setIsVisible(true);
-    }
+    if (typeof window !== "undefined") {
+      // Ensure that window is defined
+      if (window.scrollY > lastScrollY && window.scrollY > 200) {
+        setIsVisible(false);
+      } else {
+        // Scrolling up
+        setIsVisible(true);
+      }
 
-    if (window.scrollY > 400) {
-      setIsSticky(true);
-    } else {
-      setIsSticky(false);
-    }
+      if (window.scrollY > 400) {
+        setIsSticky(true);
+      } else {
+        setIsSticky(false);
+      }
 
-    setLastScrollY(window.scrollY); // Update the last scroll position
+      setLastScrollY(window.scrollY); // Update the last scroll position
+    }
   };
 
   useEffect(() => {
@@ -92,13 +100,6 @@ export default function Header({ locale }) {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [lastScrollY]); // Dependency array with lastScrollY to re-trigger on scroll
-
-
-
-  const { validUserTocken } = useAuthContext();
-  const { cartItems } = useCartContext();
-
-  const { translation } = useLanguageContext();
 
   const savedMenuInLocalStorage =
     typeof window !== "undefined"
@@ -197,27 +198,16 @@ export default function Header({ locale }) {
     }
   };
 
-  function checkScreenWidth() {
-    const width =
-      window.innerWidth ||
-      document.documentElement.clientWidth ||
-      document.body.clientWidth;
-    return width;
-  }
-
-  const screenWidth = checkScreenWidth();
-  // console.log(`Screen width: ${screenWidth}`);
-
   return (
     <header
-    className={`transition-all z-20 ${
-      isSticky && "sticky-header"
-    } bg-white transition-all sticky top-0 left-0 right-0 z-20`}
-    style={{
-      transform: isVisible ? "translateY(0)" : "translateY(-100%)", // Hide on scroll down
-    }}
-
-    ref={headerRef}>
+      className={`transition-all z-20 ${
+        isSticky && "sticky-header"
+      } bg-white transition-all sticky top-0 left-0 right-0 z-[99]`}
+      style={{
+        transform: isVisible ? "translateY(0)" : "translateY(-100%)", // Hide on scroll down
+      }}
+      ref={headerRef}
+    >
       <div className="bg-primary uppercase [&>*]:text-xs py-1 sm:py-0">
         <div className="container flex justify-between items-center">
           <small className="block text-white sm:text-xs text-[10px]">
@@ -246,10 +236,27 @@ export default function Header({ locale }) {
                 >
                   {currencies &&
                     currencies?.map((item, index) => (
-                      <li key={index} onClick={handleClick}>
+                      <li
+                        key={index}
+                        onClick={handleClick}
+                        onTouchStart={handleClick}
+                      >
                         <button
                           className=""
                           onClick={(e) => {
+                            setActiveCurrency(item?.title?.rendered),
+                              typeof window !== "undefined" &&
+                                localStorage.setItem(
+                                  `${siteName}_currency`,
+                                  item?.title?.rendered
+                                ),
+                              typeof window !== "undefined" &&
+                                localStorage.setItem(
+                                  `${siteName}_currency_symbol`,
+                                  item?.acf?.symbol
+                                );
+                          }}
+                          onTouchStart={(e) => {
                             setActiveCurrency(item?.title?.rendered),
                               typeof window !== "undefined" &&
                                 localStorage.setItem(
@@ -281,7 +288,7 @@ export default function Header({ locale }) {
           <div className="container mb-4">
             <div className="flex items-center justify-between sm:gap-[30px] gap-[20px]">
               <div className="logo">
-                <Link href={homeUrl}>
+                <Link href={`${homeUrl}${locale}`}>
                   <Images
                     imageurl={siteLogo}
                     quality="100"
@@ -306,6 +313,9 @@ export default function Header({ locale }) {
                   {/* SEARCH ICON */}
                   <svg
                     onClick={(e) =>
+                      setSearchMobileVisible(!searchMobileVisible)
+                    }
+                    onTouchStart={(e) =>
                       setSearchMobileVisible(!searchMobileVisible)
                     }
                     className="cursor-pointer hover:opacity-30 transition-all"
@@ -352,7 +362,10 @@ export default function Header({ locale }) {
                       >
                         {validUserTocken && (
                           <>
-                            <li onClick={handleClick}>
+                            <li
+                              onClick={handleClick}
+                              onTouchStart={handleClick}
+                            >
                               <Link href={`${homeUrl}${locale}/account`}>
                                 {getTranslation(
                                   translation[0]?.translations,
@@ -361,7 +374,10 @@ export default function Header({ locale }) {
                                 )}
                               </Link>
                             </li>
-                            <li onClick={handleClick}>
+                            <li
+                              onClick={handleClick}
+                              onTouchStart={handleClick}
+                            >
                               <Logout small />
                             </li>
                           </>
@@ -439,6 +455,7 @@ export default function Header({ locale }) {
                   </Link>
                   <svg
                     onClick={(e) => setShowMegaMenu(!showMegaMenu)}
+                    onTouchStart={(e) => setShowMegaMenu(!showMegaMenu)}
                     className="lg:hidden cursor-pointer"
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -477,6 +494,9 @@ export default function Header({ locale }) {
                 onClick={(e) => {
                   setShowMegaMenu(!showMegaMenu);
                 }}
+                onTouchStart={(e) => {
+                  setShowMegaMenu(!showMegaMenu);
+                }}
                 className="close-nav"
                 xmlns="http://www.w3.org/2000/svg"
                 width="14"
@@ -510,12 +530,22 @@ export default function Header({ locale }) {
                 >
                   <Link
                     onClick={(e) => setShowMegaMenu(!showMegaMenu)}
+                    onTouchStart={(e) => setShowMegaMenu(!showMegaMenu)}
                     href={`${homeUrl}${locale}/products/${category?.title
                       .toLowerCase()
                       .replace(/ /g, "-")}/`}
                     className="primary-font text-primary mb-0 block text-[18px]"
                   >
-                    {locale === "en" ? category?.title : category?.acf?.arabic}
+
+<span
+              dangerouslySetInnerHTML={{
+                __html: locale === "en"
+                ? category?.title
+                : category?.acf?.arabic,
+              }}
+            />
+
+
                   </Link>
                   <div className="lg:flex  lg:flex-wrap md:gap-12 gap-2 justify-start w-full">
                     {headerMenu &&
@@ -570,12 +600,17 @@ export default function Header({ locale }) {
                                       .replace(/ /g, "-")}/`}
                                     className="w-full uppercase primary-font text-primary leading-[1.5em]  text-left font-medium transition-all  flex items-center justify-between"
                                   >
-                                    {getTranslation(
-                                      translation[0]?.translations,
-                                      subCategory?.title,
-                                      locale || "en"
-                                    )}
-                                  </Link>
+
+<span
+              dangerouslySetInnerHTML={{
+                __html: locale === "en"
+                ? subCategory?.title
+                : subCategory?.acf?.arabic,
+              }}
+            />
+
+                                 
+                                   </Link>
                                 )}
                               </div>
                             </div>
@@ -593,6 +628,9 @@ export default function Header({ locale }) {
           <div
             className="backdrop-megamenu cursor-pointer absolute"
             onClick={(e) => {
+              setShowMegaMenu(!showMegaMenu);
+            }}
+            onTouchStart={(e) => {
               setShowMegaMenu(!showMegaMenu);
             }}
           ></div>

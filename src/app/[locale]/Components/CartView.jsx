@@ -15,17 +15,13 @@ import { useLanguageContext } from "../Context/LanguageContext";
 import { useParams } from "next/navigation";
 
 export default function CartView() {
-
   const router = useRouter();
 
   const { locale } = useParams();
 
-
-
   const { cartItems, setGuestUser } = useCartContext();
 
   const { setLoadingAuth, validUserTocken } = useAuthContext(); // Get authentication status
- 
 
   const { translation } = useLanguageContext();
 
@@ -44,7 +40,7 @@ export default function CartView() {
           buttonLabel={getTranslation(
             translation[0]?.translations,
             "Shop now",
-            locale || 'en'
+            locale || "en"
           )}
           cartEmpty
           url={homeUrl}
@@ -55,7 +51,7 @@ export default function CartView() {
           title={getTranslation(
             translation[0]?.translations,
             "You do not have any items in your cart",
-            locale || 'en'
+            locale || "en"
           )}
         />
       </div>
@@ -81,7 +77,7 @@ export default function CartView() {
               {getTranslation(
                 translation[0]?.translations,
                 "Continue shopping",
-                locale || 'en'
+                locale || "en"
               )}
             </Link>
           </div>
@@ -93,7 +89,7 @@ export default function CartView() {
                 title={getTranslation(
                   translation[0]?.translations,
                   "Order summary",
-                  locale || 'en'
+                  locale || "en"
                 )}
                 card
               />
@@ -118,30 +114,30 @@ export default function CartView() {
                         confirmButtonText: getTranslation(
                           translation[0]?.translations,
                           "Save",
-                          locale || 'en'
+                          locale || "en"
                         ),
                         denyButtonText: getTranslation(
                           translation[0]?.translations,
                           "Guest Checkout",
-                          locale || 'en'
+                          locale || "en"
                         ),
 
                         title: getTranslation(
                           translation[0]?.translations,
                           "Login to Checkout",
-                          locale || 'en'
+                          locale || "en"
                         ),
                         text: getTranslation(
                           translation[0]?.translations,
                           "Log in to your account to continue with the checkout process.",
-                          locale || 'en'
+                          locale || "en"
                         ),
                         icon: false,
                         // showCancelButton: true, // Show cancel button
                         confirmButtonText: getTranslation(
                           translation[0]?.translations,
                           "Login",
-                          locale || 'en'
+                          locale || "en"
                         ),
                         // cancelButtonText: "Guest checkout",
                         reverseButtons: true,
@@ -168,7 +164,7 @@ export default function CartView() {
                 {getTranslation(
                   translation[0]?.translations,
                   "Proceed to Checkout",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </button>
 
@@ -180,7 +176,7 @@ export default function CartView() {
                   {getTranslation(
                     translation[0]?.translations,
                     "Continue as a Guest",
-                    locale || 'en'
+                    locale || "en"
                   )}
                 </button>
               )}
