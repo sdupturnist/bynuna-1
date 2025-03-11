@@ -5,60 +5,47 @@ import { useLanguageContext } from "../Context/LanguageContext";
 import { getTranslation } from "../Utils/variables";
 import { useParams, useRouter } from "next/navigation";
 
-export default function GenerateTable({ tableData,  }) {
-
-    const router = useRouter();
-       const params = useParams();  
-       const locale = params.locale; 
+export default function GenerateTable({ tableData }) {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params.locale || "en"; // Get locale from URL params or default to 'en'
 
   const { translation } = useLanguageContext();
 
-  // Function to convert the value string into an array of key-value objects
-  const transformValue = (value) => {
-    return value.split(",").map((pair) => {
-      const [key, val] = pair.split(":");
-      return { key: key.trim(), value: val && val.trim() };
-    });
-  };
-
   return (
-    tableData &&
-    tableData.map((item) => (
-      <div key={item.id}>
-        <table
-          border="1"
-          cellPadding="5"
-          cellSpacing="0"
-          className="!mt-0 capitalize"
-        >
-          {/* <thead>
-                <tr>
-                  <th>Key</th>
-                  <th>Value</th>
-                </tr>
-              </thead> */}
-          <tbody>
-            {transformValue(item.value).map((pair, index) => (
+    <div>
+      <table
+        border="1"
+        cellPadding="5"
+        cellSpacing="0"
+        className="!mt-0 capitalize"
+      >
+        <thead>
+          <tr>
+            <th>
+              {getTranslation(translation[0]?.translations, "Key", locale)}
+            </th>
+            <th>
+              {getTranslation(translation[0]?.translations, "Value", locale)}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {tableData &&
+            tableData[0]?.value?.map((item, index) => (
               <tr key={index}>
                 <td>
-                  {getTranslation(
-                    translation[0]?.translations,
-                    pair.key,
-                    locale || 'en'
-                  )}
+                  {locale === "ar" ? item.label_ar : item.label_en}{" "}
+                  {/* Render label based on locale */}
                 </td>
                 <td>
-                  {getTranslation(
-                    translation[0]?.translations,
-                    pair.value,
-                    locale || 'en'
-                  )}
+                  {locale === "ar" ? item.value_ar : item.value_en}{" "}
+                  {/* Render value based on locale */}
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div>
-    ))
+        </tbody>
+      </table>
+    </div>
   );
 }
