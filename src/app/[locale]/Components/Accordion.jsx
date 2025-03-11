@@ -249,7 +249,7 @@ const Accordion = ({
                       className="text-sm"
                       dangerouslySetInnerHTML={{
                         __html:
-                          ocale === "en"
+                          locale === "en"
                             ? item?.text?.en
                             : item?.text?.ar
                             ? item?.text?.ar
