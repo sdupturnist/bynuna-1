@@ -14,10 +14,15 @@ export default function ProductName({title}){
     const { translation } = useLanguageContext();
 
 
-    return    getTranslation(
+    return   <span
+    dangerouslySetInnerHTML={{
+      __html: getTranslation(
         translation[0]?.translations,
        title?.replace(/&amp;/g, "&"),
         locale || 'en'
-      )
+      ),
+    }}
+  />
+  
 
 }
