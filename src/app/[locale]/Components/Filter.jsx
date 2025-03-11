@@ -33,6 +33,12 @@ export default function Filter({
   const [value, setValue] = useState([0, 1000000]);
   const { queryUpdated, setQueryUpdated } = useSiteContext();
 
+  const isUpdatingRef = useRef(false);
+
+
+
+
+
   //PRICE
 
   const isInitialRender = useRef(true); // To prevent updating the URL on the initial render
@@ -66,17 +72,88 @@ export default function Filter({
     );
   }, [value, router]); // Runs whenever `value` changes
 
-  // REMOVE SELECTED FILTER ITEM
-  const removeFilter = (itemToRemove) => {
-    setSelectedFilters((prevFilters) => {
-      const updatedFilters = prevFilters.filter(
-        (item) => item !== itemToRemove
-      );
 
-      setQueryUpdated(true);
+
+
+
+
+  // REMOVE SELECTED FILTER ITEM
+
+
+
+   // Function to update the URL with selected filters
+   const updateURL = (filters) => {
+    const currentQuery = new URLSearchParams(window.location.search);
+
+    // Remove previous filters
+    currentQuery.delete("meta_key");
+    currentQuery.delete("meta_value");
+
+    // Append the new filters
+    filters.forEach((filter) => {
+      currentQuery.append("meta_key", "_filter_items");
+      currentQuery.append("meta_value", filter?.text?.en);
+    });
+
+    //Push the updated URL to the router
+    router.push(
+      `${window.location.pathname}?${currentQuery.toString()}`,
+      undefined,
+      { shallow: true }
+    );
+  };
+  
+
+
+  const removeFilter = (item) => {
+    setSelectedFilters((prevFilters) => {
+      const isItemSelected = prevFilters.some(
+        (filter) => filter?.text?.en === item?.text?.en
+      );
+      const updatedFilters = isItemSelected
+        ? prevFilters.filter((filter) => filter?.text?.en !== item?.text?.en)
+        : [...prevFilters, item];
+
+      // Avoid setting state during render, use ref to delay URL update
+      if (!isUpdatingRef.current) {
+        isUpdatingRef.current = true; // Mark the update as in progress
+
+        setTimeout(() => {
+          updateURL(updatedFilters);
+          isUpdatingRef.current = false; // Reset the flag after the update
+        }, 300); // Wait for 300ms before updating the URL
+      }
+
       return updatedFilters;
     });
   };
+
+
+
+
+
+
+  // const removeFilter = (itemToRemove) => {
+  //   setSelectedFilters((prevFilters) => {
+  //     // Log the previous filters for debugging
+  //     console.log('PREV', prevFilters);
+  
+  //     // Filter out the item to remove
+  //     const updatedFilters = prevFilters.filter(
+  //       (item) => item !== itemToRemove?.item?.en
+  //     );
+  
+  //     // Indicate that the query should be updated
+  //     setQueryUpdated(true);
+  
+  //     // Return the updated filters
+  //     return updatedFilters;
+  //   });
+  // };
+
+
+
+
 
   // CLEAR ALL FILTERS
   const clearAllFilters = () => {
@@ -146,11 +223,7 @@ export default function Filter({
     //localStorage.removeItem(`${siteName}_selectedFilters`);
   };
 
-  const featuredItems = (item) => {
-    router.push(`${window.location.pathname}?featured=${item}`, undefined, {
-      shallow: true,
-    });
-  };
+
 
   if (
     shopPageLevel === "subcategory" ||
