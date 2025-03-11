@@ -351,11 +351,7 @@ const Accordion = ({
                 }}
               >
                 {noHtml ? (
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: item?.content,
-                    }}
-                  />
+               item?.content
                 ) : (
                   <div
                     dangerouslySetInnerHTML={{
