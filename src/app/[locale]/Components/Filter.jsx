@@ -35,10 +35,6 @@ export default function Filter({
 
   const isUpdatingRef = useRef(false);
 
-
-
-
-
   //PRICE
 
   const isInitialRender = useRef(true); // To prevent updating the URL on the initial render
@@ -72,17 +68,10 @@ export default function Filter({
     );
   }, [value, router]); // Runs whenever `value` changes
 
-
-
-
-
-
   // REMOVE SELECTED FILTER ITEM
 
-
-
-   // Function to update the URL with selected filters
-   const updateURL = (filters) => {
+  // Function to update the URL with selected filters
+  const updateURL = (filters) => {
     const currentQuery = new URLSearchParams(window.location.search);
 
     // Remove previous filters
@@ -102,8 +91,6 @@ export default function Filter({
       { shallow: true }
     );
   };
-  
-
 
   const removeFilter = (item) => {
     setSelectedFilters((prevFilters) => {
@@ -128,32 +115,23 @@ export default function Filter({
     });
   };
 
-
-
-
-
-
   // const removeFilter = (itemToRemove) => {
   //   setSelectedFilters((prevFilters) => {
   //     // Log the previous filters for debugging
   //     console.log('PREV', prevFilters);
-  
+
   //     // Filter out the item to remove
   //     const updatedFilters = prevFilters.filter(
   //       (item) => item !== itemToRemove?.item?.en
   //     );
-  
+
   //     // Indicate that the query should be updated
   //     setQueryUpdated(true);
-  
+
   //     // Return the updated filters
   //     return updatedFilters;
   //   });
   // };
-
-
-
-
 
   // CLEAR ALL FILTERS
   const clearAllFilters = () => {
@@ -222,8 +200,6 @@ export default function Filter({
     //setQueryUpdated(true);
     //localStorage.removeItem(`${siteName}_selectedFilters`);
   };
-
-
 
   if (
     shopPageLevel === "subcategory" ||
@@ -398,11 +374,8 @@ export default function Filter({
                 />
               )}
 
-
               {filteredData &&
                 filteredData.map((item, index) => (
-                
-
                   <Accordion
                     key={index}
                     filter

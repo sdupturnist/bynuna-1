@@ -454,8 +454,11 @@ export default function Header({ locale }) {
                     </div>
                   </Link>
                   <svg
-                    onClick={(e) => setShowMegaMenu(!showMegaMenu)}
-                    onTouchStart={(e) => setShowMegaMenu(!showMegaMenu)}
+                   onClick={(e) => {
+                    setShowMegaMenu(!showMegaMenu),
+                        (document.body.style.overflow = "hidden")
+                  }}
+                  
                     className="lg:hidden cursor-pointer"
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -491,12 +494,11 @@ export default function Header({ locale }) {
           <div className="container sm:pb-[200px] pb-[70px] grid sm:gap-8 gap-5">
             {showMegaMenu && (
               <svg
-                onClick={(e) => {
-                  setShowMegaMenu(!showMegaMenu);
-                }}
-                onTouchStart={(e) => {
-                  setShowMegaMenu(!showMegaMenu);
-                }}
+              onClick={(e) => {
+                setShowMegaMenu(!showMegaMenu),
+                    (document.body.style.overflow = "auto")
+              }}
+                
                 className="close-nav"
                 xmlns="http://www.w3.org/2000/svg"
                 width="14"
@@ -510,7 +512,6 @@ export default function Header({ locale }) {
                 />
               </svg>
             )}
-
             {loading ? (
               <Skelton menu />
             ) : (
@@ -536,16 +537,14 @@ export default function Header({ locale }) {
                       .replace(/ /g, "-")}/`}
                     className="primary-font text-primary mb-0 block text-[18px]"
                   >
-
-<span
-              dangerouslySetInnerHTML={{
-                __html: locale === "en"
-                ? category?.title
-                : category?.acf?.arabic,
-              }}
-            />
-
-
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          locale === "en"
+                            ? category?.title
+                            : category?.acf?.arabic,
+                      }}
+                    />
                   </Link>
                   <div className="lg:flex  lg:flex-wrap md:gap-12 gap-2 justify-start w-full">
                     {headerMenu &&
@@ -600,17 +599,15 @@ export default function Header({ locale }) {
                                       .replace(/ /g, "-")}/`}
                                     className="w-full uppercase primary-font text-primary leading-[1.5em]  text-left font-medium transition-all  flex items-center justify-between"
                                   >
-
-<span
-              dangerouslySetInnerHTML={{
-                __html: locale === "en"
-                ? subCategory?.title
-                : subCategory?.acf?.arabic,
-              }}
-            />
-
-                                 
-                                   </Link>
+                                    <span
+                                      dangerouslySetInnerHTML={{
+                                        __html:
+                                          locale === "en"
+                                            ? subCategory?.title
+                                            : subCategory?.acf?.arabic,
+                                      }}
+                                    />
+                                  </Link>
                                 )}
                               </div>
                             </div>

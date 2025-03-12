@@ -341,26 +341,29 @@ const Accordion = ({
         {items &&
           items
             ?.filter((item) => item !== null)
-            .map((item, index) => (
-              <AccordionItem
-                key={index}
-                title={item?.title?.rendered || item?.title}
-                isOpen={openIndex === index}
-                onClick={(event) => {
-                  toggleAccordion(index);
-                }}
-              >
-                {noHtml ? (
-               item?.content
-                ) : (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: item?.content?.rendered || item?.content,
-                    }}
-                  />
-                )}
-              </AccordionItem>
-            ))}
+            .map((item, index) =>
+              // console.log(item?.content)
+              item?.content !== null ? (
+                <AccordionItem
+                  key={index}
+                  title={item?.title?.rendered || item?.title}
+                  isOpen={openIndex === index}
+                  onClick={(event) => {
+                    toggleAccordion(index);
+                  }}
+                >
+                  {noHtml ? (
+                    item?.content
+                  ) : (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: item?.content?.rendered || item?.content,
+                      }}
+                    />
+                  )}
+                </AccordionItem>
+              ) : null
+            )}
       </div>
     );
   } else {

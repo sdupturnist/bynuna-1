@@ -107,35 +107,35 @@ export default async function ProductSingle({
       (product) => upsellsIds && upsellsIds.includes(product.id)
     );
 
- 
-
   const accordianItems = [
     singleProduct?.description || singleProduct?.acf?.arabic?.description
       ? {
           title: "Description",
-          content: (
-            <div
-              className="py-4"
-              dangerouslySetInnerHTML={{
-                __html: singleProduct?.acf?.arabic?.description
-                  ? singleProduct?.acf?.arabic?.description
-                  : singleProduct?.description,
-              }}
-            />
-          ),
+          content:
+            singleProduct?.description ||
+            singleProduct?.acf?.arabic?.description !== "" ? (
+              <div
+                className="py-4"
+                dangerouslySetInnerHTML={{
+                  __html: singleProduct?.acf?.arabic?.description
+                    ? singleProduct?.acf?.arabic?.description
+                    : singleProduct?.description,
+                }}
+              />
+            ) : null,
         }
       : null,
 
     // Primary specifications: Show if valid primarySpecifications
-    primarySpecifications &&
-      primarySpecifications[0]?.value !== "" && {
-        title: "Primary specifications",
-        content: (
+    {
+      title: "Primary specifications",
+      content:
+        primarySpecifications[0]?.value !== "" ? (
           <div className="py-4">
             <GenerateTable tableData={primarySpecifications} />
           </div>
-        ),
-      },
+        ) : null,
+    },
 
     // Delivery & Returns: Show if valid deliveryreturns
     deliveryreturns && {
@@ -144,7 +144,10 @@ export default async function ProductSingle({
         <div
           className="content"
           dangerouslySetInnerHTML={{
-            __html: deliveryreturns?.content?.rendered,
+            __html:
+              deliveryreturns !== ""
+                ? deliveryreturns?.content?.rendered
+                : null,
           }}
         />
       ),
@@ -157,7 +160,10 @@ export default async function ProductSingle({
         <div
           className="content"
           dangerouslySetInnerHTML={{
-            __html: securitypayments?.content?.rendered,
+            __html:
+              deliveryreturns !== ""
+                ? securitypayments?.content?.rendered
+                : null,
           }}
         />
       ),
@@ -199,19 +205,20 @@ export default async function ProductSingle({
     },
   ];
 
-
-
   return (
     <main className="bg-light lg:bg-white product-single">
       <div className="mobile-container-fixed">
         <div className="bg-white px-5 lg:px-0 py-3 sm:py-0">
           <Breadcrumb
-          title={locale === "en"
-            ? singleProduct?.name
-            : singleProduct?.acf?.arabic?.title
-            ? singleProduct?.acf?.arabic?.title
-            : singleProduct?.name}
-          data={singleProduct?.acf}  />
+            title={
+              locale === "en"
+                ? singleProduct?.name
+                : singleProduct?.acf?.arabic?.title
+                ? singleProduct?.acf?.arabic?.title
+                : singleProduct?.name
+            }
+            data={singleProduct?.acf}
+          />
         </div>
         <section className="grid lg:gap-0 gap-2 pb-0 lg:pt-10 pt-0">
           <div className="bg-white grid grid-cols-1 lg:gap-7 gap-5 items-center lg:grid-cols-[50%_50%] product-single lg:py-0 pb-10  px-5 lg:px-0">
@@ -236,20 +243,32 @@ export default async function ProductSingle({
                   </div>
                 )}
 
+         
+
                 <Suspense fallback={<LoadingItem spinner />}>
                   {singleProduct?.images?.gallery?.length > 0 ? (
                     <ProductGallery data={singleProduct?.images?.gallery} />
-                  ) : (
+                  ) : <div className="border aspect-square flex items-center justify-center sm:p-10 p-5">{
+                    singleProduct?.images?.featured?.url ?
                     <Image
                       width="600"
                       height="600"
                       quality="100"
-                      src="/images/placeholder_brand.jpg"
+                      src={singleProduct?.images?.featured?.url}
                       className="block w-full"
                       alt={siteName}
                       title={siteName}
-                    />
-                  )}
+                    /> :
+                    <Image
+                    width="600"
+                    height="600"
+                    quality="100"
+                    src="/images/placeholder_brand.jpg"
+                    className="block w-full"
+                    alt={siteName}
+                    title={siteName}
+                  />
+                  }</div>}
                 </Suspense>
               </div>
             </div>

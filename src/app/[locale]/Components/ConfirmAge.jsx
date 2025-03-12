@@ -1,27 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiUrl, siteName } from "../Utils/variables";
+import { apiUrl, getTranslation, siteName } from "../Utils/variables";
 import Button from "./Button";
 import Images from "./Images";
 import Cookies from "js-cookie"; // Import js-cookie
 import LoadingItem from "./LoadingItem";
 import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";  // Import useRouter
+import { useRouter } from "next/navigation"; // Import useRouter
+import { useLanguageContext } from "../Context/LanguageContext";
 
 export default function ConfirmAge() {
-  const router = useRouter();  // Initialize router
+  const router = useRouter(); // Initialize router
 
-  const params = useParams();  
-  const locale = params.locale; 
+  const params = useParams();
+  const locale = params.locale;
 
   const [pageData, setPageData] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const { translation } = useLanguageContext();
+
   const confirmAgePageData = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}wp-json/wp/v2/pages?slug=confirm-age&lang=${locale || 'en'}`,
+        `${apiUrl}wp-json/wp/v2/pages?slug=confirm-age-${locale || "en"}`,
         {
           next: { revalidate: 60 },
         }
@@ -51,7 +54,7 @@ export default function ConfirmAge() {
 
   const handleCancel = () => {
     // Redirect user to another page instead of closing the tab
-    router.replace("https://www.google.com");  // Corrected the URL
+    router.replace("https://www.google.com"); // Corrected the URL
   };
 
   return (
@@ -87,22 +90,46 @@ export default function ConfirmAge() {
             <Button
               classes="bg-primary text-white"
               action={confirmAge}
-              label={pageData[0]?.acf?.confirm_age_button}
+              label={getTranslation(
+                translation[0]?.translations,
+                "I am 18 or older",
+                locale || 'en'
+              )}
             />
             <button
               className="btn"
               onClick={handleCancel} // Trigger the redirection
             >
-              Cancel
+                 {getTranslation(
+                  translation[0]?.translations,
+                  "Cancel",
+                  locale || 'en'
+                )}
             </button>
           </div>
         </div>
       </div>
+      <div className="fixed grid bottom-0 w-full left-0 right-0 sm:hidden">
       <Button
-        classes="fixed bottom-0 w-full left-0 right-0 bg-primary text-white sm:hidden"
+        classes="bg-primary text-white "
         action={confirmAge}
-        label={pageData[0]?.acf?.confirm_age_button}
+        label={getTranslation(
+                  translation[0]?.translations,
+                  "I am 18 or older",
+                  locale || 'en'
+                )}
       />
+            <button
+              className="btn"
+              onClick={handleCancel} // Trigger the redirection
+            >
+              {getTranslation(
+                  translation[0]?.translations,
+                  "Cancel",
+                  locale || 'en'
+                )}
+            </button>
+      </div>
     </div>
   );
 }
