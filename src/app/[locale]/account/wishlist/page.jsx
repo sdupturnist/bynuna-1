@@ -47,7 +47,7 @@ export default function WishList() {
                         {activeWishlist &&
                           activeWishlist.map((item, index) => (
                             <Card
-                              product
+                              type="product"
                               key={index}
                               data={item}
                               locale={locale}
