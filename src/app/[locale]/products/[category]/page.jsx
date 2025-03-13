@@ -8,8 +8,9 @@ import {
   siteLogo,
   siteName,
 } from "../../Utils/variables";
+import ProductWrapper from "../../Components/ProductWrapper";
 
-export default async function Category({ params, params: { locale } }) {
+export default async function Category({ params,   searchParams,  params: { locale } }) {
   const { category } = await params;
   const decodeUrl = decodeURIComponent(category);
   
@@ -48,6 +49,15 @@ export default async function Category({ params, params: { locale } }) {
       <section className="p-0">
         <div className="container lg:py-10 p-0">
         <ul className="border-list">
+            <ProductWrapper
+                      locale={locale}
+                      data={subCategories && filteredItems}
+                      searchParams={searchParams}
+                      type="subcategoryLarge"
+                    />
+</ul>
+
+        {/* <ul className="border-list">
             {subCategories &&
               filteredItems.map((item, index) => (
                 <Card
@@ -57,8 +67,10 @@ export default async function Category({ params, params: { locale } }) {
                   subcategoryLarge
                   subcategoryFromUrl={item}
                 />
+
+                
               ))}
-          </ul>
+          </ul> */}
         </div>
       </section>
     </div>

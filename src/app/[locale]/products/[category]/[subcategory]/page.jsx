@@ -12,6 +12,7 @@ import Card from "@/app/[locale]/Components/Card";
 import Alerts from "@/app/[locale]/Components/Alerts";
 import Pagination from "@/app/[locale]/Components/Pagination";
 import LoadingItem from "@/app/[locale]/Components/LoadingItem";
+import ProductWrapper from "@/app/[locale]/Components/ProductWrapper";
 
 export default async function SubCategoryPage({
   params,
@@ -31,6 +32,8 @@ export default async function SubCategoryPage({
   const { per_page } = await searchParams;
 
   const itemsShowPerPage = per_page || 32;
+
+
 
   let resultFilterParams = "";
 
@@ -74,7 +77,7 @@ export default async function SubCategoryPage({
   let products = await fetch(
     `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${
       subCat[0]?.id
-    }&meta_key=sub_categories${resultFilterParams}&min_price=${
+    }&meta_key=sub_categories_new${resultFilterParams}&min_price=${
       min_price || 0
     }&max_price=${max_price || 0}&per_page=${itemsShowPerPage}&sort_by=${
       sortby || "name"
@@ -86,9 +89,12 @@ export default async function SubCategoryPage({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
+
+  
+
   //PRODUCTS FILTERS || LENGTH
   let productsGetFilters = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${subCat[0]?.id}&meta_key=sub_categories`,
+    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${subCat[0]?.id}&meta_key=sub_categories_new`,
     {
       next: { revalidate: 60 },
     }
@@ -98,54 +104,57 @@ export default async function SubCategoryPage({
 
 
 
+
+    //FILTER
+
     const finalFilterItems = productsGetFilters?.flatMap((product) => {
       const filteredMetaData = product.meta_data?.filter(
         (item) => item.key === "_filter_items" && item.value
       );
-  
+    
       if (!filteredMetaData || filteredMetaData.length === 0) return []; // Return empty if no metadata or no matching items
-  
+    
       const labelAccumulator = {};
-  
+    
       // Process each metadata entry
       filteredMetaData.forEach((item) => {
-        item.value.forEach((valueItem) => {
-          const label_en = valueItem.label_en;
-          const label_ar = valueItem.label_ar;
-          const value_en = valueItem.value_en;
-          const value_ar = valueItem.value_ar;
-          const acf_arabic = valueItem.acf?.arabic; // Extract the Arabic label from acf
-  
-          if (label_en && value_en) {
-            // Accumulate the results under the label
-            if (!labelAccumulator[label_en]) {
-              labelAccumulator[label_en] = {
-                ar_name: acf_arabic || label_ar || "default_ar_name", // Use acf_arabic for the label's Arabic name
-                items: new Set(),
+        // Split the value string into key-value pairs
+        const valuePairs = item.value.split(",").map((pair) => {
+          const [key, value] = pair.split(":");
+          return { key, value };
+        });
+    
+        valuePairs.forEach(({ key, value }) => {
+          // Separate the value into English and Arabic parts
+          const [en, ar] = value.split("|");
+    
+          // Accumulate the results under the label
+          if (key && en && ar) {
+            if (!labelAccumulator[key]) {
+              labelAccumulator[key] = {
+                items: [],
               };
             }
-  
-            labelAccumulator[label_en].items.add({
-              en: value_en,
-              ar: value_ar || acf_arabic || "default_ar_name", // Use acf_arabic for the item's Arabic name if value_ar is missing
+    
+            labelAccumulator[key].items.push({
+              en, // English value
+              ar, // Arabic value
             });
           }
         });
       });
-  
+    
       // Convert labelAccumulator to the desired structure
-      return Object.keys(labelAccumulator).map((label_en) => ({
-        label: label_en, // Use label_en as the label
-        ar_name: labelAccumulator[label_en].ar_name, // Use the Arabic name from acf_arabic
-        items: Array.from(labelAccumulator[label_en].items).map((value) => ({
-          item: value, // Include the value pair (English and Arabic)
-          ar_name: value.ar, // Use the Arabic name for the item
-        })),
+      return Object.keys(labelAccumulator).map((label) => ({
+        label, // Use the label
+        items: labelAccumulator[label].items, // Include the items with English and Arabic values
       }));
     });
-  
+    
+    
+    
     const result = [];
-  
+    
     // Merge items by label
     finalFilterItems.forEach((entry) => {
       const existing = result.find((r) => r.label === entry.label);
@@ -155,41 +164,42 @@ export default async function SubCategoryPage({
         result.push({
           label: entry.label,
           items: entry.items,
-          ar_name: entry.ar_name,
         }); // Add new label
       }
     });
-  
+    
     // Filter by matching labels in subCat
     const filteredProductFilters = result.filter(
       (productFilter) =>
         subCat[0]?.acf?.filters &&
         subCat[0]?.acf?.filters.some(
-          (catFilter) => catFilter.post_name === productFilter.label
+          (catFilter) => catFilter.post_title === productFilter.label
         )
     );
-  
-  
+    
 
+
+    
+    
   return (
     <div className="bg-bggray">
       <section className="p-0">
-      <Suspense fallback={<LoadingItem fullscreen />}>
-              <PageHeader
-                activeFilterMetas={meta_value}
-                shopPageLevel={1}
-                title={
-                  locale === "en"
-                    ? subCat[0]?.title?.rendered
-                    : subCat[0]?.acf?.title_arabic
-                    ? subCat[0]?.acf?.title_arabic
-                    : subCat[0]?.title?.rendered
-                }
-                filter="subcategory"
-                filterData={filteredProductFilters}
-                sortProducts
-              />
-            </Suspense>
+        <Suspense fallback={<LoadingItem fullscreen />}>
+          <PageHeader
+            activeFilterMetas={meta_value}
+            shopPageLevel={1}
+            title={
+              locale === "en"
+                ? subCat[0]?.title?.rendered
+                : subCat[0]?.acf?.title_arabic
+                ? subCat[0]?.acf?.title_arabic
+                : subCat[0]?.title?.rendered
+            }
+            filter="subcategory"
+            filterData={filteredProductFilters}
+            sortProducts
+          />
+        </Suspense>
         {!products?.length ? (
           // When no products are available, show a loading fallback or an alert.
           <Suspense fallback={<LoadingItem fullscreen />}>
@@ -198,20 +208,20 @@ export default async function SubCategoryPage({
               title="Sorry, no products found!"
               large
               url={homeUrl}
-              //desc={`Thanks for signing up! Please check your email for a confirmation link to finish your registration.`}
             />
           </Suspense>
         ) : (
           <>
-    
-
             <div
               className={`${products?.length > 0 && "sm:py-10 py-5"} container`}
             >
-              <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-0 gap-3">
-                {products.map((item, index) => (
-                  <Card key={index} data={item} product locale={locale} />
-                ))}
+              <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
+                <ProductWrapper
+                  locale={locale}
+                  data={products && products}
+                  searchParams={searchParams}
+                  type="product"
+                />
               </div>
 
               <Suspense fallback={<LoadingItem fullscreen />}>

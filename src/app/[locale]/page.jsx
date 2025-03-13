@@ -65,9 +65,9 @@ export default async function Home({
 
   //PRODUCTS
   let products = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}`,
+    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&per_page=8`,
 
-    {
+    { 
       next: { revalidate: 60 },
     }
   )
@@ -94,24 +94,31 @@ export default async function Home({
           <CategorySlider locale={locale} />
         </div>
       </section>
-      <section className="p-0 lg:pt-10 sm:pt-5 text-center">
+    
+     {products?.length !== 0 &&  <section className="p-0 lg:pt-10 sm:pt-5 text-center">
         <div className="container border-t sm:border-black border-border spacing-normal spacing-gap">
           <h2 className="heading-lg">
             {page[0]?.acf?.featured_products?.featured_products_heading}
           </h2>
-          <ProductWrapper
-            locale={locale}
-            data={products && products}
-            searchParams={searchParams}
-          />
+          <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-8 gap-3">
+            <ProductWrapper
+              locale={locale}
+              data={products && products}
+              searchParams={searchParams}
+              type="product"
+            />
+          </div>
         </div>
       </section>
+}
       <section className="p-0 text-center">
-        <ul className="sm:max-w-[90%] mx-auto border-t sm:border-black border-border spacing sub-cat-list">
-          {subCategoreis &&
-            subCategoreis.map((item, index) => (
-              <Card key={index} data={item} subcategory locale={locale} />
-            ))}
+        <ul className={`${products?.length === 0 ? 'sm:mt-10' : ''} sm:max-w-[90%] mx-auto border-t sm:border-black border-border spacing sub-cat-list`}>
+          <ProductWrapper
+            locale={locale}
+            data={subCategoreis && subCategoreis}
+            searchParams={searchParams}
+            type="subcategory"
+          />
         </ul>
       </section>
       <section className="p-0 text-center">
@@ -148,7 +155,7 @@ export default async function Home({
             <div className="grid md:grid-cols-3  justify-evenly items-start gap-10">
               {blogs &&
                 blogs.map((item, index) => (
-                  <Card key={index} data={item} blog locale={locale} />
+                  <Card key={index} data={item} type="blog" locale={locale} />
                 ))}
             </div>
           </div>
@@ -182,7 +189,6 @@ export default async function Home({
 export async function generateMetadata({ params, searchParams }, parent) {
   const staticData = metaStaticData;
 
- 
   try {
     const page = await fetch(
       `${apiUrl}wp-json/wp/v2/pages?slug=home-en`,
@@ -193,8 +199,6 @@ export async function generateMetadata({ params, searchParams }, parent) {
     );
 
     const [pageData] = await page.json();
-
- 
 
     // Return metadata object with dynamic values, or fall back to static values
     return {
@@ -209,7 +213,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       viewport: "width=device-width, initial-scale=1",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
-        canonical: homeUrl+'en',
+        canonical: homeUrl + "en",
       },
       og_locale: pageData?.yoast_head_json?.og_locale || staticData.og_locale,
       og_type: pageData?.yoast_head_json?.og_type || staticData.og_type,
@@ -233,8 +237,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
         staticData.twitter_image,
       openGraph: {
         images: [
-          pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.ogImage,
+          pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.ogImage,
         ],
       },
     };

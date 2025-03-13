@@ -245,6 +245,7 @@ const Accordion = ({
                       )}
                     />
 
+
                     <label
                       className="text-sm"
                       dangerouslySetInnerHTML={{

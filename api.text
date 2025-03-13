@@ -59,6 +59,27 @@ add_action( 'wp_enqueue_scripts', 'hello_elementor_child_scripts_styles', 20 );
 
 // add_action('rest_api_init', 'add_cors_headers_to_rest_api');
 
+// Add CORS headers to allow requests from your frontend (e.g., http://localhost:3000)
+function add_cors_headers() {
+    // Allow requests from specific origin (you can change this as needed)
+    header("Access-Control-Allow-Origin: http://localhost:3000");
+    
+    // Allow specific HTTP methods (GET, POST, OPTIONS)
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    
+    // Allow specific headers (for example, Content-Type)
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-WP-Nonce");
+    
+    // If the request is an OPTIONS request (preflight), return early
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        exit(0);
+    }
+}
+
+// Hook into the `init` action to apply CORS headers before any output
+add_action('init', 'add_cors_headers');
+
+
 
 //COLOR SCHEME
 function wpacg_bynuna_admin_color_scheme() {
@@ -671,147 +692,227 @@ add_action('rest_api_init', 'add_featured_image_details_to_all_rest_api');
 
 //=================================================================================================================================================================================================================//
 
+//ALERT BEFORE CHANGE IN FILTER
+function show_message_before_save_post() {
+    // Check if we are on the edit screen for a custom post type
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'filter') {
+        ?>
+        <div class="notice is-dismissible" style="background-color: #ffd7d7;color: #000;border-left: 8px solid #ff0000;font-size: 20px;padding: 30px;font-weight: bold;line-height: 1.6;box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+            <p style="font-size: 18px;"><strong> <span style="display:block;font-size: 22px; text-transform:uppercase; color:#fe1010; margin-bottom:10px;">Important Reminder:</span></strong> If you make any changes to filter items after they have been published (e.g., renaming the title, slug, etc.), you will need to re-import the WooCommerce products to reflect the updated filter data. 
+            <br><strong>Please note:</strong> Deleting filter items does not require re-importing.
+            <br>If you encounter any issues, please <strong>contact the administrator</strong> for assistance.</p>
+        </div>
+        <?php
+    }
+}
+add_action('admin_notices', 'show_message_before_save_post');
+
+
+
 
 /////////////////////////FILTER CUSTOM FIELD START///////////////////////////////////
-// Add the custom fields to the product edit page
-function add_repeatable_custom_fields_to_product() {
+// Display the filter items table on the product page in WooCommerce
+// Display filter items table in the product edit page
+function add_filter_items_table_to_product() {
     global $post;
 
-    // Retrieve the current '_filter_items' value
-    $existing_custom_fields = get_post_meta( $post->ID, '_filter_items', true );
-    $existing_custom_fields = is_array( $existing_custom_fields ) ? $existing_custom_fields : [];
+    // Retrieve existing custom fields from the product meta
+    $existing_custom_fields_string = get_post_meta( $post->ID, '_filter_items', true );
+
+    // Decode the fields and split them into an array
+    $existing_custom_fields = !empty( $existing_custom_fields_string ) ? explode( ',', $existing_custom_fields_string ) : [];
 
     ?>
-    <div class="repeatable-field-container" style="padding: 20px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
-        <table class="widefat" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-            <thead>
-                <tr style="background-color: #f1f1f1; color: #333;">
-                    <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Value', 'woocommerce' ); ?></th>
-                    <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Arabic Value', 'woocommerce' ); ?></th>
-                    <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Select filter', 'woocommerce' ); ?></th>
-                    <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Actions', 'woocommerce' ); ?></th>
-                </tr>
-            </thead>
-            <tbody class="repeatable-field-body">
-                <tr class="repeatable-field-group" style="background-color: #fff; border-bottom: 1px solid #ddd;">
-                    <td style="padding: 10px 15px;">
-                        <input type="text" name="custom_text_field[]" class="custom_text_field" placeholder="<?php _e( 'Enter property', 'woocommerce' ); ?>" value="" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    </td>
-                    <td style="padding: 10px 15px;">
-                        <input type="text" name="custom_arabic_field[]" class="custom_arabic_field" placeholder="<?php _e( 'Enter Arabic value', 'woocommerce' ); ?>" value="" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    </td>
-                    <td style="padding: 10px 15px;">
-                        <select name="custom_filter_field[]" class="custom_filter_field" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                            <option value=""><?php _e( 'Select a filter', 'woocommerce' ); ?></option>
-                            <?php
-                            // Get all 'filter' custom post type posts
-                            $filters = get_posts( array(
-                                'post_type' => 'filter',
-                                'posts_per_page' => -1,
-                                'post_status' => 'publish',
-                            ) );
-                            foreach ( $filters as $filter ) {
-                                echo '<option value="' . $filter->ID . '">' . esc_html( $filter->post_title ) . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </td>
-                    <td style="padding: 10px 15px;">
-                        <button type="button" class="remove-repeatable-field" style="background-color: #e74c3c; color: #fff; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">
-                            <?php _e( 'Remove', 'woocommerce' ); ?>
-                        </button>
-                    </td>
-                </tr>
-
-                <!-- Display existing filter items below the table -->
-                <?php if ( ! empty( $existing_custom_fields ) ) : ?>
-                    <tr>
-                        <td colspan="4" style="padding: 15px 0;">
-                            <h3 style="margin-bottom: 10px;"><?php _e( 'Current Filter Items:', 'woocommerce' ); ?></h3>
-                            <ul class="current-filter-items" style="list-style-type: none; padding: 0; margin: 0;">
-                                <?php
-                                foreach ( $existing_custom_fields as $index => $item ) {
-                                    echo '<li data-index="' . $index . '" style="background-color: #f7f7f7; margin-bottom: 10px; padding: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
-                                            <span style="font-weight: bold;">' . esc_html( $item['label_en'] ) . ': ' . esc_html( $item['value_en'] ) . ' | ' . esc_html( $item['value_ar'] ) . '</span>
-                                            <button type="button" class="remove-current-item" style="background-color: #e74c3c; color: #fff; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer;">' . __( 'Remove', 'woocommerce' ) . '</button>
-                                          </li>';
-                                }
-                                ?>
-                            </ul>
-                        </td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-
-        <!-- Add the custom message below the input group -->
-      
-    <div style="background-color: #fff9e0; padding: 20px; border-radius: 5px; border: 1px solid #ffaa00; margin-bottom: 20px;">
-        <h2 style="margin-top: 0;">⚠️ Data Entry Warning: Maintain Consistent Formatting ⚠️</h2>
-        <p>To ensure data accuracy and prevent system inconsistencies, <span style="color: #ff0000; font-weight: bold;">do not change the format of previously entered values</span>. Once a format is established, it must remain the same.</p>
-        <ul>
-            <li><strong>If a value has been entered before, use the exact same format every time.</strong></li>
-            <li><strong>If entering a new value, establish a format and follow it consistently for all future entries.</strong></li>
-        </ul>
-
-        <p><span style="color: #ff0000; font-weight: bold;">🚨 Even a small change—such as extra spacing, different capitalization, or slight variations in units—will cause the system to treat the values as separate entries, leading to filtering issues.</span></p>
-
-        <div style="background-color: #f9f9f9; padding: 10px; border: 1px solid #ddd; margin-top: 10px;">
-            <h3>Examples of Incorrect Changes:</h3>
-            <ul>
-                <li>✅ Previously Entered: "50 mm" → ❌ Incorrect: "50mm", "50.0 mm"</li>
-                <li>✅ Previously Entered: "Black" → ❌ Incorrect: "black", "BLACK"</li>
-                <li>✅ Previously Entered: "1000" → ❌ Incorrect: "1,000", "1000.0"</li>
+    <div class="filter-items-table-container" style="padding: 20px; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+        <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; border: 1px solid #ffeeba; margin-bottom: 20px;">
+            <h2 style="font-size: 16px; font-weight: bold;">⚠️ Data Entry Warning: Maintain Consistent Formatting ⚠️</h2>
+            <p style="font-size: 14px;">To ensure data accuracy and prevent system inconsistencies, do not change the format of previously entered values. Once a format is established, it must remain the same.</p>
+            <ul style="font-size: 14px;">
+                <li><strong>🔹 If a value has been entered before, use the exact same format every time.</strong></li>
+                <li><strong>🔹 If entering a new value, establish a format and follow it consistently for all future entries.</strong></li>
             </ul>
+            <p style="font-size: 14px; font-weight: bold; color: #155724;">🚨 Even a small change—such as extra spacing, different capitalization, or slight variations in units—will cause the system to treat the values as separate entries, leading to filtering issues.</p>
+            <h3 style="font-size: 16px; color: #856404;">Examples of Incorrect Changes:</h3>
+            <ul style="font-size: 14px;">
+                <li><strong>✅ Previously Entered: "50 mm" → ❌ Incorrect: "50mm", "50.0 mm"</strong></li>
+                <li><strong>✅ Previously Entered: "Black" → ❌ Incorrect: "black", "BLACK"</strong></li>
+                <li><strong>✅ Previously Entered: "1000" → ❌ Incorrect: "1,000", "1000.0"</strong></li>
+            </ul>
+            <p style="font-size: 14px;">📌 Before submitting, always check that your entry matches the existing format exactly. If it’s a new value, decide on a format and stick to it for all future entries.</p>
         </div>
 
-        <p><strong>📌 Before submitting, always check that your entry matches the existing format exactly. If it’s a new value, decide on a format and stick to it for all future entries.</strong></p>
-    </div>
+        <h3><?php _e( 'Filter Items', 'woocommerce' ); ?></h3>
 
-        <button type="button" class="add-repeatable-field" style="background-color: #2ecc71; color: #fff; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
-            <?php _e( 'Add Another', 'woocommerce' ); ?>
+        <!-- Accordion Toggle Button -->
+        <button type="button" class="accordion" style="margin-bottom:10px;background-color: #3498db; color: #fff; padding: 10px; width: 100%; border: none; border-radius: 4px; cursor: pointer;">
+            <?php _e( 'Manage Filter Items', 'woocommerce' ); ?>
         </button>
+
+        <!-- Collapsible Accordion Content -->
+        <div class="accordion-content" style="display: none;">
+            <!-- Search box for filter labels inside the accordion -->
+            <input type="text" id="filter-search" placeholder="<?php _e( 'Search filter labels...', 'woocommerce' ); ?>" style="width: 100%; padding: 3px; margin-bottom: 0; border: 0; border-radius: 4px;">
+
+            <table class="widefat" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f1f1f1; color: #333;">
+                        <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Filter Label', 'woocommerce' ); ?></th>
+                        <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Value (English)', 'woocommerce' ); ?></th>
+                        <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Value (Arabic)', 'woocommerce' ); ?></th>
+                        <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Action', 'woocommerce' ); ?></th>
+                    </tr>
+                </thead>
+                <tbody class="filter-items-body" id="filter-items-body" style="max-height: 500px; overflow: hidden;">
+                    <?php 
+                    // Get all 'filter' custom post type posts
+                    $filters = get_posts( array(
+                        'post_type' => 'filter',  // Custom post type 'filter'
+                        'posts_per_page' => -1,   // Get all filter posts
+                        'post_status' => 'publish', // Only published posts
+                    ) );
+
+                    // Loop through all the filter items and display them in the table
+                    foreach ( $filters as $filter ) :
+                        // Retrieve the saved value for each filter from the custom field
+                        $saved_value = '';
+                        foreach ($existing_custom_fields as $field) {
+                            // Find the matching filter label (post title) in the existing saved fields
+                            if (strpos($field, $filter->post_title . ':') === 0) {
+                                $saved_value = $field;
+                                break;
+                            }
+                        }
+
+                        // Split the saved value into English and Arabic values
+                        $saved_english_value = '';
+                        $saved_arabic_value = '';
+                        if (!empty($saved_value)) {
+                            $value_parts = explode(':', $saved_value);
+                            if (isset($value_parts[1])) {
+                                $values = explode('|', $value_parts[1]);
+                                $saved_english_value = isset($values[0]) ? $values[0] : '';
+                                $saved_arabic_value = isset($values[1]) ? $values[1] : '';
+                            }
+                        }
+                        ?>
+                        <tr class="filter-item-row" style="background-color: #fff; border-bottom: 1px solid #ddd;">
+                            <td style="padding: 5px;">
+                                <?php echo esc_html( $filter->post_title ); ?>
+                            </td>
+                            <td style="padding:0;">
+                                <input type="text" name="filter_values[<?php echo esc_attr( $filter->ID ); ?>][english]" class="filter_english_value" value="<?php echo esc_attr( $saved_english_value ); ?>" style="width: 95%; margin:5px; padding: 2px 5px; border: 0; border-radius: 4px;">
+                            </td>
+                            <td style="padding:0; text-align: right;">
+                                <input type="text" name="filter_values[<?php echo esc_attr( $filter->ID ); ?>][arabic]" class="filter_arabic_value" value="<?php echo esc_attr( $saved_arabic_value ); ?>" style="width: 95%; margin:5px; padding:2px  5px; border: 0; border-radius: 4px; text-align: right;">
+                            </td>
+                            <td style="padding: 0;">
+                                <!-- Clear button for each row -->
+                                <button type="button" class="clear-row" style="background-color: #e74c3c; color: #fff; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;">
+                                    <?php _e( 'Clear', 'woocommerce' ); ?>
+                                </button>
+                            </td>
+                        </tr>
+                        <?php
+                    endforeach;
+                    ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script type="text/javascript">
         jQuery(document).ready(function($) {
-            // Add new repeatable field group
-            $('button.add-repeatable-field').click(function() {
-                var new_field_group = $('.repeatable-field-group:first').clone();
-                new_field_group.find('input').val('');
-                new_field_group.find('select').val('');
-                $('.repeatable-field-body').append(new_field_group);
-            });
-
-            // Remove repeatable field group
-            $('.repeatable-field-container').on('click', '.remove-repeatable-field', function() {
-                $(this).closest('.repeatable-field-group').remove();
-            });
-
-            // Remove current filter item
-            $('.repeatable-field-container').on('click', '.remove-current-item', function() {
-                var item = $(this).closest('li');
-                var index = item.data('index'); // Get the index of the item
-
-                // Send an AJAX request to remove the item from the meta field
-                $.ajax({
-                    type: 'POST',
-                    url: ajaxurl,
-                    data: {
-                        action: 'remove_filter_item',
-                        post_id: <?php echo $post->ID; ?>,
-                        index: index
-                    },
-                    success: function(response) {
-                        item.remove(); // Remove the list item from the UI
+            // Filter rows based on the search box input
+            $('#filter-search').on('input', function() {
+                var searchTerm = $(this).val().toLowerCase();
+                
+                // Loop through each row and show/hide based on search term
+                $('.filter-item-row').each(function() {
+                    var filterLabel = $(this).find('td:first').text().toLowerCase();
+                    if (filterLabel.indexOf(searchTerm) !== -1) {
+                        $(this).show(); // Show the row if it matches the search term
+                    } else {
+                        $(this).hide(); // Hide the row if it does not match
                     }
                 });
+            });
+
+            // Toggle the visibility of the accordion content when the button is clicked
+            $('.accordion').click(function(e) {
+                e.preventDefault(); // Prevent default button behavior (refresh)
+                $(this).next('.accordion-content').slideToggle();
+            });
+
+            // Add green background color to rows with values
+            $('.filter-item-row').each(function() {
+                var englishValue = $(this).find('.filter_english_value').val();
+                var arabicValue = $(this).find('.filter_arabic_value').val();
+
+                // If both values are not empty, add a green background color to the row
+                if (englishValue.trim() !== '' && arabicValue.trim() !== '') {
+                    $(this).css('background-color', '#d4edda'); // Green background color
+                }
+            });
+
+            // Listen for changes in the input fields to dynamically update row color
+            $('.filter_english_value, .filter_arabic_value').on('input', function() {
+                var row = $(this).closest('tr');
+                var englishValue = row.find('.filter_english_value').val();
+                var arabicValue = row.find('.filter_arabic_value').val();
+
+                if (englishValue.trim() !== '' && arabicValue.trim() !== '') {
+                    row.css('background-color', '#d4edda'); // Green background color
+                } else {
+                    row.css('background-color', '#fff'); // Reset to default (white) if either value is empty
+                }
+            });
+
+            // Clear values and reset background color for individual rows
+            $('.clear-row').click(function() {
+                var row = $(this).closest('tr');
+                row.find('.filter_english_value').val('');
+                row.find('.filter_arabic_value').val('');
+                row.css('background-color', '#fff'); // Reset background to white
             });
         });
     </script>
     <?php
 }
-add_action( 'woocommerce_product_options_general_product_data', 'add_repeatable_custom_fields_to_product' );
+add_action( 'woocommerce_product_options_general_product_data', 'add_filter_items_table_to_product' );
+
+// Save the filter items when the product is saved
+function save_filter_items_to_product( $post_id ) {
+    // Check if this is a product and if we're not autosaving
+    if ( 'product' !== get_post_type( $post_id ) || defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+
+    // Check if the custom fields data exists
+    if ( isset( $_POST['filter_values'] ) ) {
+        $custom_fields = array();
+
+        // Loop through each filter and save the values
+        foreach ( $_POST['filter_values'] as $filter_id => $values ) {
+            // Ensure both English and Arabic values are provided and not empty
+            if ( !empty( $values['english'] ) && !empty( $values['arabic'] ) ) {
+                // Construct the value in the format "Filter Label:english|arabic"
+                $filter_label = get_the_title( $filter_id );
+                $custom_fields[] = $filter_label . ':' . sanitize_text_field( $values['english'] ) . '|' . sanitize_text_field( $values['arabic'] );
+            }
+        }
+
+        // Store all filter values as a single string without spaces after commas
+        if ( !empty( $custom_fields ) ) {
+            // Remove spaces after commas
+            $custom_fields_string = implode( ',', $custom_fields );
+            update_post_meta( $post_id, '_filter_items', $custom_fields_string );
+        } else {
+            // If no values are selected, remove the custom field
+            delete_post_meta( $post_id, '_filter_items' );
+        }
+    }
+}
+add_action( 'save_post', 'save_filter_items_to_product' );
 
 /////////////////////////FILTER CUSTOM FIELD END///////////////////////////////////
 
@@ -1592,228 +1693,6 @@ function custom_wc_meta_filter( $data ) {
 }
 
 
-
-
-// add_action( 'rest_api_init', function() {
-//     register_rest_route( 'wc/v3', '/products/filter/', [
-//         'methods'  => 'GET',
-//         'callback' => 'custom_wc_meta_filter',
-//         'permission_callback' => '__return_true',
-//         'args' => [
-//             'meta_key' => [
-//                 'required' => false,
-//                 'validate_callback' => function( $param, $request, $key ) {
-//                     return is_string( $param );
-//                 }
-//             ],
-//             'meta_value' => [
-//                 'required' => false,
-//                 'validate_callback' => function( $param, $request, $key ) {
-//                     return is_array( $param ) || is_string( $param );
-//                 }
-//             ],
-//             'min_price' => [
-//                 'required' => false,
-//                 'validate_callback' => function( $param, $request, $key ) {
-//                     return is_numeric( $param );
-//                 }
-//             ],
-//             'max_price' => [
-//                 'required' => false,
-//                 'validate_callback' => function( $param, $request, $key ) {
-//                     return is_numeric( $param );
-//                 }
-//             ],
-//             'per_page' => [
-//                 'required' => false,
-//                 'validate_callback' => function( $param, $request, $key ) {
-//                     return is_numeric( $param ) && $param > 0;
-//                 },
-//                 'default' => 10 // Default per page if not set
-//             ],
-//             'featured' => [
-//                 'required' => false,
-//                 'validate_callback' => function( $param, $request, $key ) {
-//                     return in_array($param, ['1', '0']);
-//                 },
-//             ],
-//             'sort_by' => [
-//                 'required' => false,
-//                 'validate_callback' => function( $param, $request, $key ) {
-//                     return in_array($param, ['name', 'price']);
-//                 },
-//                 'default' => 'name' // Default sorting by title
-//             ],
-//             'order' => [
-//                 'required' => false,
-//                 'validate_callback' => function( $param, $request, $key ) {
-//                     return in_array($param, ['asc', 'desc']);
-//                 },
-//                 'default' => 'asc' // Default sorting order (A-Z)
-//             ],
-//         ]
-//     ]);
-// });
-
-// // Custom product filtering by meta key, value, price range, per_page, featured status, and sorting
-// function custom_wc_meta_filter( $data ) {
-//     $meta_key = isset( $data['meta_key'] ) ? $data['meta_key'] : '';
-//     $meta_values = isset( $data['meta_value'] ) ? (array)$data['meta_value'] : []; // Convert to array if multiple values
-//     $min_price = isset( $data['min_price'] ) ? floatval( $data['min_price'] ) : '';
-//     $max_price = isset( $data['max_price'] ) ? floatval( $data['max_price'] ) : '';
-//     $per_page = isset( $data['per_page'] ) ? intval( $data['per_page'] ) : 10;
-//     $featured = isset( $data['featured'] ) ? $data['featured'] : null;  // Check for featured filter
-//     $sort_by = isset( $data['sort_by'] ) ? $data['sort_by'] : 'name';  // Default sorting by title
-//     $order = isset( $data['order'] ) ? $data['order'] : 'asc'; // Default sorting order
-
-//     // Set up the query args for filtering products
-//     $args = [
-//         'post_type'      => 'product',
-//         'posts_per_page' => $per_page, // Use the per_page value
-//         'meta_query'     => [],
-//         'tax_query'      => [],
-//         'orderby'        => 'title', // Default sorting by title (product name)
-//         'order'          => $order === 'asc' ? 'ASC' : 'DESC',  // Sort by name (A-Z or Z-A)
-//     ];
-
-//     // Handle sorting by name
-//     if ( $sort_by === 'name' ) {
-//         $args['orderby'] = 'title'; // Sort by title (product name)
-//         $args['order'] = $order === 'desc' ? 'DESC' : 'ASC'; // Sort A-Z or Z-A based on `order`
-//     }
-
-//     // Handle sorting by price
-//     if ( $sort_by === 'price' ) {
-//         $args['orderby'] = 'meta_value_num'; // Sort by numerical value (for price)
-//         $args['meta_key'] = '_price'; // Meta key for product price
-//         $args['order'] = $order === 'desc' ? 'DESC' : 'ASC'; // Sort by price ascending or descending
-//     }
-
-//     // Handle multiple meta_values for custom meta key filtering
-//     if ( $meta_key && !empty($meta_values) ) {
-//         $meta_query = [];
-//         foreach ( $meta_values as $meta_value ) {
-//             $meta_query[] = [
-//                 'key'     => $meta_key,
-//                 'value'   => $meta_value,
-//                 'compare' => 'LIKE'  // Use 'LIKE' for partial matches (e.g., color:red)
-//             ];
-//         }
-
-//         // Combine the meta_query with OR relation to allow multiple values
-//         $args['meta_query'][] = [
-//             'relation' => 'OR',
-//             ...$meta_query
-//         ];
-//     }
-
-//     // Add price range filter if min_price or max_price is provided
-//     if ( $min_price || $max_price ) {
-//         $price_query = [
-//             'relation' => 'AND',
-//         ];
-
-//         if ( $min_price ) {
-//             $price_query[] = [
-//                 'key'     => '_price',
-//                 'value'   => $min_price,
-//                 'type'    => 'NUMERIC',
-//                 'compare' => '>='
-//             ];
-//         }
-
-//         if ( $max_price ) {
-//             $price_query[] = [
-//                 'key'     => '_price',
-//                 'value'   => $max_price,
-//                 'type'    => 'NUMERIC',
-//                 'compare' => '<='
-//             ];
-//         }
-
-//         $args['meta_query'] = array_merge( $args['meta_query'], $price_query );
-//     }
-
-//     // Filter by featured status (if provided)
-//     if ( ! is_null( $featured ) ) {
-//         $args['meta_query'][] = [
-//             'key'     => '_featured',  // Correct meta key for featured status in WooCommerce
-//             'value'   => $featured,    // 1 for featured, 0 for not featured
-//             'compare' => '='
-//         ];
-//     }
-
-//     // Perform the query
-//     $query = new WP_Query( $args );
-
-//     $products = [];
-//     foreach ( $query->posts as $post ) {
-//         $product = wc_get_product( $post->ID );
-
-//         // Manually build the response data with images and ACF fields
-//         $product_data = $product->get_data();
-
-//         // Featured Image
-//         $featured_image_id = $product->get_image_id();
-//         if ( $featured_image_id ) {
-//             $featured_image_data = wp_get_attachment_image_src( $featured_image_id, 'full' );
-//             if ( $featured_image_data ) {
-//                 $product_data['images']['featured'] = [
-//                     'id'         => $featured_image_id,
-//                     'url'        => $featured_image_data[0],
-//                     'width'      => $featured_image_data[1],
-//                     'height'     => $featured_image_data[2],
-//                     'alt'        => get_post_meta( $featured_image_id, '_wp_attachment_image_alt', true )
-//                 ];
-//             }
-//         }
-
-//         // Gallery Images
-//         $gallery_image_ids = $product->get_gallery_image_ids();
-//         if ( $gallery_image_ids ) {
-//             $gallery_images = [];
-//             foreach ( $gallery_image_ids as $gallery_image_id ) {
-//                 $gallery_image_data = wp_get_attachment_image_src( $gallery_image_id, 'full' );
-//                 if ( $gallery_image_data ) {
-//                     $gallery_images[] = [
-//                         'id'         => $gallery_image_id,
-//                         'url'        => $gallery_image_data[0],
-//                         'width'      => $gallery_image_data[1],
-//                         'height'     => $gallery_image_data[2],
-//                         'alt'        => get_post_meta( $gallery_image_id, '_wp_attachment_image_alt', true )
-//                     ];
-//                 }
-//             }
-//             $product_data['images']['gallery'] = $gallery_images;
-//         }
-
-//         // Add ACF Fields to the product data
-//         $acf_fields = get_fields($product->get_id()); // Fetch all ACF fields
-//         if ($acf_fields) {
-//             $product_data['acf'] = $acf_fields; // Add ACF data to the response
-//         }
-
-//         // Add price to the product data
-//         $product_data['price'] = $product->get_price();
-
-//         $products[] = $product_data;
-//     }
-
-//     return $products;
-// }
-
-
-
-// /wp-json/wc/v3/products/filter/
-// 
-// /meta_key=custom_field
-// /meta_value[]=value1&meta_value[]=value2
-// /min_price=10
-// /max_price=50
-// /per_page=10
-// /featured=1
-// /sort_by=name
-// /order=desc
 
 
 
@@ -2967,4 +2846,363 @@ function remove_custom_order_status( $order_statuses ) {
     return $order_statuses;
 }
 add_filter( 'wc_order_statuses', 'remove_custom_order_status' );
+
+
+/////////////////////CUSTOM FIELDS FOR MAIN CAT, SUB, CHILD FOR STORE META
+
+function categories_and_brands_woocommerce_product_select_fields() {
+    // Get all 'main-categories' CPT posts
+    $args = array(
+        'post_type' => 'main-categories',
+        'posts_per_page' => -1, // Get all categories
+    );
+    $categories = get_posts($args);
+
+    // Build select options for main categories
+    $options = array('' => __('Select Main Category', 'woocommerce')); // Default option
+    foreach ($categories as $category) {
+        $options[$category->ID] = $category->post_title; // Use post title as the option label
+    }
+
+    // Display the main categories select box
+    woocommerce_wp_select(
+        array(
+            'id'          => 'main_categories_new', // Field ID for main categories
+            'label'       => __('Select Main Category', 'woocommerce'), // Field label
+            'desc_tip'    => 'true',
+            'description' => __('Select a main category from the list.', 'woocommerce'),
+            'options'     => $options, // Select options from custom post type
+            'value'       => get_post_meta(get_the_ID(), 'main_categories_new', true), // Default value
+        )
+    );
+
+    // Get all 'sub-categories' CPT posts
+    $args_sub = array(
+        'post_type' => 'sub-categories',
+        'posts_per_page' => -1, // Get all sub-categories
+    );
+    $sub_categories = get_posts($args_sub);
+
+    // Build select options for sub categories
+    $sub_options = array('' => __('Select Sub Category', 'woocommerce')); // Default option
+    foreach ($sub_categories as $sub_category) {
+        $sub_options[$sub_category->ID] = $sub_category->post_title; // Use post title as the option label
+    }
+
+    // Display the sub categories select box
+    woocommerce_wp_select(
+        array(
+            'id'          => 'sub_categories_new', // Field ID for sub categories
+            'label'       => __('Select Sub Category', 'woocommerce'), // Field label
+            'desc_tip'    => 'true',
+            'description' => __('Select a sub category from the list.', 'woocommerce'),
+            'options'     => $sub_options, // Select options from custom post type
+            'value'       => get_post_meta(get_the_ID(), 'sub_categories_new', true), // Default value
+        )
+    );
+
+    // Get all 'child-categories' CPT posts
+    $args_child = array(
+        'post_type' => 'child-categories',
+        'posts_per_page' => -1, // Get all child-categories
+    );
+    $child_categories = get_posts($args_child);
+
+    // Build select options for child categories
+    $child_options = array('' => __('Select Child Category', 'woocommerce')); // Default option
+    foreach ($child_categories as $child_category) {
+        $child_options[$child_category->ID] = $child_category->post_title; // Use post title as the option label
+    }
+
+    // Display the child categories select box
+    woocommerce_wp_select(
+        array(
+            'id'          => 'child_categories_new', // Field ID for child categories
+            'label'       => __('Select Child Category', 'woocommerce'), // Field label
+            'desc_tip'    => 'true',
+            'description' => __('Select a child category from the list.', 'woocommerce'),
+            'options'     => $child_options, // Select options from custom post type
+            'value'       => get_post_meta(get_the_ID(), 'child_categories_new', true), // Default value
+        )
+    );
+
+    // Get all 'brands' CPT posts
+    $args_brands = array(
+        'post_type' => 'brands',  // Assuming 'brands' is a custom post type
+        'posts_per_page' => -1,  // Get all brands
+    );
+    $brands = get_posts($args_brands);
+
+    // Build select options for brands
+    $brand_options = array('' => __('Select Brand', 'woocommerce')); // Default option
+    foreach ($brands as $brand) {
+        $brand_options[$brand->ID] = $brand->post_title; // Use post title as the option label
+    }
+
+    // Display the brands select box
+    woocommerce_wp_select(
+        array(
+            'id'          => 'brands_new', // Field ID for brands
+            'label'       => __('Select Brand', 'woocommerce'), // Field label
+            'desc_tip'    => 'true',
+            'description' => __('Select a brand from the list.', 'woocommerce'),
+            'options'     => $brand_options, // Select options from custom post type
+            'value'       => get_post_meta(get_the_ID(), 'brands_new', true), // Default value
+        )
+    );
+}
+add_action('woocommerce_product_options_general_product_data', 'categories_and_brands_woocommerce_product_select_fields');
+
+// Save the custom field values for main category, sub category, child category, and brand
+function categories_and_brands_woocommerce_save_product_select_fields($post_id) {
+    // Save main category (Store only the ID)
+    if (isset($_POST['main_categories_new'])) {
+        $main_category_id = sanitize_text_field($_POST['main_categories_new']);
+        update_post_meta($post_id, 'main_categories_new', $main_category_id); // Save only the ID
+    }
+
+    // Save sub category (Store only the ID)
+    if (isset($_POST['sub_categories_new'])) {
+        $sub_category_id = sanitize_text_field($_POST['sub_categories_new']);
+        update_post_meta($post_id, 'sub_categories_new', $sub_category_id); // Save only the ID
+    }
+
+    // Save child category (Store only the ID)
+    if (isset($_POST['child_categories_new'])) {
+        $child_category_id = sanitize_text_field($_POST['child_categories_new']);
+        update_post_meta($post_id, 'child_categories_new', $child_category_id); // Save only the ID
+    }
+
+    // Save brand (Store only the ID)
+    if (isset($_POST['brands_new'])) {
+        $brand_id = sanitize_text_field($_POST['brands_new']);
+        update_post_meta($post_id, 'brands_new', $brand_id); // Save only the ID
+    }
+}
+add_action('woocommerce_process_product_meta', 'categories_and_brands_woocommerce_save_product_select_fields');
+
+// Retrieve the custom field values for main category, sub category, child category, and brand
+function get_categories_and_brands_data($post_id) {
+    // Retrieve only the saved ID for main category, sub category, child category, and brand
+    return array(
+        'main_category'  => get_post_meta($post_id, 'main_categories_new', true),
+        'sub_category'   => get_post_meta($post_id, 'sub_categories_new', true),
+        'child_category' => get_post_meta($post_id, 'child_categories_new', true),
+        'brand'          => get_post_meta($post_id, 'brands_new', true),
+    );
+}
+
+// Example of how to retrieve and display the saved category and brand data (for testing purposes)
+function display_categories_and_brand_data($post_id) {
+    $category_and_brand_data = get_categories_and_brands_data($post_id);
+
+    // Display the stored IDs (You can modify this code to display more relevant data if needed)
+    echo 'Main Category ID: ' . $category_and_brand_data['main_category'] . '<br>';
+    echo 'Sub Category ID: ' . $category_and_brand_data['sub_category'] . '<br>';
+    echo 'Child Category ID: ' . $category_and_brand_data['child_category'] . '<br>';
+    echo 'Brand ID: ' . $category_and_brand_data['brand'] . '<br>';
+}
+
+
+///////////ADDITION FIELDS
+function custom_woocommerce_product_arabic_fields() {
+    global $post;
+
+    // Start the table structure with a border
+    echo '<style>.form-table fieldset.form-field, .form-table p.form-field {
+        padding: 0 !important;
+    }
+    @media only screen and (max-width: 1280px) {
+        .form-table  .wrap, .form-table  .short, .form-table  input[type=email].short, .form-table  input[type=number].short, .form-table  input[type=password].short, .form-table  input[type=text].short {
+            width: 100%;
+        }
+    }
+    </style>';
+    echo '<table class="form-table" style="border: 1px solid #ddd; width: 100%; padding: 10px;">';
+
+    // Group: Name, Description, and Short Description in Arabic
+    echo '<tr><th colspan="2" style="text-align: center; background-color: #f2f2f2; padding: 10px;" colspan="2"><h3>' . __('Arabic Fields', 'woocommerce') . '</h3></th></tr>';
+
+    // Name in Arabic (Text Box)
+    echo '<tr style="border-bottom: 1px solid #ddd;">';
+    echo '<th style="padding: 10px; background-color: #f9f9f9; width: 30%;">';
+    echo '<div class="_name_in_arabic_field ">';
+    echo '<p style="margin: 0;">' . __('Name in Arabic', 'woocommerce') . '</p>';  
+    echo '</div>';
+    echo '</th>';
+    echo '<td style="padding: 10px;">';
+    woocommerce_wp_text_input(
+        array(
+            'id'          => '_name_in_arabic', 
+            'label'       => '', 
+            'desc_tip'    => 'true',
+            'description' => __('Enter the product name in Arabic.', 'woocommerce'),
+            'value'       => get_post_meta($post->ID, '_name_in_arabic', true),
+        )
+    );
+    echo '</td>';
+    echo '</tr>';
+
+    // Description in Arabic (WYSIWYG Editor)
+    echo '<tr style="border-bottom: 1px solid #ddd;">';
+    echo '<th style="padding: 10px; background-color: #f9f9f9; width: 30%;">';
+    echo '<div class="_description_in_arabic_field ">';
+    echo '<p style="margin: 0;">' . __('Description in Arabic', 'woocommerce') . '</p>';  
+    echo '</div>';
+    echo '</th>';
+    echo '<td style="padding: 10px;">';
+    wp_editor(
+        get_post_meta($post->ID, '_description_in_arabic', true),
+        '_description_in_arabic',
+        array(
+            'textarea_name' => '_description_in_arabic',
+            'textarea_rows' => 5,
+            'editor_class'  => 'wp-editor-area',
+        )
+    );
+    echo '</td>';
+    echo '</tr>';
+
+    // Short Description in Arabic (Text Area)
+    echo '<tr style="border-bottom: 1px solid #ddd;">';
+    echo '<th style="padding: 10px; background-color: #f9f9f9; width: 30%;">';
+    echo '<div class="_short_description_in_arabic_field ">';
+    echo '<p style="margin: 0;">' . __('Short Description in Arabic', 'woocommerce') . '</p>';  
+    echo '</div>';
+    echo '</th>';
+    echo '<td style="padding: 10px;">';
+    woocommerce_wp_textarea_input(
+        array(
+            'id'          => '_short_description_in_arabic',
+            'label'       => '', 
+            'desc_tip'    => 'true',
+            'description' => __('Enter the short description of the product in Arabic.', 'woocommerce'),
+            'value'       => get_post_meta($post->ID, '_short_description_in_arabic', true),
+        )
+    );
+    echo '</td>';
+    echo '</tr>';
+
+    // Offer Deal (Select: Yes/No) with default value "No"
+    echo '<tr style="border-bottom: 1px solid #ddd;">';
+    echo '<th style="padding: 10px; background-color: #f9f9f9; width: 30%;">';
+    echo '<div class="_offer_deal_field ">';
+    echo '<p style="margin: 0;">' . __('Offer Deal', 'woocommerce') . '</p>';  
+    echo '</div>';
+    echo '</th>';
+    echo '<td style="padding: 10px;">';
+    woocommerce_wp_select(
+        array(
+            'id'          => '_offer_deal',
+            'label'       => '',
+            'desc_tip'    => 'true',
+            'description' => __('Is this product part of an offer deal?', 'woocommerce'),
+            'options'     => array(
+                'no'   => __('No', 'woocommerce'),
+                'yes'  => __('Yes', 'woocommerce'),
+            ),
+            'value'       => get_post_meta($post->ID, '_offer_deal', true) ? get_post_meta($post->ID, '_offer_deal', true) : 'no', // Default value is "no"
+        )
+    );
+    echo '</td>';
+    echo '</tr>';
+
+    // Required Valid Documents (Select: Yes/No) with default value "No"
+    echo '<tr style="border-bottom: 1px solid #ddd;">';
+    echo '<th style="padding: 10px; background-color: #f9f9f9; width: 30%;">';
+    echo '<div class="_required_valid_documents_field ">';
+    echo '<p style="margin: 0;">' . __('Required Valid Documents', 'woocommerce') . '</p>';  
+    echo '</div>';
+    echo '</th>';
+    echo '<td style="padding: 10px;">';
+    woocommerce_wp_select(
+        array(
+            'id'          => '_required_valid_documents',
+            'label'       => '',
+            'desc_tip'    => 'true',
+            'description' => __('Does this product require valid documents?', 'woocommerce'),
+            'options'     => array(
+                'no'   => __('No', 'woocommerce'),
+                'yes'  => __('Yes', 'woocommerce'),
+            ),
+            'value'       => get_post_meta($post->ID, '_required_valid_documents', true) ? get_post_meta($post->ID, '_required_valid_documents', true) : 'no', // Default value is "no"
+        )
+    );
+    echo '</td>';
+    echo '</tr>';
+
+    // Star Product (Select: Yes/No) with default value "No"
+    echo '<tr style="border-bottom: 1px solid #ddd;">';
+    echo '<th style="padding: 10px; background-color: #f9f9f9; width: 30%;">';
+    echo '<div class="_star_product_field ">';
+    echo '<p style="margin: 0;">' . __('Star Product', 'woocommerce') . '</p>';  
+    echo '</div>';
+    echo '</th>';
+    echo '<td style="padding: 10px;">';
+    woocommerce_wp_select(
+        array(
+            'id'          => '_star_product',
+            'label'       => '',
+            'desc_tip'    => 'true',
+            'description' => __('Is this a star product?', 'woocommerce'),
+            'options'     => array(
+                'no'   => __('No', 'woocommerce'),
+                'yes'  => __('Yes', 'woocommerce'),
+            ),
+            'value'       => get_post_meta($post->ID, '_star_product', true) ? get_post_meta($post->ID, '_star_product', true) : 'no', // Default value is "no"
+        )
+    );
+    echo '</td>';
+    echo '</tr>';
+
+    // Close the table
+    echo '</table>';
+}
+add_action('woocommerce_product_options_general_product_data', 'custom_woocommerce_product_arabic_fields');
+
+// Save custom fields when the product is saved
+function custom_woocommerce_save_product_arabic_fields($post_id) {
+    // Save Name in Arabic
+    if (isset($_POST['_name_in_arabic'])) {
+        update_post_meta($post_id, '_name_in_arabic', sanitize_text_field($_POST['_name_in_arabic']));
+    }
+
+    // Save Description in Arabic
+    if (isset($_POST['_description_in_arabic'])) {
+        update_post_meta($post_id, '_description_in_arabic', wp_kses_post($_POST['_description_in_arabic']));
+    }
+
+    // Save Short Description in Arabic
+    if (isset($_POST['_short_description_in_arabic'])) {
+        update_post_meta($post_id, '_short_description_in_arabic', sanitize_textarea_field($_POST['_short_description_in_arabic']));
+    }
+
+    // Save Offer Deal (Select)
+    if (isset($_POST['_offer_deal'])) {
+        update_post_meta($post_id, '_offer_deal', sanitize_text_field($_POST['_offer_deal']));
+    }
+
+    // Save Required Valid Documents (Select)
+    if (isset($_POST['_required_valid_documents'])) {
+        update_post_meta($post_id, '_required_valid_documents', sanitize_text_field($_POST['_required_valid_documents']));
+    }
+
+    // Save Star Product (Select)
+    if (isset($_POST['_star_product'])) {
+        update_post_meta($post_id, '_star_product', sanitize_text_field($_POST['_star_product']));
+    }
+}
+add_action('woocommerce_process_product_meta', 'custom_woocommerce_save_product_arabic_fields');
+
+// Retrieve the custom field values
+function get_custom_arabic_product_fields($post_id) {
+    return array(
+        'name_in_arabic'             => get_post_meta($post_id, '_name_in_arabic', true),
+        'description_in_arabic'      => get_post_meta($post_id, '_description_in_arabic', true),
+        'short_description_in_arabic'=> get_post_meta($post_id, '_short_description_in_arabic', true),
+        'offer_deal'                 => get_post_meta($post_id, '_offer_deal', true),
+        'required_valid_documents'   => get_post_meta($post_id, '_required_valid_documents', true),
+        'star_product'               => get_post_meta($post_id, '_star_product', true),
+    );
+}
 

@@ -13,6 +13,7 @@ import Pagination from "@/app/[locale]/Components/Pagination";
 import PageHeader from "@/app/[locale]/Components/PageHeader";
 import LoadingItem from "@/app/[locale]/Components/LoadingItem";
 import Card from "@/app/[locale]/Components/Card";
+import ProductWrapper from "@/app/[locale]/Components/ProductWrapper";
 
 
 export default async function BrandPage({ params, searchParams, params: { locale } }) {
@@ -71,7 +72,7 @@ export default async function BrandPage({ params, searchParams, params: { locale
   let products = await fetch(
     `${apiUrl}wp-json/wc/v3/products/filter?meta_value=${
       brands[0]?.id
-    }&meta_key=brands${resultFilterParams}&min_price=${
+    }&meta_key=brands_new${resultFilterParams}&min_price=${
       min_price || 0
     }&max_price=${max_price || 0}&per_page=${itemsShowPerPage}&sort_by=${
       sortby || "name"
@@ -165,12 +166,14 @@ export default async function BrandPage({ params, searchParams, params: { locale
           />
         :
         <div className={`${products?.length > 0 && "sm:py-10 py-5"} container`}>
-          <div className="grid md:grid-cols-3 grid-cols-2 lg:gap-0 gap-3">
-            {products?.length > 0 &&
-              products.map((item, index) => (
-                <Card key={index} data={item} product locale={locale}/>
-              ))}
-          </div>
+      <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
+                        <ProductWrapper
+                                          locale={locale}
+                                          data={products && products}
+                                          searchParams={searchParams}
+                                          type="product"
+                                        />
+                         </div>
           <Suspense fallback={<LoadingItem fullscreen />}>
             <div className="sm:pt-5 pt-2 w-full">
               <Pagination

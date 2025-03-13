@@ -38,7 +38,7 @@ export default function CategorySlider({ data, locale }) {
             locale={locale}
             key={index}
             data={item}
-            category
+            type="category"
             title={
               locale  === "en"
                 ? item?.title?.rendered || item?.title

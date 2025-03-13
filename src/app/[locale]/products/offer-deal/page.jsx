@@ -13,12 +13,13 @@ import Card from "../../Components/Card";
 import Alerts from "../../Components/Alerts";
 import Pagination from "../../Components/Pagination";
 import LoadingItem from "../../Components/LoadingItem";
+import ProductWrapper from "../../Components/ProductWrapper";
 
-
-
-export default async function BrandPage({ params, searchParams, params: { locale }}) {
-
-
+export default async function BrandPage({
+  params,
+  searchParams,
+  params: { locale },
+}) {
   const { brand } = await params;
 
   const { meta_key } = await searchParams;
@@ -34,7 +35,7 @@ export default async function BrandPage({ params, searchParams, params: { locale
 
   //PRODUCTS
   let products = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=offer_deal&meta_value=1&per_page=${itemsShowPerPage}`,
+    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=_offer_deal&meta_value=yes&per_page=${itemsShowPerPage}`,
     {
       next: { revalidate: 60 },
     }
@@ -43,7 +44,7 @@ export default async function BrandPage({ params, searchParams, params: { locale
     .catch((error) => console.error("Error:", error));
 
   let totalProducts = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=offer_deal&meta_value=1&per_page=1000`,
+    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=_offer_deal&meta_value=yes&per_page=1000`,
     {
       next: { revalidate: 60 },
     }
@@ -62,7 +63,7 @@ export default async function BrandPage({ params, searchParams, params: { locale
             sortProducts
           />
         </Suspense>
-        {!products?.length > 0 ? 
+        {!products?.length > 0 ? (
           <Alerts
             noLogo
             title="Sorry, no products found!"
@@ -70,27 +71,31 @@ export default async function BrandPage({ params, searchParams, params: { locale
             url={homeUrl}
             //desc={`Thanks for signing up! Please check your email for a confirmation link to finish your registration.`}
           />
-      :
-        <div className={`${products?.length > 0 && "sm:py-10 py-5"} container`}>
-          <div className="grid  md:grid-cols-3 grid-cols-2 lg:gap-0 gap-3">
-            {products?.length > 0 &&
-              products.map((item, index) => (
-                <Card key={index} data={item} product locale={locale}/>
-              ))}
-          </div>
-          <Suspense fallback={<LoadingItem fullscreen />}>
-            <div className="sm:pt-5 pt-2 w-full">
-              <Pagination
-                currentPage={parseInt(1, 10)}
-                totalActiveData={products && products?.length}
-                totalPages={totalProducts && totalProducts?.length}
-                baseUrl={`${homeUrl}`}
-                itemsShowPerPage={itemsShowPerPage}
+        ) : (
+          <div
+            className={`${products?.length > 0 && "sm:py-10 py-5"} container`}
+          >
+            <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
+              <ProductWrapper
+                locale={locale}
+                data={products && products}
+                searchParams={searchParams}
+                type="product"
               />
             </div>
-          </Suspense>
-        </div>
-}
+            <Suspense fallback={<LoadingItem fullscreen />}>
+              <div className="sm:pt-5 pt-2 w-full">
+                <Pagination
+                  currentPage={parseInt(1, 10)}
+                  totalActiveData={products && products?.length}
+                  totalPages={totalProducts && totalProducts?.length}
+                  baseUrl={`${homeUrl}`}
+                  itemsShowPerPage={itemsShowPerPage}
+                />
+              </div>
+            </Suspense>
+          </div>
+        )}
       </section>
     </div>
   );
@@ -147,8 +152,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
         staticData.twitter_image,
       openGraph: {
         images: [
-          pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.ogImage,
+          pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.ogImage,
         ],
       },
     };

@@ -389,7 +389,7 @@ export default function Filter({
                             ? item?.ar_name
                             : item?.label,
                         content: item?.items?.map((item, childIndex) => ({
-                          text: item?.item,
+                          text: item,
                           id: item?.id,
                         })),
                       },
@@ -594,7 +594,7 @@ export default function Filter({
                             ? item?.ar_name
                             : item?.label,
                         content: item?.items?.map((item, childIndex) => ({
-                          text: item?.item,
+                          text: item,
                           id: item?.id,
                         })),
                       },

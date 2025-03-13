@@ -58,6 +58,9 @@ export default function CartListItem({}) {
       };
     });
 
+
+    
+
   return (
     <>
       <ul className="added-cart-list">
@@ -130,11 +133,12 @@ export default function CartListItem({}) {
                         convertStringToJSON(item && item?.option)) ||
                       item?.price
                     }
-                    category={item?.acf?.main_categories[0]?.post_name}
-                    subCategory={item?.acf?.sub_categories[0]?.post_name}
-                    childCategory={item?.acf?.child_categories[0]?.post_name}
+                    category={item?.category}
+                    subCategory={item?.sub_category}
+                    childCategory={item?.child_category}
                   />
                 )}
+
               </div>
               {item?.isNeedLicence === 1 && (
                 <div className="border-t border-red-300 bg-red-300 bg-opacity-10 text-xs p-2">

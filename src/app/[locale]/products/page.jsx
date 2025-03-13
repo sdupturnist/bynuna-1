@@ -27,7 +27,7 @@ export default async function ALlCategoryPage({ params, params: { locale } }) {
                   locale={locale}
                   key={index}
                   data={item}
-                  categoryLarge
+                  type='categoryLarge'
                   subcategoryFromUrl={item}
                 />
               ))}

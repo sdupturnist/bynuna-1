@@ -13,7 +13,7 @@ export default function Pagination({ currentPage, totalPages, itemsShowPerPage }
   const handleLoadMore = () => {
     const url = new URL(window.location.href);
     const currentPerPage = parseInt(url.searchParams.get("per_page") || itemsShowPerPage);
-    const newPerPage = Math.min(currentPerPage + 8, totalPages * itemsShowPerPage);
+    const newPerPage = Math.min(currentPerPage + 4, totalPages * itemsShowPerPage);
 
     url.searchParams.set("per_page", newPerPage);
 

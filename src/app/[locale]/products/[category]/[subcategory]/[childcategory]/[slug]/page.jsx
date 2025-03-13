@@ -15,6 +15,7 @@ import ReviewCount from "@/app/[locale]/Components/ReviewCount";
 import Reviews from "@/app/[locale]/Components/Reviews";
 import ReviewStatus from "@/app/[locale]/Components/ReviewStatus";
 import SectionHeader from "@/app/[locale]/Components/SectionHeader";
+
 import {
   apiUrl,
   convertStringToJSON,
@@ -51,6 +52,47 @@ export default async function ProductSingle({
   );
 
   const [singleProduct] = await singleProductData.json();
+
+  let mainCategoryData = await fetch(
+    `${apiUrl}wp-json/wp/v2/main-categories?id=${
+      singleProduct?.meta_data?.filter(
+        (item) => item.key === "main_categories_new"
+      )[0]?.id
+    }&per_page=1`,
+    {
+      next: { revalidate: 60 },
+    }
+  );
+
+  const [mainCategory] = await mainCategoryData.json();
+
+  let subCategoryData = await fetch(
+    `${apiUrl}wp-json/wp/v2/sub-categories?id=${
+      singleProduct?.meta_data?.filter(
+        (item) => item.key === "sub_categories_new"
+      )[0]?.id
+    }&per_page=1`,
+    {
+      next: { revalidate: 60 },
+    }
+  );
+
+  const [subCategory] = await subCategoryData.json();
+
+ 
+
+  let childCategoryData = await fetch(
+    `${apiUrl}wp-json/wp/v2/child-categories?id=${
+      singleProduct?.meta_data?.filter(
+        (item) => item.key === "child_categories_new"
+      )[0]?.id
+    }&per_page=1`,
+    {
+      next: { revalidate: 60 },
+    }
+  );
+
+  const [childCategory] = await childCategoryData.json();
 
   let productReviewData = await fetch(
     `${apiUrl}wp-json/wc/v3/products/reviews${woocommerceKey}&product=${singleProduct?.id}`,
@@ -217,7 +259,9 @@ export default async function ProductSingle({
                 ? singleProduct?.acf?.arabic?.title
                 : singleProduct?.name
             }
-            data={singleProduct?.acf}
+            mainCategory={mainCategory}
+            subCategory={subCategory}
+            childCategory={childCategory}
           />
         </div>
         <section className="grid lg:gap-0 gap-2 pb-0 lg:pt-10 pt-0">
@@ -243,32 +287,34 @@ export default async function ProductSingle({
                   </div>
                 )}
 
-         
-
                 <Suspense fallback={<LoadingItem spinner />}>
                   {singleProduct?.images?.gallery?.length > 0 ? (
                     <ProductGallery data={singleProduct?.images?.gallery} />
-                  ) : <div className="border aspect-square flex items-center justify-center sm:p-10 p-5">{
-                    singleProduct?.images?.featured?.url ?
-                    <Image
-                      width="600"
-                      height="600"
-                      quality="100"
-                      src={singleProduct?.images?.featured?.url}
-                      className="block w-full"
-                      alt={siteName}
-                      title={siteName}
-                    /> :
-                    <Image
-                    width="600"
-                    height="600"
-                    quality="100"
-                    src="/images/placeholder_brand.jpg"
-                    className="block w-full"
-                    alt={siteName}
-                    title={siteName}
-                  />
-                  }</div>}
+                  ) : (
+                    <div className="border aspect-square flex items-center justify-center sm:p-10 p-5">
+                      {singleProduct?.images?.featured?.url ? (
+                        <Image
+                          width="600"
+                          height="600"
+                          quality="100"
+                          src={singleProduct?.images?.featured?.url}
+                          className="block w-full"
+                          alt={siteName}
+                          title={siteName}
+                        />
+                      ) : (
+                        <Image
+                          width="600"
+                          height="600"
+                          quality="100"
+                          src="/images/placeholder_brand.jpg"
+                          className="block w-full"
+                          alt={siteName}
+                          title={siteName}
+                        />
+                      )}
+                    </div>
+                  )}
                 </Suspense>
               </div>
             </div>
@@ -334,13 +380,9 @@ export default async function ProductSingle({
                     singlePage
                     slug={singleProduct?.slug}
                     isNeedLicence={parseInt(isNeedLicence?.value)}
-                    category={singleProduct?.acf?.main_categories[0]?.post_name}
-                    subCategory={
-                      singleProduct?.acf?.sub_categories[0]?.post_name
-                    }
-                    childCategory={
-                      singleProduct?.acf?.child_categories[0]?.post_name
-                    }
+                    category={mainCategory && mainCategory?.slug}
+                    subCategory={subCategory && subCategory?.slug}
+                    childCategory={childCategory && childCategory?.slug}
                   />
                 </div>
               )}
@@ -416,6 +458,45 @@ export async function generateMetadata({ params, searchParams }, parent) {
 
     const [pageData] = await page.json();
 
+    let mainCategoryData = await fetch(
+      `${apiUrl}wp-json/wp/v2/main-categories?id=${
+        pageData?.meta_data?.filter(
+          (item) => item.key === "main_categories_new"
+        )[0]?.id
+      }&per_page=1`,
+      {
+        next: { revalidate: 60 },
+      }
+    );
+
+    const [mainCategory] = await mainCategoryData.json();
+
+    let subCategoryData = await fetch(
+      `${apiUrl}wp-json/wp/v2/sub-categories?id=${
+        pageData?.meta_data?.filter(
+          (item) => item.key === "sub_categories_new"
+        )[0]?.id
+      }&per_page=1`,
+      {
+        next: { revalidate: 60 },
+      }
+    );
+
+    const [subCategory] = await subCategoryData.json();
+
+    let childCategoryData = await fetch(
+      `${apiUrl}wp-json/wp/v2/child-categories?id=${
+        pageData?.meta_data?.filter(
+          (item) => item.key === "child_categories_new"
+        )[0]?.id
+      }&per_page=1`,
+      {
+        next: { revalidate: 60 },
+      }
+    );
+
+    const [childCategory] = await childCategoryData.json();
+
     // Return metadata object with dynamic values, or fall back to static values
     return {
       title:
@@ -429,7 +510,11 @@ export async function generateMetadata({ params, searchParams }, parent) {
       viewport: "width=device-width, initial-scale=1",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
-        canonical: `${homeUrl}${locale}/products/${pageData?.acf?.main_categories[0]?.post_name}/${pageData?.acf?.sub_categories[0]?.post_name}/${pageData?.acf?.child_categories[0]?.post_name}/${pageData?.slug}`,
+        canonical: `${homeUrl}${locale}/products/${
+          mainCategory && mainCategory?.slug
+        }/${subCategory && subCategory?.slug}/${
+          childCategory && childCategory?.slug
+        }/${pageData?.slug}`,
       },
       og_locale: pageData?.yoast_head_json?.og_locale || staticData.og_locale,
       og_type: pageData?.yoast_head_json?.og_type || staticData.og_type,
