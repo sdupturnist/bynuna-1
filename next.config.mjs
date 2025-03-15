@@ -13,7 +13,8 @@ const nextConfig = {
         'secure.gravatar.com',
         'ardalmarmoom.com',
         'via.placeholder.com',
-        'admin.bynuna.ae'
+        'admin.bynuna.ae',
+        'admin.ardalmarmoom.com'
       ],
     },
     

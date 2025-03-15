@@ -53,47 +53,6 @@ export default async function ProductSingle({
 
   const [singleProduct] = await singleProductData.json();
 
-  let mainCategoryData = await fetch(
-    `${apiUrl}wp-json/wp/v2/main-categories?id=${
-      singleProduct?.meta_data?.filter(
-        (item) => item.key === "main_categories_new"
-      )[0]?.id
-    }&per_page=1`,
-    {
-      next: { revalidate: 60 },
-    }
-  );
-
-  const [mainCategory] = await mainCategoryData.json();
-
-  let subCategoryData = await fetch(
-    `${apiUrl}wp-json/wp/v2/sub-categories?id=${
-      singleProduct?.meta_data?.filter(
-        (item) => item.key === "sub_categories_new"
-      )[0]?.id
-    }&per_page=1`,
-    {
-      next: { revalidate: 60 },
-    }
-  );
-
-  const [subCategory] = await subCategoryData.json();
-
- 
-
-  let childCategoryData = await fetch(
-    `${apiUrl}wp-json/wp/v2/child-categories?id=${
-      singleProduct?.meta_data?.filter(
-        (item) => item.key === "child_categories_new"
-      )[0]?.id
-    }&per_page=1`,
-    {
-      next: { revalidate: 60 },
-    }
-  );
-
-  const [childCategory] = await childCategoryData.json();
-
   let productReviewData = await fetch(
     `${apiUrl}wp-json/wc/v3/products/reviews${woocommerceKey}&product=${singleProduct?.id}`,
     {
@@ -247,6 +206,45 @@ export default async function ProductSingle({
     },
   ];
 
+  let mainCategoriesData = await fetch(
+    `${apiUrl}/wp-json/custom/v1/main-categories-data/?per_page=1000`,
+    {
+      next: { revalidate: 60 },
+    }
+  )
+    .then((response) => response.json())
+    .catch((error) => console.error("Error:", error));
+
+  let subCategoriesData = await fetch(
+    `${apiUrl}/wp-json/custom/v1/sub-categories-data/?per_page=1000`,
+    {
+      next: { revalidate: 60 },
+    }
+  )
+    .then((response) => response.json())
+    .catch((error) => console.error("Error:", error));
+
+  let childCategoriesData = await fetch(
+    `${apiUrl}wp-json/custom/v1/child-categories-data/?per_page=1000`,
+    {
+      next: { revalidate: 60 },
+    }
+  )
+    .then((response) => response.json())
+    .catch((error) => console.error("Error:", error));
+
+  const mainCatById = (id) => {
+    return mainCategoriesData.filter((item) => item.id === parseInt(id));
+  };
+
+  const subCatById = (id) => {
+    return subCategoriesData.filter((item) => item.id === parseInt(id));
+  };
+
+  const childCatById = (id) => {
+    return childCategoriesData.filter((item) => item.id === parseInt(id));
+  };
+
   return (
     <main className="bg-light lg:bg-white product-single">
       <div className="mobile-container-fixed">
@@ -259,9 +257,27 @@ export default async function ProductSingle({
                 ? singleProduct?.acf?.arabic?.title
                 : singleProduct?.name
             }
-            mainCategory={mainCategory}
-            subCategory={subCategory}
-            childCategory={childCategory}
+            mainCategory={
+              mainCatById(
+                singleProduct?.meta_data.filter(
+                  (item) => item.key === "main_categories_new"
+                )[0]?.value
+              )[0]
+            }
+            subCategory={
+              subCatById(
+                singleProduct?.meta_data.filter(
+                  (item) => item.key === "sub_categories_new"
+                )[0]?.value
+              )[0]
+            }
+            childCategory={
+              childCatById(
+                singleProduct?.meta_data.filter(
+                  (item) => item.key === "child_categories_new"
+                )[0]?.value
+              )[0]
+            }
           />
         </div>
         <section className="grid lg:gap-0 gap-2 pb-0 lg:pt-10 pt-0">
@@ -347,21 +363,23 @@ export default async function ProductSingle({
                 />
               </div>
               {singleProduct?.short_description &&
-                (locale === "en" ? (
-                  <div
-                    className="content mb-5 [&>*]:text-sm"
-                    dangerouslySetInnerHTML={{
-                      __html: singleProduct?.short_description,
-                    }}
-                  />
-                ) : (
-                  <div
-                    className="content mb-5 [&>*]:text-sm"
-                    dangerouslySetInnerHTML={{
-                      __html: singleProduct?.acf?.arabic?.short_description,
-                    }}
-                  />
-                ))}
+                (locale === "en"
+                  ? singleProduct?.short_description && (
+                      <div
+                        className="content mb-5 [&>*]:text-sm"
+                        dangerouslySetInnerHTML={{
+                          __html: singleProduct?.short_description,
+                        }}
+                      />
+                    )
+                  : singleProduct?.acf?.arabic?.short_description && (
+                      <div
+                        className="content mb-5 [&>*]:text-sm"
+                        dangerouslySetInnerHTML={{
+                          __html: singleProduct?.acf?.arabic?.short_description,
+                        }}
+                      />
+                    ))}
 
               {singleProduct?.price && (
                 <div className="flex gap-3 items-center justify-center bg-white mt-6 sm:mt-7">
@@ -380,12 +398,31 @@ export default async function ProductSingle({
                     singlePage
                     slug={singleProduct?.slug}
                     isNeedLicence={parseInt(isNeedLicence?.value)}
-                    category={mainCategory && mainCategory?.slug}
-                    subCategory={subCategory && subCategory?.slug}
-                    childCategory={childCategory && childCategory?.slug}
+                    category={
+                      mainCatById(
+                        singleProduct?.meta_data.filter(
+                          (item) => item.key === "main_categories_new"
+                        )[0]?.value
+                      )[0]?.slug
+                    }
+                    subCategory={
+                      subCatById(
+                        singleProduct?.meta_data.filter(
+                          (item) => item.key === "sub_categories_new"
+                        )[0]?.value
+                      )[0]?.slug
+                    }
+                    childCategory={
+                      childCatById(
+                        singleProduct?.meta_data.filter(
+                          (item) => item.key === "child_categories_new"
+                        )[0]?.value
+                      )[0]?.slug
+                    }
                   />
                 </div>
               )}
+
               <div className="border-t border-border sm:mt-10 mt-8 sm:pt-10 pt-5 grid items-center justify-center">
                 <SocialShare
                   url={`${homeUrl}/${locale}/${

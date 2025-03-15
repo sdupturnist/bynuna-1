@@ -13,6 +13,7 @@ import Pagination from "@/app/[locale]/Components/Pagination";
 import PageHeader from "@/app/[locale]/Components/PageHeader";
 import LoadingItem from "@/app/[locale]/Components/LoadingItem";
 import Card from "@/app/[locale]/Components/Card";
+import ProductWrapper from "../../Components/ProductWrapper";
 
 export default async function SearchPage({ params, searchParams, params: { locale } }) {
 
@@ -69,11 +70,18 @@ export default async function SearchPage({ params, searchParams, params: { local
           />
         :
         <div className={`${products?.length > 0 && "sm:py-10 py-5"} container`}>
-          <div className="grid md:grid-cols-3 grid-cols-2 lg:gap-0 gap-3">
-            {products?.length > 0 &&
+          <div className="grid md:grid-cols-3 grid-cols-2 lg:gap-7 gap-3">
+             <ProductWrapper
+                              locale={locale}
+                              data={products && products}
+                              searchParams={searchParams}
+                              type="product"
+                            />
+
+            {/* {products?.length > 0 &&
               products.map((item, index) => (
                 <Card key={index} data={item} product locale={locale} />
-              ))}
+              ))} */}
           </div>
           <Suspense fallback={<LoadingItem fullscreen />}>
             <div className="sm:pt-5 pt-2 w-full">

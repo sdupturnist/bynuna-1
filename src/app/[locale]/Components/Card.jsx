@@ -30,14 +30,14 @@ export default function Card({
   mainCategoryName,
   subCategoryName,
   childCategoryName,
-  type
+  type,
 }) {
   //CHECK NEED LICENCE FOR BUY THIS PRODUCT
   const isNeedLicence =
     data &&
     data?.meta_data?.find((item) => item.key === "required_valid_documents");
 
-  if (type === 'categoryLarge') {
+  if (type === "categoryLarge") {
     return (
       <li>
         <Link href={`${homeUrl}${locale}/products/${data?.slug}`} className="">
@@ -53,7 +53,7 @@ export default function Card({
               placeholder={true}
             />
             <h3 className="heading-md mt-5 text-center line-clamp-2">
-              {data?.title?.rendered || data?.name}
+              <ProductName title={data?.title?.rendered || data?.name} />
             </h3>
           </div>
         </Link>
@@ -61,12 +61,12 @@ export default function Card({
     );
   }
 
-  if (type === 'subcategoryLarge') {
+  if (type === "subcategoryLarge") {
     return (
       <li>
         <Link
           href={`${homeUrl}${locale}/products/${
-            subcategoryFromUrl || mainCategoryName?.slug
+            subcategoryFromUrl || mainCategoryName || mainCategoryName?.slug
           }/${data?.slug}`}
           className="hover:text-primary transition-all"
         >
@@ -90,7 +90,7 @@ export default function Card({
     );
   }
 
-  if (type === 'childcategoryLarge') {
+  if (type === "childcategoryLarge") {
     return (
       <li>
         <Link
@@ -119,14 +119,13 @@ export default function Card({
     );
   }
 
-  if (type === 'category') {
+  if (type === "category") {
     return (
       <li>
         <Link
-          href={`${homeUrl}${locale}/products/${data?.title
-            .replace(/%20/g, " ")
-            .toLowerCase()
-            .replace(/ /g, "-")}`}
+          href={`${homeUrl}${locale}/products/${
+            data?.url?.split("/").slice(-2, -1)[0]
+          }`}
         >
           <div>
             <Images
@@ -150,13 +149,11 @@ export default function Card({
     );
   }
 
-  if (type === 'subcategory') {
+  if (type === "subcategory") {
     return (
       <li>
         <Link
-          href={`${homeUrl}${locale}/products/${
-            mainCategoryName?.slug
-          }/${data?.title.rendered?.toLowerCase()?.replace(/ /g, "-")}`}
+          href={`${homeUrl}${locale}/products/${data?.acf?.main_categories[0]?.post_name}/${data?.slug}`}
           className="hover:text-primary transition-all"
         >
           <div>
@@ -183,7 +180,7 @@ export default function Card({
   }
 
   //FOR PRODUCTS
-  if (type === 'product') {
+  if (type === "product") {
     return (
       <div className="relative product-item p-0">
         <div className="grid  gap-[10px] h-full">
@@ -212,16 +209,13 @@ export default function Card({
                   image={data?.images?.featured?.url || data?.images}
                   slug={data?.slug}
                   isNeedLicence={parseInt(isNeedLicence?.value)}
-                  category={mainCategoryName?.slug}
-                  subCategory={subCategoryName?.slug}
-                  childCategory={childCategoryName?.slug}
+                  category={mainCategoryName}
+                  subCategory={subCategoryName}
+                  childCategory={childCategoryName}
                 />
+
                 <Link
-                  href={`${homeUrl}${locale}/products/${
-                    subcategoryFromUrl || mainCategoryName?.slug
-                  }/${subcategoryFromUrl || subCategoryName?.slug}/${
-                    childCategoryName?.slug
-                  }/${data?.slug}`}
+                  href={`${homeUrl}${locale}/products/${mainCategoryName}/${subCategoryName}/${childCategoryName}/${data?.slug}`}
                   className="bg-white flex hover:bg-primary hover:text-white hover:[&>*]:text-white !h-[60px] rounded-full lg:size-[60px] size-[40px] transition-all items-center justify-center  border border-border"
                 >
                   <i className="bi bi-eye"></i>
@@ -237,11 +231,7 @@ export default function Card({
             </div>
             <Link
               className="flex"
-              href={`${homeUrl}${locale}/products/${
-                subcategoryFromUrl || mainCategoryName?.slug
-              }/${subcategoryFromUrl || subCategoryName?.slug}/${
-                childCategoryName?.slug
-              }/${data?.slug}`}
+              href={`${homeUrl}${locale}/products/${mainCategoryName}/${subCategoryName}/${childCategoryName}/${data?.slug}`}
             >
               <Images
                 imageurl={`${
@@ -260,11 +250,7 @@ export default function Card({
           </div>
           <div className="contents items-center justify-center w-full mt-2 min-h-[115px] sm:min-h-fit">
             <Link
-              href={`${homeUrl}${locale}/products/${
-                subcategoryFromUrl || mainCategoryName?.slug
-              }/${subcategoryFromUrl || subCategoryName?.slug}/${
-                childCategoryName?.slug
-              }/${data?.slug}`}
+              href={`${homeUrl}${locale}/products/${mainCategoryName}/${subCategoryName}/${childCategoryName[0]}/${data?.slug}`}
             >
               <h3 className="sm:text-[14px] text-[12px] sm:mb-3 mb-1 line-clamp-1 text-center">
                 <ProductName
@@ -296,9 +282,9 @@ export default function Card({
                 image={data?.images?.featured?.url || data?.images}
                 slug={data?.slug}
                 isNeedLicence={parseInt(isNeedLicence?.value)}
-                category={mainCategoryName?.slug}
-                subCategory={subCategoryName?.slug}
-                childCategory={childCategoryName?.slug}
+                category={mainCategoryName}
+                subCategory={subCategoryName}
+                childCategory={childCategoryName}
               />
             </div>
           </div>
@@ -307,7 +293,7 @@ export default function Card({
     );
   }
 
-  if (type === 'blog') {
+  if (type === "blog") {
     return (
       <Link
         href={`${homeUrl}${locale}/blogs/${data?.slug}`}

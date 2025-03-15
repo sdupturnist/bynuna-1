@@ -6,14 +6,17 @@ import { useParams, usePathname } from "next/navigation";
 import { useLanguageContext } from "../Context/LanguageContext";
 import { useSiteContext } from "../Context/siteContext";
 
-export default function Breadcrumb({ data, title, mainCategory, subCategory, childCategory }) {
-
-
+export default function Breadcrumb({
+  data,
+  title,
+  mainCategory,
+  subCategory,
+  childCategory,
+}) {
   const { locale } = useParams();
   // const pathname = usePathname();
   const { translation } = useLanguageContext();
   const { categories, subCategories, childCategories } = useSiteContext();
-
 
   return (
     <div className="breadcrumbs text-xs sm:py-2 py-0">
@@ -40,14 +43,12 @@ export default function Breadcrumb({ data, title, mainCategory, subCategory, chi
           </Link>
         </li>
         <li>
-          <Link
-            href={`${homeUrl}${locale}/products/${mainCategory?.slug}`}
-          >
+          <Link href={`${homeUrl}${locale}/products/${mainCategory?.slug}`}>
             <span
               dangerouslySetInnerHTML={{
                 __html:
                   locale === "en"
-                    ? mainCategory?.title?.rendered
+                    ? mainCategory?.title
                     : mainCategory?.acf?.title_arabic
                     ? mainCategory?.acf?.title_arabic
                     : mainCategory?.title?.rendered,
@@ -63,7 +64,7 @@ export default function Breadcrumb({ data, title, mainCategory, subCategory, chi
               dangerouslySetInnerHTML={{
                 __html:
                   locale === "en"
-                    ? subCategory?.title?.rendered
+                    ? subCategory?.title
                     : subCategory?.acf?.title_arabic
                     ? subCategory?.acf?.title_arabic
                     : subCategory?.title?.rendered,
@@ -79,7 +80,7 @@ export default function Breadcrumb({ data, title, mainCategory, subCategory, chi
               dangerouslySetInnerHTML={{
                 __html:
                   locale === "en"
-                    ? childCategory?.title?.rendered
+                    ? childCategory?.title
                     : childCategory?.acf?.title_arabic
                     ? childCategory?.acf?.title_arabic
                     : childCategory?.title?.rendered,

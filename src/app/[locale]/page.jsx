@@ -84,6 +84,8 @@ export default async function Home({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
+
+
   return (
     <>
       <section className="sm:h-[70vh] h-[50vh] p-0 overflow-hidden sm:text-start text-center">
@@ -106,6 +108,7 @@ export default async function Home({
               data={products && products}
               searchParams={searchParams}
               type="product"
+              
             />
           </div>
         </div>
@@ -113,12 +116,17 @@ export default async function Home({
 }
       <section className="p-0 text-center">
         <ul className={`${products?.length === 0 ? 'sm:mt-10' : ''} sm:max-w-[90%] mx-auto border-t sm:border-black border-border spacing sub-cat-list`}>
-          <ProductWrapper
-            locale={locale}
-            data={subCategoreis && subCategoreis}
-            searchParams={searchParams}
-            type="subcategory"
-          />
+         
+         {subCategoreis &&  subCategoreis?.map((item, index) => (
+                  
+                   <Card
+                     type='subcategory'
+                     key={index}
+                     data={item}
+                     locale={locale}
+                    />
+                 ))}
+          
         </ul>
       </section>
       <section className="p-0 text-center">

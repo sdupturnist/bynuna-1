@@ -756,7 +756,8 @@ function add_filter_items_table_to_product() {
             <table class="widefat" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <thead>
                     <tr style="background-color: #f1f1f1; color: #333;">
-                        <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Filter Label', 'woocommerce' ); ?></th>
+                        <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Filter Label English', 'woocommerce' ); ?></th>
+                        <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Filter Label Arabic', 'woocommerce' ); ?></th>
                         <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Value (English)', 'woocommerce' ); ?></th>
                         <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Value (Arabic)', 'woocommerce' ); ?></th>
                         <th style="padding: 10px 15px; text-align: left;"><?php _e( 'Action', 'woocommerce' ); ?></th>
@@ -777,7 +778,7 @@ function add_filter_items_table_to_product() {
                         $saved_value = '';
                         foreach ($existing_custom_fields as $field) {
                             // Find the matching filter label (post title) in the existing saved fields
-                            if (strpos($field, $filter->post_title . ':') === 0) {
+                            if (strpos($field, $filter->post_title . '~') === 0) {
                                 $saved_value = $field;
                                 break;
                             }
@@ -798,6 +799,13 @@ function add_filter_items_table_to_product() {
                         <tr class="filter-item-row" style="background-color: #fff; border-bottom: 1px solid #ddd;">
                             <td style="padding: 5px;">
                                 <?php echo esc_html( $filter->post_title ); ?>
+                            </td>
+                            <td style="padding: 5px;">
+                                <?php 
+                                // Get the Arabic label from ACF for this filter
+                                $arabic_label = get_field('arabic', $filter->ID); 
+                                echo esc_html( $arabic_label );
+                                ?>
                             </td>
                             <td style="padding:0;">
                                 <input type="text" name="filter_values[<?php echo esc_attr( $filter->ID ); ?>][english]" class="filter_english_value" value="<?php echo esc_attr( $saved_english_value ); ?>" style="width: 95%; margin:5px; padding: 2px 5px; border: 0; border-radius: 4px;">
@@ -895,9 +903,14 @@ function save_filter_items_to_product( $post_id ) {
         foreach ( $_POST['filter_values'] as $filter_id => $values ) {
             // Ensure both English and Arabic values are provided and not empty
             if ( !empty( $values['english'] ) && !empty( $values['arabic'] ) ) {
-                // Construct the value in the format "Filter Label:english|arabic"
+                // Fetch the filter label and Arabic label from ACF
                 $filter_label = get_the_title( $filter_id );
-                $custom_fields[] = $filter_label . ':' . sanitize_text_field( $values['english'] ) . '|' . sanitize_text_field( $values['arabic'] );
+                $arabic_label = get_field('arabic', $filter_id); // ACF field 'arabic'
+
+                // Construct the value in the format "Filter Label~Arabic Label:english|arabic"
+                //$custom_fields[] = $filter_label . '~' . $arabic_label . ':' . sanitize_text_field( $values['english'] ) . '|' . sanitize_text_field( $values['arabic'] );
+           
+                $custom_fields[] = $filter_label . '~:' . sanitize_text_field( $values['english'] ) . '|' . sanitize_text_field( $values['arabic'] );
             }
         }
 
@@ -913,6 +926,7 @@ function save_filter_items_to_product( $post_id ) {
     }
 }
 add_action( 'save_post', 'save_filter_items_to_product' );
+
 
 /////////////////////////FILTER CUSTOM FIELD END///////////////////////////////////
 
@@ -3206,3 +3220,258 @@ function get_custom_arabic_product_fields($post_id) {
     );
 }
 
+
+//LIMIT 100 to 1000 FOR CHILD MAIN SUB CATEOGARIES
+// Register Custom REST API Route for Main Categories
+// Register Custom REST API Route for Main Categories
+function register_main_categories_data_endpoint() {
+    register_rest_route( 'custom/v1', '/main-categories-data/', array(
+        'methods' => 'GET',
+        'callback' => 'get_main_categories_data',
+        'permission_callback' => '__return_true', // You can change this based on your permission needs
+        'args' => array(
+            'per_page' => array(
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_numeric( $param ); // Validate if per_page is numeric
+                },
+                'default' => 10, // Default to 10 items per page
+            ),
+        ),
+    ) );
+}
+add_action( 'rest_api_init', 'register_main_categories_data_endpoint' );
+
+// Callback function for Main Categories
+function get_main_categories_data( $data ) {
+    $per_page = isset( $data['per_page'] ) ? (int) $data['per_page'] : 10;
+    $per_page = min( $per_page, 1000 );  // Set maximum per_page to 1000
+
+    // WP_Query for fetching 'main-categories'
+    $args = array(
+        'post_type'      => 'main-categories', // Your custom post type for main categories
+        'posts_per_page' => $per_page,
+    );
+
+    $query = new WP_Query( $args );
+
+    if ( $query->have_posts() ) {
+        $posts = array();
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            // Fetch ACF fields
+            $sub_categories = get_field( 'sub_categories' );  // ACF field for sub categories
+            $filters        = get_field( 'Filters' );         // ACF field for Filters
+            $title_arabic   = get_field( 'title_arabic' );    // ACF field for Arabic Title
+            
+            // Prepare the sub_categories and filters as arrays of title and link
+            $sub_categories_data = array();
+            if ( $sub_categories ) {
+                foreach ( $sub_categories as $sub_category ) {
+                    $sub_categories_data[] = array(
+                        'id'    => $sub_category['ID'],  // Get the ID from the sub_category ACF field
+                        'title' => $sub_category['post_title'], // Title from the sub category
+                        'link'  => get_permalink( $sub_category['ID'] ),  // Get the permalink for each sub category
+                    );
+                }
+            }
+
+            $filters_data = array();
+            if ( $filters ) {
+                foreach ( $filters as $filter ) {
+                    $filters_data[] = array(
+                        'id'    => $filter['ID'], // Get the ID from the filter ACF field
+                        'title' => $filter['post_title'], // Title from the filter
+                        'link'  => get_permalink( $filter['ID'] ), // Get the permalink for each filter
+                    );
+                }
+            }
+
+            // Prepare the response array including ACF data
+            $posts[] = array(
+                'id'             => get_the_ID(),
+                'title'          => get_the_title(),
+                'slug'           => get_post_field( 'post_name', get_the_ID() ),
+                'link'           => get_permalink(),
+                'acf'            => array(
+                    'sub_categories' => $sub_categories_data,  // Include the sub categories data
+                    'filters'        => $filters_data,         // Include the filters data
+                    'title_arabic'   => $title_arabic,         // Include the Arabic title
+                ),
+            );
+        }
+
+        return new WP_REST_Response( $posts, 200 );
+    }
+
+    return new WP_REST_Response( 'No main categories found', 404 );
+}
+
+// Register Custom REST API Route for Sub Categories
+function register_sub_categories_data_endpoint() {
+    register_rest_route( 'custom/v1', '/sub-categories-data/', array(
+        'methods' => 'GET',
+        'callback' => 'get_sub_categories_data',
+        'permission_callback' => '__return_true', // You can change this based on your permission needs
+        'args' => array(
+            'per_page' => array(
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_numeric( $param ); // Validate if per_page is numeric
+                },
+                'default' => 10, // Default to 10 items per page
+            ),
+        ),
+    ) );
+}
+add_action( 'rest_api_init', 'register_sub_categories_data_endpoint' );
+
+// Callback function for Sub Categories
+function get_sub_categories_data( $data ) {
+    $per_page = isset( $data['per_page'] ) ? (int) $data['per_page'] : 10;
+    $per_page = min( $per_page, 1000 );  // Set maximum per_page to 1000
+
+    // WP_Query for fetching 'sub-categories'
+    $args = array(
+        'post_type'      => 'sub-categories', // Your custom post type for sub categories
+        'posts_per_page' => $per_page,
+    );
+
+    $query = new WP_Query( $args );
+
+    if ( $query->have_posts() ) {
+        $posts = array();
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            // Fetch ACF fields
+            $sub_categories = get_field( 'sub_categories' );  // ACF field for sub categories
+            $filters        = get_field( 'Filters' );         // ACF field for Filters
+            $title_arabic   = get_field( 'title_arabic' );    // ACF field for Arabic Title
+            
+            // Prepare the sub_categories and filters as arrays of title and link
+            $sub_categories_data = array();
+            if ( $sub_categories ) {
+                foreach ( $sub_categories as $sub_category ) {
+                    $sub_categories_data[] = array(
+                        'id'    => $sub_category['ID'],
+                        'title' => $sub_category['post_title'],
+                        'link'  => get_permalink( $sub_category['ID'] ),
+                    );
+                }
+            }
+
+            $filters_data = array();
+            if ( $filters ) {
+                foreach ( $filters as $filter ) {
+                    $filters_data[] = array(
+                        'id'    => $filter['ID'],
+                        'title' => $filter['post_title'],
+                        'link'  => get_permalink( $filter['ID'] ),
+                    );
+                }
+            }
+
+            // Prepare the response array including ACF data
+            $posts[] = array(
+                'id'             => get_the_ID(),
+                'title'          => get_the_title(),
+                'slug'           => get_post_field( 'post_name', get_the_ID() ),
+                'link'           => get_permalink(),
+                'acf'            => array(
+                    'sub_categories' => $sub_categories_data,
+                    'filters'        => $filters_data,
+                    'title_arabic'   => $title_arabic,
+                ),
+            );
+        }
+
+        return new WP_REST_Response( $posts, 200 );
+    }
+
+    return new WP_REST_Response( 'No sub categories found', 404 );
+}
+
+
+// Register Custom REST API Route for Child Categories
+function register_child_categories_data_endpoint() {
+    register_rest_route( 'custom/v1', '/child-categories-data/', array(
+        'methods' => 'GET',
+        'callback' => 'get_child_categories_data',
+        'permission_callback' => '__return_true',
+        'args' => array(
+            'per_page' => array(
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_numeric( $param );
+                },
+                'default' => 10,
+            ),
+        ),
+    ) );
+}
+add_action( 'rest_api_init', 'register_child_categories_data_endpoint' );
+
+// Callback function for Child Categories
+function get_child_categories_data( $data ) {
+    $per_page = isset( $data['per_page'] ) ? (int) $data['per_page'] : 10;
+    $per_page = min( $per_page, 1000 );  // Set maximum per_page to 1000
+
+    // WP_Query for fetching 'child-categories'
+    $args = array(
+        'post_type'      => 'child-categories', 
+        'posts_per_page' => $per_page,
+    );
+
+    $query = new WP_Query( $args );
+
+    if ( $query->have_posts() ) {
+        $posts = array();
+        while ( $query->have_posts() ) {
+            $query->the_post();
+
+            // Fetch ACF fields
+          //  $sub_categories = get_field( 'sub_categories' );
+          //  $filters        = get_field( 'Filters' );
+            $title_arabic   = get_field( 'title_arabic' );
+            
+            // Prepare the sub_categories and filters as arrays of title and link
+            $sub_categories_data = array();
+            if ( $sub_categories ) {
+                foreach ( $sub_categories as $sub_category ) {
+                    $sub_categories_data[] = array(
+                        'id'    => $sub_category['ID'],
+                        'title' => $sub_category['post_title'],
+                        'link'  => get_permalink( $sub_category['ID'] ),
+                    );
+                }
+            }
+
+            $filters_data = array();
+            if ( $filters ) {
+                foreach ( $filters as $filter ) {
+                    $filters_data[] = array(
+                        'id'    => $filter['ID'],
+                        'title' => $filter['post_title'],
+                        'link'  => get_permalink( $filter['ID'] ),
+                    );
+                }
+            }
+
+            // Prepare the response array including ACF data
+            $posts[] = array(
+                'id'             => get_the_ID(),
+                'title'          => get_the_title(),
+                'slug'           => get_post_field( 'post_name', get_the_ID() ),
+                'link'           => get_permalink(),
+                'acf'            => array(
+                   // 'sub_categories' => $sub_categories_data,
+                   // 'filters'        => $filters_data,
+                    'title_arabic'   => $title_arabic,
+                ),
+            );
+        }
+
+        return new WP_REST_Response( $posts, 200 );
+    }
+
+    return new WP_REST_Response( 'No child categories found', 404 );
+}

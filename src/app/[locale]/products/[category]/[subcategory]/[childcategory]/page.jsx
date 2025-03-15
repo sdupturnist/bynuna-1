@@ -99,104 +99,117 @@ export default async function childcategoryPage({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
-    
+  //FILTER
 
-
-    //FILTER
-
-    const finalFilterItems = productsGetFilters?.flatMap((product) => {
-      const filteredMetaData = product.meta_data?.filter(
-        (item) => item.key === "_filter_items" && item.value
-      );
-    
-      if (!filteredMetaData || filteredMetaData.length === 0) return []; // Return empty if no metadata or no matching items
-    
-      const labelAccumulator = {};
-    
-      // Process each metadata entry
-      filteredMetaData.forEach((item) => {
-        // Split the value string into key-value pairs
-        const valuePairs = item.value.split(",").map((pair) => {
-          const [key, value] = pair.split(":");
-          return { key, value };
-        });
-    
-        valuePairs.forEach(({ key, value }) => {
-          // Separate the value into English and Arabic parts
-          const [en, ar] = value.split("|");
-    
-          // Accumulate the results under the label
-          if (key && en && ar) {
-            if (!labelAccumulator[key]) {
-              labelAccumulator[key] = {
-                items: [],
-              };
-            }
-    
-            labelAccumulator[key].items.push({
-              en, // English value
-              ar, // Arabic value
-            });
-          }
-        });
-      });
-    
-      // Convert labelAccumulator to the desired structure
-      return Object.keys(labelAccumulator).map((label) => ({
-        label, // Use the label
-        items: labelAccumulator[label].items, // Include the items with English and Arabic values
-      }));
-    });
-    
-    
-    
-    const result = [];
-    
-    // Merge items by label
-    finalFilterItems.forEach((entry) => {
-      const existing = result.find((r) => r.label === entry.label);
-      if (existing) {
-        existing.items.push(...entry.items); // Spread operator to add items
-      } else {
-        result.push({
-          label: entry.label,
-          items: entry.items,
-        }); // Add new label
-      }
-    });
-    
-    // Filter by matching labels in subCat
-    const filteredProductFilters = result.filter(
-      (productFilter) =>
-        childCat[0]?.acf?.Filters &&
-      childCat[0]?.acf?.Filters.some(
-          (catFilter) => catFilter.post_title === productFilter.label
-        )
+  const finalFilterItems = productsGetFilters?.flatMap((product) => {
+    const filteredMetaData = product.meta_data?.filter(
+      (item) => item.key === "_filter_items" && item.value
     );
-    
 
-    console.log(filteredProductFilters)
+    if (!filteredMetaData || filteredMetaData.length === 0) return [];
 
+    const labelAccumulator = {};
 
+    filteredMetaData.forEach((item) => {
+      const valuePairs = item.value.split(",");
+
+      valuePairs.forEach((pair) => {
+        const [key, value] = pair.split("~:");
+
+        if (!key || !value) return;
+
+        const [en, ar] = value.split("|");
+
+        if (!en || !ar) return;
+
+        if (!labelAccumulator[key]) {
+          labelAccumulator[key] = {
+            label: key,
+            items: [],
+            arabicLabel: [],
+            seen: new Set(),
+          };
+        }
+
+        const uniquePair = `${en}|${ar}`;
+
+        if (!labelAccumulator[key].seen.has(uniquePair)) {
+          labelAccumulator[key].items.push({ en, ar });
+          labelAccumulator[key].arabicLabel.push({ en, ar });
+          labelAccumulator[key].seen.add(uniquePair);
+        }
+      });
+    });
+
+    return Object.values(labelAccumulator);
+  });
+
+  const result = [];
+
+  finalFilterItems.forEach((entry) => {
+    const existing = result.find((r) => r.label === entry.label);
+
+    if (existing) {
+      entry.items.forEach((item) => {
+        const duplicateCheck = `${item.en}|${item.ar}`;
+
+        if (!existing.seen.has(duplicateCheck)) {
+          existing.items.push(item);
+          existing.seen.add(duplicateCheck);
+        }
+      });
+    } else {
+      result.push({
+        label: entry.label,
+        items: entry.items,
+        seen: new Set(),
+      });
+    }
+  });
+
+  result.forEach((entry) => {
+    entry.items = entry.items.filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.en === item.en && t.ar === item.ar)
+    );
+  });
+
+  const filteredProductFilters = result.filter(
+    (productFilter) =>
+      childCat[0]?.acf?.Filters &&
+      childCat[0]?.acf?.Filters.some((catFilter) => {
+        const englishMatch = catFilter.post_title === productFilter.label;
+        return englishMatch;
+      })
+  );
+
+  const filteredProductFiltersWithArabic = filteredProductFilters.map(
+    (productFilter) => ({
+      ...productFilter,
+      arabicLabel: productFilter.items,
+    })
+  );
+
+ 
   return (
     <div className="bg-bggray">
       <section className="p-0">
-      <Suspense fallback={<LoadingItem fullscreen />}>
-              <PageHeader
-                activeFilterMetas={meta_value}
-                shopPageLevel={1}
-                title={
-                  locale === "en"
-                    ? childCat[0]?.title?.rendered
-                    : childCat[0]?.acf?.title_arabic
-                    ? childCat[0]?.acf?.title_arabic
-                    : childCat[0]?.title?.rendered
-                }
-                filter="childcategory"
-                filterData={filteredProductFilters}
-                sortProducts
-              />
-            </Suspense>
+        <Suspense fallback={<LoadingItem fullscreen />}>
+          <PageHeader
+            activeFilterMetas={meta_value}
+            shopPageLevel={1}
+            title={
+              locale === "en"
+                ? childCat[0]?.title?.rendered
+                : childCat[0]?.acf?.title_arabic
+                ? childCat[0]?.acf?.title_arabic
+                : childCat[0]?.title?.rendered
+            }
+            filter="childcategory"
+            filterData={filteredProductFiltersWithArabic}
+            sortProducts
+          />
+        </Suspense>
 
         {!products?.length ? (
           // When no products are available, show a loading fallback or an alert.
@@ -211,17 +224,16 @@ export default async function childcategoryPage({
           </Suspense>
         ) : (
           <>
-           
             <div
               className={`${products?.length > 0 && "sm:py-10 py-5"} container`}
             >
               <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
-             <ProductWrapper
-                               locale={locale}
-                               data={products && products}
-                               searchParams={searchParams}
-                               type="product"
-                             />
+                <ProductWrapper
+                  locale={locale}
+                  data={products && products}
+                  searchParams={searchParams}
+                  type="product"
+                />
               </div>
 
               <Suspense fallback={<LoadingItem fullscreen />}>

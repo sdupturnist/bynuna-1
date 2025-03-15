@@ -8,13 +8,15 @@ import {
   siteLogo,
   siteName,
 } from "../../Utils/variables";
-import ProductWrapper from "../../Components/ProductWrapper";
 
-export default async function Category({ params,   searchParams,  params: { locale } }) {
+
+export default async function Category({
+  params,
+  searchParams,
+  params: { locale },
+}) {
   const { category } = await params;
   const decodeUrl = decodeURIComponent(category);
-  
-
 
   // Fetch sub-categories
   let subCategories = await fetch(
@@ -48,29 +50,17 @@ export default async function Category({ params,   searchParams,  params: { loca
     <div className="bg-bggray">
       <section className="p-0">
         <div className="container lg:py-10 p-0">
-        <ul className="border-list">
-            <ProductWrapper
-                      locale={locale}
-                      data={subCategories && filteredItems}
-                      searchParams={searchParams}
-                      type="subcategoryLarge"
-                    />
-</ul>
-
-        {/* <ul className="border-list">
+          <ul className="border-list">
             {subCategories &&
-              filteredItems.map((item, index) => (
+              filteredItems?.map((item, index) => (
                 <Card
-                locale={locale}
+                  type="subcategoryLarge"
                   key={index}
                   data={item}
-                  subcategoryLarge
-                  subcategoryFromUrl={item}
+                  locale={locale}
                 />
-
-                
               ))}
-          </ul> */}
+          </ul>
         </div>
       </section>
     </div>
@@ -128,8 +118,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
         staticData.twitter_image,
       openGraph: {
         images: [
-          pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.ogImage,
+          pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.ogImage,
         ],
       },
     };

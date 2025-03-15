@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useSiteContext } from "../Context/siteContext";
-import { getTranslation, homeUrl, siteName } from "../Utils/variables";
+import { apiUrl, getTranslation, homeUrl, siteName } from "../Utils/variables";
 import Accordion from "./Accordion";
 import RangeSlider from "react-range-slider-input";
 import "react-range-slider-input/dist/style.css";
@@ -32,6 +32,7 @@ export default function Filter({
 
   const [value, setValue] = useState([0, 1000000]);
   const { queryUpdated, setQueryUpdated } = useSiteContext();
+  const [filterLabel, setFilterLabel] = useState([]);
 
   const isUpdatingRef = useRef(false);
 
@@ -115,23 +116,7 @@ export default function Filter({
     });
   };
 
-  // const removeFilter = (itemToRemove) => {
-  //   setSelectedFilters((prevFilters) => {
-  //     // Log the previous filters for debugging
-  //     console.log('PREV', prevFilters);
-
-  //     // Filter out the item to remove
-  //     const updatedFilters = prevFilters.filter(
-  //       (item) => item !== itemToRemove?.item?.en
-  //     );
-
-  //     // Indicate that the query should be updated
-  //     setQueryUpdated(true);
-
-  //     // Return the updated filters
-  //     return updatedFilters;
-  //   });
-  // };
+  
 
   // CLEAR ALL FILTERS
   const clearAllFilters = () => {
@@ -160,8 +145,8 @@ export default function Filter({
               locale === "en"
                 ? filter?.en
                 : filter?.ar
-                ? filter?.ar
-                : filter?.en
+                  ? filter?.ar
+                  : filter?.en
             );
           });
       }
@@ -200,6 +185,44 @@ export default function Filter({
     //setQueryUpdated(true);
     //localStorage.removeItem(`${siteName}_selectedFilters`);
   };
+
+
+  //GET FILTER LABEL TRANSALATION
+    const fetchFilters = async () => {
+      try {
+        const response = await fetch(
+          `${apiUrl}wp-json/wp/v2/filter?per_page=99`,
+          {
+            next: { revalidate: 60 },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        setFilterLabel(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+     useEffect(() => {
+      fetchFilters();
+       
+      }, [filterData]);
+    
+
+     // console.log(filterLabel)
+     function filterByTitle(filters, title) {
+      // Filter the filters array by the title and extract the `acf.arabic` value
+      const filtered = filters?.filter(filter => filter?.title?.rendered === title);
+      
+      // Return the `acf.arabic` value for each filtered result
+      return filtered.map(filter => filter?.acf?.arabic);
+    }
+    
+  
+    
 
   if (
     shopPageLevel === "subcategory" ||
@@ -246,8 +269,8 @@ export default function Filter({
                             {locale === "en"
                               ? item?.text?.en
                               : item?.text?.ar
-                              ? item?.text?.ar
-                              : item?.text?.en}
+                                ? item?.text?.ar
+                                : item?.text?.en}
                           </span>
 
                           <i
@@ -277,8 +300,8 @@ export default function Filter({
                             locale === "en"
                               ? item?.title?.rendered
                               : item?.acf?.title_arabic
-                              ? item?.acf?.title_arabic
-                              : item?.title?.rendered,
+                                ? item?.acf?.title_arabic
+                                : item?.title?.rendered,
                           link: item?.slug,
                           levels: "",
                         })),
@@ -373,9 +396,9 @@ export default function Filter({
                   ]}
                 />
               )}
-
               {filteredData &&
                 filteredData.map((item, index) => (
+
                   <Accordion
                     key={index}
                     filter
@@ -383,10 +406,10 @@ export default function Filter({
                     items={[
                       {
                         title:
-                          locale === "en"
-                            ? item?.label
-                            : item?.ar_name
-                            ? item?.ar_name
+                        locale === "en"
+                          ? item?.label
+                          : filterByTitle(filterLabel, item?.label)[0]
+                            ? filterByTitle(filterLabel, item?.label)[0]
                             : item?.label,
                         content: item?.items?.map((item, childIndex) => ({
                           text: item,
@@ -444,8 +467,8 @@ export default function Filter({
                             {locale === "en"
                               ? item?.text?.en
                               : item?.text?.ar
-                              ? item?.text?.ar
-                              : item?.text?.en}
+                                ? item?.text?.ar
+                                : item?.text?.en}
                           </span>
                           <i
                             className="bi bi-x cursor-pointer text-[13px] mr-1"
@@ -482,8 +505,8 @@ export default function Filter({
                             locale === "en"
                               ? item?.title?.rendered
                               : item?.acf?.title_arabic
-                              ? item?.acf?.title_arabic
-                              : item?.title?.rendered,
+                                ? item?.acf?.title_arabic
+                                : item?.title?.rendered,
                           link: item?.slug,
                           levels: "",
                         })),
@@ -579,8 +602,11 @@ export default function Filter({
                 />
               )}
 
+              
+
               {filteredData &&
                 filteredData.map((item, index) => (
+                  
                   <Accordion
                     key={index}
                     filter
@@ -590,9 +616,9 @@ export default function Filter({
                         title:
                           locale === "en"
                             ? item?.label
-                            : item?.ar_name
-                            ? item?.ar_name
-                            : item?.label,
+                            : filterByTitle(filterLabel, item?.label)[0]
+                              ? filterByTitle(filterLabel, item?.label)[0]
+                              : item?.label,
                         content: item?.items?.map((item, childIndex) => ({
                           text: item,
                           id: item?.id,

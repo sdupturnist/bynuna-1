@@ -34,7 +34,7 @@ export let returnDays = 24; //24 hours
 //.ENV
 //export let homeUrl = `http://localhost:3000/`;
 export let homeUrl = `https://bynuna-chi.vercel.app/`;
-export let apiUrl = `https://ardalmarmoom.com/`;
+export let apiUrl = `https://admin.ardalmarmoom.com/`;
 //export let apiUrl = `https://admin.bynuna.ae/`;
 
 //RAZORPAY CONFIG
@@ -186,10 +186,10 @@ export const getTranslation = (translations, englishText, language) => {
     return englishText; // Return the original text if translations or englishText is invalid
   }
 
-  if (language === "ar") {
- 
-    const trimmedEnglishText = englishText && englishText.trim();
+  // Ensure englishText is a valid string before trimming
+  const trimmedEnglishText = typeof englishText === 'string' ? englishText.trim() : '';
 
+  if (language === "ar") {
     const translation = translations.find(
       (item) =>
         item.english.trim().toLowerCase() === trimmedEnglishText.toLowerCase()
@@ -204,6 +204,7 @@ export const getTranslation = (translations, englishText, language) => {
 
   return englishText;
 };
+
 
 export const translateStatusToArabic = (status) => {
   const statusTranslations = {
@@ -435,3 +436,4 @@ export let isValidEmail = (email) => {
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return emailRegex.test(email);
 };
+

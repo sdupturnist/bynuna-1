@@ -106,79 +106,96 @@ export default async function SubCategoryPage({
 
 
     //FILTER
-
     const finalFilterItems = productsGetFilters?.flatMap((product) => {
       const filteredMetaData = product.meta_data?.filter(
         (item) => item.key === "_filter_items" && item.value
       );
     
-      if (!filteredMetaData || filteredMetaData.length === 0) return []; // Return empty if no metadata or no matching items
+      if (!filteredMetaData || filteredMetaData.length === 0) return [];
     
       const labelAccumulator = {};
     
-      // Process each metadata entry
       filteredMetaData.forEach((item) => {
-        // Split the value string into key-value pairs
-        const valuePairs = item.value.split(",").map((pair) => {
-          const [key, value] = pair.split(":");
-          return { key, value };
-        });
+        const valuePairs = item.value.split(",");
     
-        valuePairs.forEach(({ key, value }) => {
-          // Separate the value into English and Arabic parts
+        valuePairs.forEach((pair) => {
+          const [key, value] = pair.split("~:");
+    
+          if (!key || !value) return;
+    
           const [en, ar] = value.split("|");
     
-          // Accumulate the results under the label
-          if (key && en && ar) {
-            if (!labelAccumulator[key]) {
-              labelAccumulator[key] = {
-                items: [],
-              };
-            }
+          if (!en || !ar) return;
     
-            labelAccumulator[key].items.push({
-              en, // English value
-              ar, // Arabic value
-            });
+          if (!labelAccumulator[key]) {
+            labelAccumulator[key] = {
+              label: key,
+              items: [],
+              arabicLabel: [],
+              seen: new Set(),
+            };
+          }
+    
+          const uniquePair = `${en}|${ar}`;
+    
+          if (!labelAccumulator[key].seen.has(uniquePair)) {
+            labelAccumulator[key].items.push({ en, ar });
+            labelAccumulator[key].arabicLabel.push({ en, ar });
+            labelAccumulator[key].seen.add(uniquePair);
           }
         });
       });
     
-      // Convert labelAccumulator to the desired structure
-      return Object.keys(labelAccumulator).map((label) => ({
-        label, // Use the label
-        items: labelAccumulator[label].items, // Include the items with English and Arabic values
-      }));
+      return Object.values(labelAccumulator);
     });
-    
-    
     
     const result = [];
     
-    // Merge items by label
     finalFilterItems.forEach((entry) => {
       const existing = result.find((r) => r.label === entry.label);
+    
       if (existing) {
-        existing.items.push(...entry.items); // Spread operator to add items
+        entry.items.forEach(item => {
+          const duplicateCheck = `${item.en}|${item.ar}`;
+    
+          if (!existing.seen.has(duplicateCheck)) {
+            existing.items.push(item);
+            existing.seen.add(duplicateCheck);
+          }
+        });
       } else {
         result.push({
           label: entry.label,
           items: entry.items,
-        }); // Add new label
+          seen: new Set(),
+        });
       }
     });
     
-    // Filter by matching labels in subCat
+    result.forEach((entry) => {
+      entry.items = entry.items.filter((item, index, self) => 
+        index === self.findIndex((t) => t.en === item.en && t.ar === item.ar)
+      );
+    });
+    
     const filteredProductFilters = result.filter(
       (productFilter) =>
         subCat[0]?.acf?.filters &&
         subCat[0]?.acf?.filters.some(
-          (catFilter) => catFilter.post_title === productFilter.label
+          (catFilter) => {
+            const englishMatch = catFilter.post_title === productFilter.label;
+            return englishMatch;
+          }
         )
     );
     
+    const filteredProductFiltersWithArabic = filteredProductFilters.map((productFilter) => ({
+      ...productFilter,
+      arabicLabel: productFilter.items,
+    }));
+    
 
-
+    
     
     
   return (
@@ -196,7 +213,7 @@ export default async function SubCategoryPage({
                 : subCat[0]?.title?.rendered
             }
             filter="subcategory"
-            filterData={filteredProductFilters}
+            filterData={filteredProductFiltersWithArabic}
             sortProducts
           />
         </Suspense>
@@ -216,10 +233,13 @@ export default async function SubCategoryPage({
               className={`${products?.length > 0 && "sm:py-10 py-5"} container`}
             >
               <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
+               
+               
+               
                 <ProductWrapper
                   locale={locale}
                   data={products && products}
-                  searchParams={searchParams}
+                  searchParams={subcategory}
                   type="product"
                 />
               </div>
