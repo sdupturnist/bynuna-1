@@ -54,7 +54,7 @@ export default async function Blogs({ searchParams, params: { locale } }) {
             <div className="grid sm:grid-cols-2 sm:gap-8 gap-5">
               {blogs &&
                 blogs.map((item, index) => (
-                  <Card locale={locale} large blog key={index} data={item} />
+                  <Card locale={locale} large type="blog" key={index} data={item} />
                 ))}
             </div>
             <Pagination

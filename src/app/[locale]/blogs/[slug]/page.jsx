@@ -70,7 +70,7 @@ export default async function BlogSingle({ params, params: { locale } }) {
                   <div className="grid sm:grid-cols-2 sm:gap-8 gap-5">
                     {blogs &&
                       blogs.map((item, index) => (
-                        <Card key={index} data={item} blog locale={locale} />
+                        <Card key={index} data={item} type="blog" locale={locale} />
                       ))}
                   </div>
                 </>
