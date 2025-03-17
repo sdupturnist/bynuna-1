@@ -640,7 +640,7 @@ export default function Header({ locale }) {
             )}
           </div>
           <Images
-                    imageurl={`${homeUrl}images/brand-bg.webp`}
+                    imageurl={`${homeUrl}${locale}/images/brand-bg.webp`}
                     quality="100"
                     width="600"
                     height="200"
