@@ -158,7 +158,11 @@ export default function PageHeader({
                 )}
                 <div className="order-2">
                   <h1 className="sm:text-lg text-sm font-bold text-center uppercase w-fit px-4 mx-auto">
-                    <span dangerouslySetInnerHTML={{ __html: title }} />
+                    <span dangerouslySetInnerHTML={{ __html: getTranslation(
+                      translation[0]?.translations,
+                      title,
+                      locale || "en"
+                    )  }} />
                   </h1>
                 </div>
                 <div className="order-3">

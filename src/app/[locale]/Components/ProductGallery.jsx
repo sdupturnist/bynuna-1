@@ -1,37 +1,24 @@
 'use client'
-import ImageGallery from "react-image-gallery";
+
 import SliderImage from "react-zoom-slider";
 
-export default function ProductGallery({data}){
+export default function ProductGallery({ data }) {
+  // Ensure data is properly formatted
+  const images = Array.isArray(data) 
+    ? data.map((item) => ({
+        image: item?.url || '',  // Default to an empty string if url is undefined
+        text: item?.alt || ''    // Default to an empty string if alt is undefined
+      }))
+    : [{ image: data || '', text: '' }]; // If data is a string, ensure it's wrapped in an object with image and text
 
-     const images =
-    data.map((item) => ({
-      image: item?.url,
-       text: item?.alt
-    })) || [];
-
-
-
-
-    return(
-
-      <SliderImage
-        data={images}
-        showDescription={true}
-        direction="right"
-        nav={false}
-      />
-
-      //   <ImageGallery
-      //   items={images}
-      //   showNav={false}
-      //   lazyLoad={true}
-      //   showThumbnails={true}
-      //   autoPlay={false}
-      //   showFullscreenButton={true}
-      //   showPlayButton={false}
-      //   thumbnailWidth={10} // Adjust this value to your desired thumbnail width
-      //   thumbnailHeight={75} // Adjust this value to your desired thumbnail height
-      // />
-    )
+ 
+  return (
+    <SliderImage
+      data={images}
+      showDescription={true}
+      direction="right"
+      nav={false}
+    />
+   
+  );
 }

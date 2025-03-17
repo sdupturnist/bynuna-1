@@ -56,20 +56,20 @@ const Accordion = ({
   const isUpdatingRef = useRef(false);
 
   // Function to update the URL with selected filters
+
   const updateURL = (filters) => {
     const currentQuery = new URLSearchParams(window.location.search);
 
     // Remove previous filters
-    currentQuery.delete("meta_key");
-    currentQuery.delete("meta_value");
+    currentQuery.delete("filter_items");
 
-    // Append the new filters
-    filters.forEach((filter) => {
-      currentQuery.append("meta_key", "_filter_items");
-      currentQuery.append("meta_value", filter?.text?.en);
-    });
+    // Format filters into the desired structure
+    const filterString = filters.join("&filter_items="); // Join multiple filters with '|'
 
-    //Push the updated URL to the router
+    // Append the new filter as a single _filter_items key
+    currentQuery.append("filter_items", filterString);
+
+    // Push the updated URL to the router
     router.push(
       `${window.location.pathname}?${currentQuery.toString()}`,
       undefined,
@@ -80,12 +80,13 @@ const Accordion = ({
   // Function to handle adding/removing filters
   const activeFilters = (item) => {
     setSelectedFilters((prevFilters) => {
-      const isItemSelected = prevFilters.some(
-        (filter) => filter?.text?.en === item?.text?.en
-      );
+      // Check if the item is already in the filters array
+      const isItemSelected = prevFilters.includes(item);
+
+      // Update the filter list based on whether the item is selected
       const updatedFilters = isItemSelected
-        ? prevFilters.filter((filter) => filter?.text?.en !== item?.text?.en)
-        : [...prevFilters, item];
+        ? prevFilters.filter((filter) => filter !== item) // Remove if already selected
+        : [...prevFilters, item]; // Add if not selected
 
       // Avoid setting state during render, use ref to delay URL update
       if (!isUpdatingRef.current) {
@@ -202,14 +203,12 @@ const Accordion = ({
 
       {/* NORMAL */}
       {!navigation && !filter && isOpen && (
-        <div className="pb-7 bg-white rounded-b-lg general-content">
-          {children}
-        </div>
+        <div className="pb-7 rounded-b-lg general-content">{children}</div>
       )}
 
       {/* NAVIGATION */}
       {navigation && !isOpen && (
-        <div className="bg-white grid gap-4 mt-3 rounded-none">
+        <div className=" grid gap-4 mt-3 rounded-none">
           {children.map((item, index) => (
             <ViewMoreLess
               footerNavigation
@@ -227,7 +226,7 @@ const Accordion = ({
         !filterLink &&
         !filterComponent &&
         isOpen && (
-          <div className="bg-white rounded-b-lg grid sm:gap-2 gap-3 pb-5 max-h-[200px] overflow-auto">
+          <div className="rounded-b-lg grid sm:gap-2 gap-3 pb-5 max-h-[200px] overflow-auto">
             {children &&
               Array.from(new Set(children.map((item) => item?.text)))
                 .map((text) => children.find((item) => item?.text === text))
@@ -239,22 +238,25 @@ const Accordion = ({
                     <input
                       type="checkbox"
                       className="checkbox checkbox-success checkbox-xs rounded-none"
-                      onChange={() => activeFilters(item)} // Pass the full item to the handler
-                      checked={selectedFilters.some(
-                        (filter) => filter?.text?.en === item?.text?.en
+                      onChange={() =>
+                        activeFilters(item?.text?.val_label?.split("|")[0])
+                      } // Pass the full item to the handler
+                      checked={selectedFilters.includes(
+                        item?.text?.val_label?.split("|")[0]
                       )}
                     />
-
 
                     <label
                       className="text-sm"
                       dangerouslySetInnerHTML={{
                         __html:
                           locale === "en"
-                            ? item?.text?.en
-                            : item?.text?.ar
-                            ? item?.text?.ar
-                            : item?.text?.en,
+                            ? item?.text?.val_label.split("~:")[1].split("|")[0]
+                            : item?.text?.val_label.split("|")[1]
+                            ? item?.text?.val_label.split("|")[1]
+                            : item?.text?.val_label
+                                .split("~:")[1]
+                                .split("|")[0],
                       }}
                     />
                   </div>
@@ -264,24 +266,34 @@ const Accordion = ({
 
       {/* FILTER GRAPHIC */}
       {filter && filterGraphic && !filterLink && !filterComponent && isOpen && (
-        <div className="bg-white rounded-b-lg grid grid-cols-8 items-center gap-3 pb-5">
+        <div className="rounded-b-lg grid grid-cols-8 items-center gap-3 pb-5">
           {children?.map((item, index) => {
-            const itemKey = item?.item?.en || `${index}`;
+            const itemKey = item?.item || `${index}`;
+
+            const searchString = item?.text?.split("|")[0]?.toLowerCase();
+
             const isSelected = selectedFilters.some(
-              (filter) => filter?.text?.en === item?.text?.en
+              (item) => item.trim() === searchString.trim()
             );
 
-            const backgroundStyle = hasExtension(item?.item?.en)
+            const backgroundStyle = hasExtension(item?.text.split("|")[0])
               ? {
-                  background: `url(${apiUrl}wp-content/uploads/${item?.item?.en}) no-repeat center`,
+                  background: `url(${apiUrl}wp-content/uploads/${
+                    item?.text.split("|")[0].split(":")[1]
+                  }) no-repeat center`,
                 }
-              : { background: item?.item?.en };
+              : {
+                  background: item?.text
+                    .split("|")[0]
+                    .split(":")[1]
+                    ?.toLowerCase(),
+                };
 
             return (
               <div key={itemKey}>
                 <div
                   className={`select-graphic rounded-full tooltip tooltip-primary tooltip-xs !bg-contain `}
-                  data-tip={item?.item?.en}
+                  data-tip={item?.item}
                   style={{
                     ...backgroundStyle,
                   }}
@@ -289,7 +301,9 @@ const Accordion = ({
                   <input
                     type="checkbox"
                     className="absolute z-10 top-[5px] right-[5px] size-4 rounded-full opacity-0"
-                    onChange={() => activeFilters(item)}
+                    onChange={() =>
+                      activeFilters(item?.text?.split("|")[0]?.toLowerCase())
+                    }
                     checked={isSelected}
                   />
                   {isSelected ? (
@@ -309,11 +323,11 @@ const Accordion = ({
       {/* FILTER LINK */}
 
       {filter && filterLink && !filterComponent && isOpen && (
-        <div className="bg-white rounded-b-lg grid  gap-3 pb-5 max-h-[200px] overflow-auto">
+        <div className="rounded-b-lg grid  gap-3 pb-5 max-h-[200px] overflow-auto">
           {children.map((item, index) => (
             <Link
               key={index}
-              href={`${homeUrl}${locale}/products/${item?.link}`}
+              href={`${homeUrl}${locale}/products/${params?.category}/${item?.link}`}
               className="text-sm block transition-all hover:text-primary"
             >
               {item?.text}
@@ -324,7 +338,7 @@ const Accordion = ({
 
       {/* FILTER COMPONENT */}
       {filter && filterComponent && isOpen && (
-        <div className="bg-white rounded-b-lg grid  gap-3 pb-5">
+        <div className="rounded-b-lg grid  gap-3 pb-5">
           {getTranslation(
             translation[0]?.translations,
             children,
@@ -343,7 +357,6 @@ const Accordion = ({
           items
             ?.filter((item) => item !== null)
             .map((item, index) =>
-              // console.log(item?.content)
               item?.content !== null ? (
                 <AccordionItem
                   key={index}

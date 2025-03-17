@@ -22,173 +22,161 @@ export default async function childcategoryPage({
   params: { locale },
 }) {
   const { childcategory } = await params;
-  const decodeUrl = decodeURIComponent(childcategory);
-
-  const { meta_key } = await searchParams;
-  const { meta_value } = await searchParams;
-  const { min_price } = await searchParams;
-  const { max_price } = await searchParams;
-  const { featured } = await searchParams;
-  const { sortby } = await searchParams;
-  const { sortVal } = await searchParams;
-  const { per_page } = await searchParams;
-
-  const itemsShowPerPage = per_page || 32;
-
-  let resultFilterParams = "";
-
-  if (meta_key === undefined || meta_value === undefined) {
-    resultFilterParams = "";
-  } else if (Array.isArray(meta_key) && Array.isArray(meta_value)) {
-    resultFilterParams = meta_key
-      .map((key, index) => {
-        const cleanedMetaValue =
-          meta_value && meta_value[index]
-            ? meta_value[index].replace(/-.*$/, "")
-            : "";
-
-        return cleanedMetaValue
-          ? `&meta_key=${key}&meta_value[]=${cleanedMetaValue}`
-          : "";
-      })
-      .filter(Boolean)
-      .join("");
-  } else {
-    const cleanedMetaValue = meta_value ? meta_value.replace(/-.*$/, "") : "";
-
-    resultFilterParams = cleanedMetaValue
-      ? `&meta_key=${meta_key}&meta_value[]=${cleanedMetaValue}`
-      : "";
-  }
-
-  //SUB CATEGORY
-  let childCat = await fetch(
-    `${apiUrl}wp-json/wp/v2/child-categories?slug=${childcategory}&lang=${
-      locale || "en"
-    }`,
-    {
-      next: { revalidate: 60 },
-    }
-  )
-    .then((response) => response.json())
-    .catch((error) => console.error("Error:", error));
-
-  //PRODUCTS
-  let products = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${
-      childCat[0]?.id
-    }&meta_key=child_categories_new${resultFilterParams}&min_price=${
-      min_price || 0
-    }&max_price=${max_price || 0}&per_page=${itemsShowPerPage}&sort_by=${
-      sortby || "name"
-    }&order=${sortVal || "asc"}`,
-    {
-      next: { revalidate: 60 },
-    }
-  )
-    .then((response) => response.json())
-    .catch((error) => console.error("Error:", error));
-
-  //PRODUCTS FILTERS || LENGTH
-  let productsGetFilters = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${childCat[0]?.id}&meta_key=child_categories_new`,
-    {
-      next: { revalidate: 60 },
-    }
-  )
-    .then((response) => response.json())
-    .catch((error) => console.error("Error:", error));
-
-  //FILTER
-
-  const finalFilterItems = productsGetFilters?.flatMap((product) => {
-    const filteredMetaData = product.meta_data?.filter(
-      (item) => item.key === "_filter_items" && item.value
-    );
-
-    if (!filteredMetaData || filteredMetaData.length === 0) return [];
-
-    const labelAccumulator = {};
-
-    filteredMetaData.forEach((item) => {
-      const valuePairs = item.value.split(",");
-
-      valuePairs.forEach((pair) => {
-        const [key, value] = pair.split("~:");
-
-        if (!key || !value) return;
-
-        const [en, ar] = value.split("|");
-
-        if (!en || !ar) return;
-
-        if (!labelAccumulator[key]) {
-          labelAccumulator[key] = {
-            label: key,
-            items: [],
-            arabicLabel: [],
-            seen: new Set(),
-          };
-        }
-
-        const uniquePair = `${en}|${ar}`;
-
-        if (!labelAccumulator[key].seen.has(uniquePair)) {
-          labelAccumulator[key].items.push({ en, ar });
-          labelAccumulator[key].arabicLabel.push({ en, ar });
-          labelAccumulator[key].seen.add(uniquePair);
-        }
+ 
+  
+   const { filter_items } = await searchParams;
+    const { meta_key } = await searchParams;
+    const { meta_value } = await searchParams;
+    const { min_price } = await searchParams;
+    const { max_price } = await searchParams;
+    const { sortby } = await searchParams;
+    const { sortVal } = await searchParams;
+    const { per_page } = await searchParams;
+  
+    const itemsShowPerPage = per_page || 32;
+  
+    // Step 1: Split the string based on the `&` symbol
+    let parts = filter_items && filter_items.split("&");
+  
+    // Step 2: Create the updated string
+    let updatedString =
+      parts &&
+      parts
+        .map((part) => {
+          if (part.includes("filter_items=")) {
+            // Extract the value after `filter_items=`
+            let value = part.split("=")[1];
+            return `&filter_items[]=${value}`;
+          } else {
+            return `&filter_items[]=${part}`;
+          }
+        })
+        .join("");
+  
+   
+  
+    //SUB CATEGORY
+    let childCat = await fetch(
+      `${apiUrl}wp-json/wp/v2/child-categories?slug=${childcategory}&lang=${
+        locale || "en"
+      }`,
+      {
+        next: { revalidate: 60 },
+      }
+    )
+      .then((response) => response.json())
+      .catch((error) => console.error("Error:", error));
+  
+    
+    //PRODUCTS
+    let products = await fetch(
+      `${apiUrl}wp-json/custom/v1/products?child_categories_new[]=${childCat[0]?.id}${
+        updatedString ? updatedString : ""
+      }&per_page=${itemsShowPerPage}&order_by=${sortby || "name"}&order=${
+        sortVal || "asc"
+      }&min_price=${min_price ? min_price : 0}&max_price=${
+        max_price ? max_price : 0
+      }`,
+  
+      {
+        next: { revalidate: 60 },
+      }
+    )
+      .then((response) => response.json())
+      .catch((error) => console.error("Error:", error));
+  
+    //PRODUCTS FILTERS || LENGTH
+    let productsGetFilters = await fetch(
+      `${apiUrl}wp-json/custom/v1/products?child_categories_new[]=${childCat[0]?.id}`,
+      {
+        next: { revalidate: 60 },
+      }
+    )
+      .then((response) => response.json())
+      .catch((error) => console.error("Error:", error));
+  
+    //FILTER
+    const finalFilterItems = productsGetFilters?.flatMap((product) => {
+      const filteredMetaData = product.meta_data?.filter(
+        (item) => item.key === "_filter_items" && item.value
+      );
+  
+      if (!filteredMetaData || filteredMetaData.length === 0) return [];
+  
+      const labelAccumulator = {};
+  
+      filteredMetaData.forEach((item) => {
+        const valuePairs = item.value.split(",");
+  
+        valuePairs.forEach((pair) => {
+          const [key, value] = pair.split("~:");
+  
+          if (!key || !value) return;
+  
+          const [en, ar] = value.split("|");
+  
+          if (!en || !ar) return;
+  
+          if (!labelAccumulator[key]) {
+            labelAccumulator[key] = {
+              label: key,
+              items: [],
+              arabicLabel: [],
+              seen: new Set(),
+            };
+          }
+  
+          const uniquePair = `${en}|${ar}`;
+  
+          if (!labelAccumulator[key].seen.has(uniquePair)) {
+            labelAccumulator[key].items.push({ en, ar });
+            labelAccumulator[key].arabicLabel.push({ en, ar });
+            labelAccumulator[key].seen.add(uniquePair);
+          }
+        });
       });
+  
+      return Object.values(labelAccumulator);
     });
-
-    return Object.values(labelAccumulator);
-  });
-
-  const result = [];
-
-  finalFilterItems.forEach((entry) => {
-    const existing = result.find((r) => r.label === entry.label);
-
-    if (existing) {
-      entry.items.forEach((item) => {
-        const duplicateCheck = `${item.en}|${item.ar}`;
-
-        if (!existing.seen.has(duplicateCheck)) {
-          existing.items.push(item);
-          existing.seen.add(duplicateCheck);
-        }
-      });
-    } else {
-      result.push({
-        label: entry.label,
-        items: entry.items,
-        seen: new Set(),
-      });
-    }
-  });
-
-  result.forEach((entry) => {
-    entry.items = entry.items.filter(
-      (item, index, self) =>
-        index === self.findIndex((t) => t.en === item.en && t.ar === item.ar)
+  
+    const result = [];
+  
+    finalFilterItems.forEach((entry) => {
+      const existing = result.find((r) => r.label === entry.label);
+  
+      if (existing) {
+        entry.items.forEach((item) => {
+          const duplicateCheck = `${item.en}|${item.ar}`;
+  
+          if (!existing.seen.has(duplicateCheck)) {
+            existing.items.push(item);
+            existing.seen.add(duplicateCheck);
+          }
+        });
+      } else {
+        result.push({
+          label: entry.label,
+          items: entry.items,
+          seen: new Set(),
+        });
+      }
+    });
+  
+    result.forEach((entry) => {
+      entry.items = entry.items.filter(
+        (item, index, self) =>
+          index === self.findIndex((t) => t.en === item.en && t.ar === item.ar)
+      );
+    });
+  
+    // Modify to the desired output format
+    const formattedResult = result.flatMap((entry) =>
+      entry.items.map((item) => ({
+        val: `${entry.label}~:${item.en}|${item.ar}`,
+      }))
     );
-  });
+  
 
-  const filteredProductFilters = result.filter(
-    (productFilter) =>
-      childCat[0]?.acf?.Filters &&
-      childCat[0]?.acf?.Filters.some((catFilter) => {
-        const englishMatch = catFilter.post_title === productFilter.label;
-        return englishMatch;
-      })
-  );
-
-  const filteredProductFiltersWithArabic = filteredProductFilters.map(
-    (productFilter) => ({
-      ...productFilter,
-      arabicLabel: productFilter.items,
-    })
-  );
 
  
   return (
@@ -206,7 +194,7 @@ export default async function childcategoryPage({
                 : childCat[0]?.title?.rendered
             }
             filter="childcategory"
-            filterData={filteredProductFiltersWithArabic}
+            filterData={formattedResult}
             sortProducts
           />
         </Suspense>

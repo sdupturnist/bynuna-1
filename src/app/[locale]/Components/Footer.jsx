@@ -161,14 +161,14 @@ export default function Footer({ locale }) {
                             haveUrl: category?.acf?.no_url,
                             title:  locale === "en"
                             ? category?.title
-                            : category?.acf?.arabic,
+                            : category?.acf?.arabic ? category?.acf?.arabic : category?.title,
                             content: getSubCategoriesByParentId(
                               footerMenu?.items,
                               String(category?.id)
                             )?.map((subCategory, childIndex) => ({
                               text:  locale === "en"
                               ? subCategory?.title
-                              : subCategory?.acf?.arabic,
+                              : subCategory?.acf?.arabic ? subCategory?.acf?.arabic : subCategory?.title,
                               link: `${homeUrl}${locale}/products/${
                                 subCategory?.url?.split("/").slice(-2, -1)[0]
                               }/`,
@@ -193,15 +193,15 @@ export default function Footer({ locale }) {
                             title:
                               locale === "en"
                                 ? category?.title
-                                : category?.acf?.arabic,
+                                : category?.acf?.arabic ? category?.acf?.arabic : category?.title,
                             content: getSubCategoriesByParentId(
                               footerMenuPages?.items,
                               String(category?.id)
                             )?.map((subCategory, childIndex) => ({
                               text:
                                 locale === "en"
-                                  ? subCategory?.title
-                                  : subCategory?.acf?.arabic,
+                                ? subCategory?.title
+                                : subCategory?.acf?.arabic ? subCategory?.acf?.arabic : subCategory?.title,
                               link: `${homeUrl}${locale}/${subCategory?.url
                                 .replace(/%20/g, " ")
                                 .split("/")

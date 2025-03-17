@@ -38,14 +38,14 @@ export default async function ProductSingle({
   const { slug } = params;
 
   let singleProductData = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&slug=${slug}`,
+    `${apiUrl}wp-json/custom/v1/products?slug=${slug}`,
     {
       next: { revalidate: 60 },
     }
   );
 
   let allProductsData = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&slug=${slug}&per_page=99`,
+    `${apiUrl}wp-json/custom/v1/products?slug=${slug}&per_page=99`,
     {
       next: { revalidate: 60 },
     }
@@ -108,19 +108,30 @@ export default async function ProductSingle({
       (product) => upsellsIds && upsellsIds.includes(product.id)
     );
 
+  console.log(singleProduct?.acf?.arabic?.description);
+
   const accordianItems = [
     singleProduct?.description || singleProduct?.acf?.arabic?.description
       ? {
           title: "Description",
           content:
             singleProduct?.description ||
-            singleProduct?.acf?.arabic?.description !== "" ? (
+            singleProduct?.meta_data.filter(
+              (item) => item.key === "_description_in_arabic"
+            )[0]?.value ? (
               <div
                 className="py-4"
                 dangerouslySetInnerHTML={{
-                  __html: singleProduct?.acf?.arabic?.description
-                    ? singleProduct?.acf?.arabic?.description
-                    : singleProduct?.description,
+                  __html:
+                    locale === "en"
+                      ? singleProduct?.description
+                      : singleProduct?.meta_data.filter(
+                          (item) => item.key === "_description_in_arabic"
+                        )[0]?.value
+                      ? singleProduct?.meta_data.filter(
+                          (item) => item.key === "_description_in_arabic"
+                        )[0]?.value
+                      : singleProduct?.description,
                 }}
               />
             ) : null,
@@ -304,31 +315,25 @@ export default async function ProductSingle({
                 )}
 
                 <Suspense fallback={<LoadingItem spinner />}>
-                  {singleProduct?.images?.gallery?.length > 0 ? (
-                    <ProductGallery data={singleProduct?.images?.gallery} />
+                  {singleProduct?.images ? (
+                    singleProduct?.images?.gallery?.length > 0 ? (
+                      <ProductGallery data={singleProduct?.images?.gallery} />
+                    ) : (
+                      <ProductGallery
+                        data={singleProduct?.images?.featured?.url}
+                      />
+                    )
                   ) : (
                     <div className="border aspect-square flex items-center justify-center sm:p-10 p-5">
-                      {singleProduct?.images?.featured?.url ? (
-                        <Image
-                          width="600"
-                          height="600"
-                          quality="100"
-                          src={singleProduct?.images?.featured?.url}
-                          className="block w-full"
-                          alt={siteName}
-                          title={siteName}
-                        />
-                      ) : (
-                        <Image
-                          width="600"
-                          height="600"
-                          quality="100"
-                          src="/images/placeholder_brand.jpg"
-                          className="block w-full"
-                          alt={siteName}
-                          title={siteName}
-                        />
-                      )}
+                      <Image
+                        width="600"
+                        height="600"
+                        quality="100"
+                        src="/images/placeholder_brand.jpg"
+                        className="block w-full"
+                        alt={siteName}
+                        title={siteName}
+                      />
                     </div>
                   )}
                 </Suspense>
@@ -339,8 +344,12 @@ export default async function ProductSingle({
                 <h1 className="sm:text-2xl text-lg">
                   {locale === "en"
                     ? singleProduct?.name
-                    : singleProduct?.acf?.arabic?.title
-                    ? singleProduct?.acf?.arabic?.title
+                    : singleProduct?.meta_data.filter(
+                      (item) => item.key === "_name_in_arabic"
+                    )[0]?.value
+                    ? singleProduct?.meta_data.filter(
+                      (item) => item.key === "_name_in_arabic"
+                    )[0]?.value
                     : singleProduct?.name}
                 </h1>
                 {productReview.length > 0 && (
@@ -363,23 +372,34 @@ export default async function ProductSingle({
                 />
               </div>
               {singleProduct?.short_description &&
-                (locale === "en"
-                  ? singleProduct?.short_description && (
-                      <div
-                        className="content mb-5 [&>*]:text-sm"
-                        dangerouslySetInnerHTML={{
-                          __html: singleProduct?.short_description,
-                        }}
-                      />
-                    )
-                  : singleProduct?.acf?.arabic?.short_description && (
-                      <div
-                        className="content mb-5 [&>*]:text-sm"
-                        dangerouslySetInnerHTML={{
-                          __html: singleProduct?.acf?.arabic?.short_description,
-                        }}
-                      />
-                    ))}
+                (locale === "en" ? (
+                  singleProduct?.short_description && (
+                    <div
+                      className="content mb-5 [&>*]:text-sm"
+                      dangerouslySetInnerHTML={{
+                        __html: singleProduct?.short_description,
+                      }}
+                    />
+                  )
+                ) : singleProduct?.meta_data.filter(
+                    (item) => item.key === "_short_description_in_arabic"
+                  )[0]?.value ? (
+                  <div
+                    className="content mb-5 [&>*]:text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: singleProduct?.meta_data.filter(
+                        (item) => item.key === "_short_description_in_arabic"
+                      )[0]?.value,
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="content mb-5 [&>*]:text-sm"
+                    dangerouslySetInnerHTML={{
+                      __html: singleProduct?.short_description,
+                    }}
+                  />
+                ))}
 
               {singleProduct?.price && (
                 <div className="flex gap-3 items-center justify-center bg-white mt-6 sm:mt-7">

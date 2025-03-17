@@ -76,16 +76,17 @@ export default function Filter({
     const currentQuery = new URLSearchParams(window.location.search);
 
     // Remove previous filters
-    currentQuery.delete("meta_key");
-    currentQuery.delete("meta_value");
+    currentQuery.delete("filter_items");
 
-    // Append the new filters
-    filters.forEach((filter) => {
-      currentQuery.append("meta_key", "_filter_items");
-      currentQuery.append("meta_value", filter?.text?.en);
-    });
+    // Format filters into the desired structure
+    const filterString = filters
+      .map((filter) => `${filter?.text?.en}~:${filter?.text?.en}`)
+      .join("|"); // Join multiple filters with '|'
 
-    //Push the updated URL to the router
+    // Append the new filter as a single _filter_items key
+    currentQuery.append("filter_items", filterString);
+
+    // Push the updated URL to the router
     router.push(
       `${window.location.pathname}?${currentQuery.toString()}`,
       undefined,
@@ -95,12 +96,13 @@ export default function Filter({
 
   const removeFilter = (item) => {
     setSelectedFilters((prevFilters) => {
-      const isItemSelected = prevFilters.some(
-        (filter) => filter?.text?.en === item?.text?.en
-      );
+      // Check if the item is already in the filters array
+      const isItemSelected = prevFilters.includes(item);
+
+      // Update the filter list based on whether the item is selected
       const updatedFilters = isItemSelected
-        ? prevFilters.filter((filter) => filter?.text?.en !== item?.text?.en)
-        : [...prevFilters, item];
+        ? prevFilters.filter((filter) => filter !== item) // Remove if already selected
+        : [...prevFilters, item]; // Add if not selected
 
       // Avoid setting state during render, use ref to delay URL update
       if (!isUpdatingRef.current) {
@@ -116,8 +118,6 @@ export default function Filter({
     });
   };
 
-  
-
   // CLEAR ALL FILTERS
   const clearAllFilters = () => {
     setSelectedFilters([]);
@@ -131,22 +131,20 @@ export default function Filter({
     const currentQuery = new URLSearchParams(window.location.search);
 
     if (selectedFilters.length === 0) {
-      currentQuery.delete("meta_key");
-      currentQuery.delete("meta_value");
+      currentQuery.delete("filter_items");
     } else {
-      currentQuery.delete("meta_key");
-      currentQuery.delete("meta_value");
+      currentQuery.delete("filter_items");
       if (Array.isArray(selectedFilters)) {
         selectedFilters &&
           selectedFilters?.forEach((filter) => {
-            currentQuery.append("meta_key", "_filter_items");
+            currentQuery.append("filter_items");
             currentQuery.append(
-              "meta_value",
+              "filter_items",
               locale === "en"
                 ? filter?.en
                 : filter?.ar
-                  ? filter?.ar
-                  : filter?.en
+                ? filter?.ar
+                : filter?.en
             );
           });
       }
@@ -161,68 +159,90 @@ export default function Filter({
     setQueryUpdated(false);
   }, [selectedFilters, queryUpdated, router]);
 
+  // First, filter out unwanted labels ("color" and "blade-style")
+
   const filteredData = filterData.filter(
-    (entry) => entry.label !== "color" && entry.label !== "blade-style"
+    (entry) =>
+      !entry.val.startsWith("Color~:") &&
+      !entry.val.startsWith("color~:") &&
+      !entry.val.startsWith("Colour~:") &&
+      !entry.val.startsWith("Blade Shape~:") &&
+      !entry.val.startsWith("Blade shape~:")
   );
+
+  // Helper function to extract label from value
+  const extractLabel = (str) => str.split("~:")[0];
+
+  // Group values by labels
+  const groupedData = [];
+  filteredData.forEach((item) => {
+    const label = extractLabel(item.val);
+    // Check if label already exists in the grouped data
+    let labelGroup = groupedData.find((group) => group.label === label);
+    if (!labelGroup) {
+      // If the label doesn't exist, create a new group
+      labelGroup = { label: label, value: [] };
+      groupedData.push(labelGroup);
+    }
+    // Add the value to the corresponding label group, updating the structure
+    labelGroup.value.push({ val_label: item.val });
+  });
 
   const hasColor = filterData.some(
-    (entry) => entry.label === "color" && entry.items.length > 0
+    (entry) =>
+      entry.val.includes("Colour") && entry.val.split("|")[0].includes("Colour")
   );
-  const colorItems =
-    filterData.find((entry) => entry.label === "color")?.items || [];
+
+  const colorItems = filterData.filter((entry) => entry.val.includes("Colour"));
 
   const hasBladetype = filterData.some(
-    (entry) => entry.label === "blade-style" && entry.items.length > 0
+    (entry) =>
+      entry.val.includes("Blade Shape") &&
+      entry.val.split("|")[0].includes("Blade Shape")
   );
 
-  const bladeItems =
-    filterData.find((entry) => entry.label === "blade-style")?.items || [];
+  const bladeItems = filterData.filter((entry) =>
+    entry.val.includes("Blade Shape")
+  );
 
   const closeFilter = () => {
     setShowFilter(!showFilter);
     document.body.style.overflow = "auto";
-    //setSelectedFilters([]);
-    //setQueryUpdated(true);
-    //localStorage.removeItem(`${siteName}_selectedFilters`);
   };
 
-
   //GET FILTER LABEL TRANSALATION
-    const fetchFilters = async () => {
-      try {
-        const response = await fetch(
-          `${apiUrl}wp-json/wp/v2/filter?per_page=99`,
-          {
-            next: { revalidate: 60 },
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
+  const fetchFilters = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}wp-json/wp/v2/filter?per_page=99`,
+        {
+          next: { revalidate: 60 },
         }
-        const data = await response.json();
-        setFilterLabel(data);
-      } catch (error) {
-        console.error(error);
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
       }
-    };
-
-     useEffect(() => {
-      fetchFilters();
-       
-      }, [filterData]);
-    
-
-     // console.log(filterLabel)
-     function filterByTitle(filters, title) {
-      // Filter the filters array by the title and extract the `acf.arabic` value
-      const filtered = filters?.filter(filter => filter?.title?.rendered === title);
-      
-      // Return the `acf.arabic` value for each filtered result
-      return filtered.map(filter => filter?.acf?.arabic);
+      const data = await response.json();
+      setFilterLabel(data);
+    } catch (error) {
+      console.error(error);
     }
-    
-  
-    
+  };
+
+  useEffect(() => {
+    fetchFilters();
+  }, [filterData]);
+
+  // console.log(filterLabel)
+  function filterByTitle(filters, title) {
+    // Filter the filters array by the title and extract the `acf.arabic` value
+    const filtered = filters?.filter(
+      (filter) => filter?.title?.rendered === title
+    );
+
+    // Return the `acf.arabic` value for each filtered result
+    return filtered.map((filter) => filter?.acf?.arabic);
+  }
 
   if (
     shopPageLevel === "subcategory" ||
@@ -262,19 +282,20 @@ export default function Filter({
                     )}
                   </div>
                   <ul className="filtered-items">
+                  
                     {selectedFilters &&
                       selectedFilters.map((item, index) => (
                         <li key={index} className="flex items-center">
-                          <span className="text-[11px] uppercase pl-1">
-                            {locale === "en"
-                              ? item?.text?.en
-                              : item?.text?.ar
-                                ? item?.text?.ar
-                                : item?.text?.en}
+                          <span className="text-[11px] uppercase pl-1 leading-4 inline-block whitespace-break-spaces">
+                           {item.split("~:")[0]} :  {locale === "en"
+                              ? item.split("~:")[1].split("|")[0]
+                              : item?.split("|")[1]
+                              ? item?.split("|")[1]
+                              : item.split("~:")[1].split("|")[0]}
                           </span>
 
                           <i
-                            className="bi bi-x cursor-pointer text-[13px] mr-1"
+                            className="bi bi-x cursor-pointer text-[15px] mr-1 ml-1"
                             onClick={() => removeFilter(item)}
                           />
                         </li>
@@ -300,8 +321,8 @@ export default function Filter({
                             locale === "en"
                               ? item?.title?.rendered
                               : item?.acf?.title_arabic
-                                ? item?.acf?.title_arabic
-                                : item?.title?.rendered,
+                              ? item?.acf?.title_arabic
+                              : item?.title?.rendered,
                           link: item?.slug,
                           levels: "",
                         })),
@@ -365,11 +386,15 @@ export default function Filter({
                         "Color",
                         locale || "en"
                       ),
-                      content: colorItems.map((item, childIndex) => ({
-                        text: item?.item,
-                        id: item?.id,
-                        item: item?.item,
-                      })),
+                      content: colorItems.map((item, childIndex) =>
+                        //console.log(item?.val?.split('~:')[1].split('|')[0])
+
+                        ({
+                          text: item?.val,
+                          id: item?.id,
+                          item: item?.item,
+                        })
+                      ),
                     },
                   ]}
                 />
@@ -384,11 +409,11 @@ export default function Filter({
                     {
                       title: getTranslation(
                         translation[0]?.translations,
-                        "Blade style",
+                        "Blade shape",
                         locale || "en"
                       ),
                       content: bladeItems.map((item, childIndex) => ({
-                        text: item?.item,
+                        text: item?.val,
                         id: item?.id,
                         item: item?.item,
                       })),
@@ -396,9 +421,10 @@ export default function Filter({
                   ]}
                 />
               )}
-              {filteredData &&
-                filteredData.map((item, index) => (
 
+              {groupedData &&
+                groupedData.map((item, index) => (
+                  //console.log('vvv', filterByTitle(filterLabel, item?.label)[0])
                   <Accordion
                     key={index}
                     filter
@@ -406,15 +432,18 @@ export default function Filter({
                     items={[
                       {
                         title:
-                        locale === "en"
-                          ? item?.label
-                          : filterByTitle(filterLabel, item?.label)[0]
+                          locale === "en"
+                            ? item?.label
+                            : filterByTitle(filterLabel, item?.label)
                             ? filterByTitle(filterLabel, item?.label)[0]
                             : item?.label,
-                        content: item?.items?.map((item, childIndex) => ({
-                          text: item,
-                          id: item?.id,
-                        })),
+                        content: item?.value?.map((item, childIndex) =>
+                          // console.log('dddddd', item)
+                          ({
+                            text: item,
+                            id: item?.id,
+                          })
+                        ),
                       },
                     ]}
                   />
@@ -460,18 +489,19 @@ export default function Filter({
                     )}
                   </div>
                   <ul className="filtered-items">
-                    {selectedFilters &&
+                  {selectedFilters &&
                       selectedFilters.map((item, index) => (
                         <li key={index} className="flex items-center">
-                          <span className="text-[11px] uppercase pl-1">
-                            {locale === "en"
-                              ? item?.text?.en
-                              : item?.text?.ar
-                                ? item?.text?.ar
-                                : item?.text?.en}
+                          <span className="text-[11px] uppercase pl-1 leading-4 inline-block whitespace-break-spaces">
+                           {item.split("~:")[0]} :  {locale === "en"
+                              ? item.split("~:")[1].split("|")[0]
+                              : item?.split("|")[1]
+                              ? item?.split("|")[1]
+                              : item.split("~:")[1].split("|")[0]}
                           </span>
+
                           <i
-                            className="bi bi-x cursor-pointer text-[13px] mr-1"
+                            className="bi bi-x cursor-pointer text-[15px] mr-1 ml-1"
                             onClick={() => removeFilter(item)}
                           />
                         </li>
@@ -505,8 +535,8 @@ export default function Filter({
                             locale === "en"
                               ? item?.title?.rendered
                               : item?.acf?.title_arabic
-                                ? item?.acf?.title_arabic
-                                : item?.title?.rendered,
+                              ? item?.acf?.title_arabic
+                              : item?.title?.rendered,
                           link: item?.slug,
                           levels: "",
                         })),
@@ -561,52 +591,53 @@ export default function Filter({
               {/* COLOR */}
               {hasColor && (
                 <Accordion
-                  filter
-                  filterGraphic
-                  items={[
-                    {
-                      title: getTranslation(
-                        translation[0]?.translations,
-                        "Color",
-                        locale || "en"
-                      ),
-                      content: colorItems.map((item, childIndex) => ({
-                        text: item?.item,
+                filter
+                filterGraphic
+                items={[
+                  {
+                    title: getTranslation(
+                      translation[0]?.translations,
+                      "Color",
+                      locale || "en"
+                    ),
+                    content: colorItems.map((item, childIndex) =>
+                      //console.log(item?.val?.split('~:')[1].split('|')[0])
+
+                      ({
+                        text: item?.val,
                         id: item?.id,
                         item: item?.item,
-                      })),
-                    },
-                  ]}
-                />
+                      })
+                    ),
+                  },
+                ]}
+              />
               )}
 
               {/* BLADE STYLE */}
               {hasBladetype && (
                 <Accordion
-                  filter
-                  filterGraphic
-                  items={[
-                    {
-                      title: getTranslation(
-                        translation[0]?.translations,
-                        "Blade style",
-                        locale || "en"
-                      ),
-                      content: bladeItems.map((item, childIndex) => ({
-                        text: item?.item,
-                        id: item?.id,
-                        item: item?.item,
-                      })),
-                    },
-                  ]}
-                />
+                filter
+                filterGraphic
+                items={[
+                  {
+                    title: getTranslation(
+                      translation[0]?.translations,
+                      "Blade shape",
+                      locale || "en"
+                    ),
+                    content: bladeItems.map((item, childIndex) => ({
+                      text: item?.val,
+                      id: item?.id,
+                      item: item?.item,
+                    })),
+                  },
+                ]}
+              />
               )}
 
-              
-
-              {filteredData &&
-                filteredData.map((item, index) => (
-                  
+              {groupedData &&
+                groupedData.map((item, index) => (
                   <Accordion
                     key={index}
                     filter
@@ -616,13 +647,16 @@ export default function Filter({
                         title:
                           locale === "en"
                             ? item?.label
-                            : filterByTitle(filterLabel, item?.label)[0]
-                              ? filterByTitle(filterLabel, item?.label)[0]
-                              : item?.label,
-                        content: item?.items?.map((item, childIndex) => ({
-                          text: item,
-                          id: item?.id,
-                        })),
+                            : filterByTitle(filterLabel, item?.label)
+                            ? filterByTitle(filterLabel, item?.label)[0]
+                            : item?.label,
+                        content: item?.value?.map((item, childIndex) =>
+                          // console.log('dddddd', item)
+                          ({
+                            text: item,
+                            id: item?.id,
+                          })
+                        ),
                       },
                     ]}
                   />

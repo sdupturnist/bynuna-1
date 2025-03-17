@@ -32,22 +32,20 @@ export let woocommerceKey =
 export let returnDays = 24; //24 hours
 
 //.ENV
-//export let homeUrl = `http://localhost:3000/`;
-export let homeUrl = `https://bynuna-chi.vercel.app/`;
-export let apiUrl = `https://admin.ardalmarmoom.com/`;
+export let homeUrl = process.env.NEXT_PUBLIC_SITE_URL
+//export let homeUrl = `https://ardalmarmoom.com/`;
+//export let homeUrl = `https://bynuna-chi.vercel.app/`;
+export let apiUrl = process.env.NEXT_PUBLIC_HOME_URL
 //export let apiUrl = `https://admin.bynuna.ae/`;
 
-//RAZORPAY CONFIG
-export let publicKey = `rzp_live_npbJa6vH2XzXnt`;
-export let secretKey = "9ixUFClcmehSffk9seqIBfrk";
 
 //GENERAL CONFIG
 export let siteName = "bynuna";
 export let siteAuthor = `${siteName} admin`;
 export let year = date.getFullYear();
 export let copyright = `©` + year + ` ` + siteName + " All rights reserved";
-export let siteLogo = `https://admin.bynuna.ae/wp-content/uploads/2025/01/bynuna_logo.png`;
-export let siteLogoWhite = `https://admin.bynuna.ae/wp-content/uploads/2025/01/bynuna_logo.png`;
+export let siteLogo = `https://admin.ardalmarmoom.com/wp-content/uploads/2025/01/bynuna_logo.png`;
+export let siteLogoWhite = `https://admin.ardalmarmoom.com/wp-content/uploads/2025/01/bynuna_logo.png`;
 
 //https://docs.totalpay.global/checkout_integration#request-parameters]
 //TOTALPAY

@@ -20,8 +20,6 @@ export default function Nav({ data, locale }) {
     savedMenuInLocalStorage?.items || data
   );
 
-
-
   useEffect(() => {
     // Only update menuData if it has changed
     if (
@@ -79,16 +77,13 @@ export default function Nav({ data, locale }) {
         {items.map((item) => {
           // Build the URL for each item dynamically
 
-          let url = `${item?.url}/`
+          let url = `${item?.url}/`;
 
+          let cleanUrl = url.replace(/\/+$/, "");
 
-let cleanUrl = url.replace(/\/+$/, "");
+          let itemName = cleanUrl.split("/").pop();
 
-
-let itemName = cleanUrl.split('/').pop();
-
-
-
+         // console.log(parentUrl)
 
           const itemUrl =
             item?.acf?.custom_url !== ""
@@ -96,19 +91,26 @@ let itemName = cleanUrl.split('/').pop();
               : `${homeUrl}${locale}/products/${parentUrl}${itemName}/`;
 
           return (
-            <li key={item.id} className="nav-item" onClick={(e) => setClicked(!clicked)}>
-              <Link
-                href={itemUrl}
-                className="nav-link"
-              >
-                <span dangerouslySetInnerHTML={{ __html: locale === "en" ? item?.title : item?.acf?.arabic }} />
+            <li
+              key={item.id}
+              className="nav-item"
+              onClick={(e) => setClicked(!clicked)}
+            >
+              <Link href={itemUrl} className="nav-link">
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: locale === "en" ? item?.title : item?.acf?.arabic,
+                  }}
+                />
               </Link>
               {/* Render children if they exist, passing the current item URL as the parent */}
+
+              
               {item.children &&
                 item.children.length > 0 &&
                 renderMenu(
                   item.children,
-                  `${parentUrl}${item?.title.toLowerCase().replace(/ /g, "-")}/`
+                  `${parentUrl}${item?.url.split('/').filter(Boolean).pop()}/`
                 )}
             </li>
           );

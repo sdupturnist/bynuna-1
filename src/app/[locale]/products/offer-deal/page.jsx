@@ -6,10 +6,8 @@ import {
   metaStaticData,
   siteLogo,
   siteName,
-  woocommerceKey,
 } from "../../Utils/variables";
 
-import Card from "../../Components/Card";
 import Alerts from "../../Components/Alerts";
 import Pagination from "../../Components/Pagination";
 import LoadingItem from "../../Components/LoadingItem";
@@ -20,22 +18,44 @@ export default async function BrandPage({
   searchParams,
   params: { locale },
 }) {
-  const { brand } = await params;
-
-  const { meta_key } = await searchParams;
+  const { filter_items } = await searchParams;
   const { meta_value } = await searchParams;
   const { min_price } = await searchParams;
   const { max_price } = await searchParams;
-  const { featured } = await searchParams;
   const { sortby } = await searchParams;
   const { sortVal } = await searchParams;
   const { per_page } = await searchParams;
 
   const itemsShowPerPage = per_page || 32;
 
+  // Step 1: Split the string based on the `&` symbol
+  let parts = filter_items && filter_items.split("&");
+
+  // Step 2: Create the updated string
+  let updatedString =
+    parts &&
+    parts
+      .map((part) => {
+        if (part.includes("filter_items=")) {
+          // Extract the value after `filter_items=`
+          let value = part.split("=")[1];
+          return `&filter_items[]=${value}`;
+        } else {
+          return `&filter_items[]=${part}`;
+        }
+      })
+      .join("");
+
   //PRODUCTS
   let products = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=_offer_deal&meta_value=yes&per_page=${itemsShowPerPage}`,
+    `${apiUrl}wp-json/custom/v1/products?_offer_deal=yes${
+      updatedString ? updatedString : ""
+    }&per_page=${itemsShowPerPage}&order_by=${sortby || "name"}&order=${
+      sortVal || "asc"
+    }&min_price=${min_price ? min_price : 0}&max_price=${
+      max_price ? max_price : 0
+    }`,
+
     {
       next: { revalidate: 60 },
     }
@@ -44,7 +64,7 @@ export default async function BrandPage({
     .catch((error) => console.error("Error:", error));
 
   let totalProducts = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter?meta_key=_offer_deal&meta_value=yes&per_page=1000`,
+    `${apiUrl}wp-json/custom/v1/products?_offer_deal=yes&per_page=1000`,
     {
       next: { revalidate: 60 },
     }

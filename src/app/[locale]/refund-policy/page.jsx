@@ -15,21 +15,19 @@ export default async function RefundPolicy({params: { locale }}) {
   let [page] = await pageData.json();
 
   return (
-    <section className="pt-0">
-      <PageHeader title={page?.title?.rendered} />
-      <div className="container">
-        <div className="sm:pt-8 py-5 pb-5 xxl:max-w-[1199px] max-w-[767px] mx-auto grid sm:gap-7 gap-5">
-          {page?.content?.rendered && (
-            <div
-              className="content text-justify"
-              dangerouslySetInnerHTML={{
-                __html: page?.content?.rendered,
-              }}
-            />
-          )}
-        </div>
-      </div>
-    </section>
+     <section className="p-0">
+         <PageHeader title={page?.title?.rendered} />
+         <div className="container lg:max-w-[60%] py-10">
+           {page?.content?.rendered && (
+             <div
+               className="blog-content"
+               dangerouslySetInnerHTML={{
+                 __html: page && page?.content?.rendered,
+               }}
+             />
+           )}
+         </div>
+       </section>
   );
 }
 

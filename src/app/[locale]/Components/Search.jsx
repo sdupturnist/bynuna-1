@@ -39,7 +39,7 @@ export default function Search({}) {
             );
         }}
       >
-        <i class="bi bi-search text-lg"></i>
+        <i className="bi bi-search text-lg"></i>
       </button>
     </div>
   );

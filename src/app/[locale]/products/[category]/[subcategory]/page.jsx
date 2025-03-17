@@ -20,46 +20,40 @@ export default async function SubCategoryPage({
   params: { locale },
 }) {
   const { subcategory } = await params;
-  const decodeUrl = decodeURIComponent(subcategory);
+  
 
+  const { filter_items } = await searchParams;
   const { meta_key } = await searchParams;
   const { meta_value } = await searchParams;
   const { min_price } = await searchParams;
   const { max_price } = await searchParams;
-  const { featured } = await searchParams;
   const { sortby } = await searchParams;
   const { sortVal } = await searchParams;
   const { per_page } = await searchParams;
 
   const itemsShowPerPage = per_page || 32;
 
+  // Step 1: Split the string based on the `&` symbol
+  let parts = filter_items && filter_items.split("&");
 
-
-  let resultFilterParams = "";
-
-  if (meta_key === undefined || meta_value === undefined) {
-    resultFilterParams = "";
-  } else if (Array.isArray(meta_key) && Array.isArray(meta_value)) {
-    resultFilterParams = meta_key
-      .map((key, index) => {
-        const cleanedMetaValue =
-          meta_value && meta_value[index]
-            ? meta_value[index].replace(/-.*$/, "")
-            : "";
-
-        return cleanedMetaValue
-          ? `&meta_key=${key}&meta_value[]=${cleanedMetaValue}`
-          : "";
+  // Step 2: Create the updated string
+  let updatedString =
+    parts &&
+    parts
+      .map((part) => {
+        if (part.includes("filter_items=")) {
+          // Extract the value after `filter_items=`
+          let value = part.split("=")[1];
+          return `&filter_items[]=${value}`;
+        } else {
+          return `&filter_items[]=${part}`;
+        }
       })
-      .filter(Boolean)
       .join("");
-  } else {
-    const cleanedMetaValue = meta_value ? meta_value.replace(/-.*$/, "") : "";
 
-    resultFilterParams = cleanedMetaValue
-      ? `&meta_key=${meta_key}&meta_value[]=${cleanedMetaValue}`
-      : "";
-  }
+ 
+
+ 
 
   //SUB CATEGORY
   let subCat = await fetch(
@@ -73,28 +67,27 @@ export default async function SubCategoryPage({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
+  
   //PRODUCTS
   let products = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${
-      subCat[0]?.id
-    }&meta_key=sub_categories_new${resultFilterParams}&min_price=${
-      min_price || 0
-    }&max_price=${max_price || 0}&per_page=${itemsShowPerPage}&sort_by=${
-      sortby || "name"
-    }&order=${sortVal || "asc"}`,
+    `${apiUrl}wp-json/custom/v1/products?sub_categories_new[]=${subCat[0]?.id}${
+      updatedString ? updatedString : ""
+    }&per_page=${itemsShowPerPage}&order_by=${sortby || "name"}&order=${
+      sortVal || "asc"
+    }&min_price=${min_price ? min_price : 0}&max_price=${
+      max_price ? max_price : 0
+    }`,
+
     {
       next: { revalidate: 60 },
     }
   )
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
-
-
-  
 
   //PRODUCTS FILTERS || LENGTH
   let productsGetFilters = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&meta_value=${subCat[0]?.id}&meta_key=sub_categories_new`,
+    `${apiUrl}wp-json/custom/v1/products?sub_categories_new[]=${subCat[0]?.id}`,
     {
       next: { revalidate: 60 },
     }
@@ -102,102 +95,89 @@ export default async function SubCategoryPage({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
-
-
-
-    //FILTER
-    const finalFilterItems = productsGetFilters?.flatMap((product) => {
-      const filteredMetaData = product.meta_data?.filter(
-        (item) => item.key === "_filter_items" && item.value
-      );
-    
-      if (!filteredMetaData || filteredMetaData.length === 0) return [];
-    
-      const labelAccumulator = {};
-    
-      filteredMetaData.forEach((item) => {
-        const valuePairs = item.value.split(",");
-    
-        valuePairs.forEach((pair) => {
-          const [key, value] = pair.split("~:");
-    
-          if (!key || !value) return;
-    
-          const [en, ar] = value.split("|");
-    
-          if (!en || !ar) return;
-    
-          if (!labelAccumulator[key]) {
-            labelAccumulator[key] = {
-              label: key,
-              items: [],
-              arabicLabel: [],
-              seen: new Set(),
-            };
-          }
-    
-          const uniquePair = `${en}|${ar}`;
-    
-          if (!labelAccumulator[key].seen.has(uniquePair)) {
-            labelAccumulator[key].items.push({ en, ar });
-            labelAccumulator[key].arabicLabel.push({ en, ar });
-            labelAccumulator[key].seen.add(uniquePair);
-          }
-        });
-      });
-    
-      return Object.values(labelAccumulator);
-    });
-    
-    const result = [];
-    
-    finalFilterItems.forEach((entry) => {
-      const existing = result.find((r) => r.label === entry.label);
-    
-      if (existing) {
-        entry.items.forEach(item => {
-          const duplicateCheck = `${item.en}|${item.ar}`;
-    
-          if (!existing.seen.has(duplicateCheck)) {
-            existing.items.push(item);
-            existing.seen.add(duplicateCheck);
-          }
-        });
-      } else {
-        result.push({
-          label: entry.label,
-          items: entry.items,
-          seen: new Set(),
-        });
-      }
-    });
-    
-    result.forEach((entry) => {
-      entry.items = entry.items.filter((item, index, self) => 
-        index === self.findIndex((t) => t.en === item.en && t.ar === item.ar)
-      );
-    });
-    
-    const filteredProductFilters = result.filter(
-      (productFilter) =>
-        subCat[0]?.acf?.filters &&
-        subCat[0]?.acf?.filters.some(
-          (catFilter) => {
-            const englishMatch = catFilter.post_title === productFilter.label;
-            return englishMatch;
-          }
-        )
+  //FILTER
+  const finalFilterItems = productsGetFilters?.flatMap((product) => {
+    const filteredMetaData = product.meta_data?.filter(
+      (item) => item.key === "_filter_items" && item.value
     );
-    
-    const filteredProductFiltersWithArabic = filteredProductFilters.map((productFilter) => ({
-      ...productFilter,
-      arabicLabel: productFilter.items,
-    }));
-    
 
-    
-    
-    
+    if (!filteredMetaData || filteredMetaData.length === 0) return [];
+
+    const labelAccumulator = {};
+
+    filteredMetaData.forEach((item) => {
+      const valuePairs = item.value.split(",");
+
+      valuePairs.forEach((pair) => {
+        const [key, value] = pair.split("~:");
+
+        if (!key || !value) return;
+
+        const [en, ar] = value.split("|");
+
+        if (!en || !ar) return;
+
+        if (!labelAccumulator[key]) {
+          labelAccumulator[key] = {
+            label: key,
+            items: [],
+            arabicLabel: [],
+            seen: new Set(),
+          };
+        }
+
+        const uniquePair = `${en}|${ar}`;
+
+        if (!labelAccumulator[key].seen.has(uniquePair)) {
+          labelAccumulator[key].items.push({ en, ar });
+          labelAccumulator[key].arabicLabel.push({ en, ar });
+          labelAccumulator[key].seen.add(uniquePair);
+        }
+      });
+    });
+
+    return Object.values(labelAccumulator);
+  });
+
+  const result = [];
+
+  finalFilterItems.forEach((entry) => {
+    const existing = result.find((r) => r.label === entry.label);
+
+    if (existing) {
+      entry.items.forEach((item) => {
+        const duplicateCheck = `${item.en}|${item.ar}`;
+
+        if (!existing.seen.has(duplicateCheck)) {
+          existing.items.push(item);
+          existing.seen.add(duplicateCheck);
+        }
+      });
+    } else {
+      result.push({
+        label: entry.label,
+        items: entry.items,
+        seen: new Set(),
+      });
+    }
+  });
+
+  result.forEach((entry) => {
+    entry.items = entry.items.filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.en === item.en && t.ar === item.ar)
+    );
+  });
+
+  // Modify to the desired output format
+  const formattedResult = result.flatMap((entry) =>
+    entry.items.map((item) => ({
+      val: `${entry.label}~:${item.en}|${item.ar}`,
+    }))
+  );
+
+  
+
   return (
     <div className="bg-bggray">
       <section className="p-0">
@@ -213,7 +193,7 @@ export default async function SubCategoryPage({
                 : subCat[0]?.title?.rendered
             }
             filter="subcategory"
-            filterData={filteredProductFiltersWithArabic}
+            filterData={formattedResult}
             sortProducts
           />
         </Suspense>
@@ -233,9 +213,6 @@ export default async function SubCategoryPage({
               className={`${products?.length > 0 && "sm:py-10 py-5"} container`}
             >
               <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
-               
-               
-               
                 <ProductWrapper
                   locale={locale}
                   data={products && products}

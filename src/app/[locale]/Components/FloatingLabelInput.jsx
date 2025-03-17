@@ -41,7 +41,7 @@ const FloatingLabelInput = ({
           id={id}
           value={value}
           name={name}
-          placeholder={focused ? "" : label}
+         // placeholder={focused ? "" : label}
           onChange={onChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
@@ -88,7 +88,7 @@ const FloatingLabelInput = ({
           className={`absolute bg-white transform uppercase transition-all cursor-pointer text-start label-input w-fit ${
             focused || value || defaultValue
               ? "top-[-8px] sm:top-[-12px] text-primary uppercase left-3 text-[12px]"
-              : "top-[20px] text-[14px] left-4 -translate-y-1/2  w-[80%] "
+              : "top-[25px] text-[14px] left-4 -translate-y-1/2  w-[80%] "
           }`}
           onClick={handleLabelClick} // Use the new click handler
         >

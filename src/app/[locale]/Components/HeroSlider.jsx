@@ -26,7 +26,7 @@ export default function HeroSlider({ data, locale }) {
         data.map((item, index) => (
           <div className="sm:min-h-[70vh] min-h-[50vh]" key={index}>
             <div className="container container-fixed absolute right-0 left-0 bottom-0 top-0 flex items-center z-10 [&>*]:text-white">
-              <div className="grid gap-5 w-full">
+              <div className="grid gap-7 w-full">
                 <h1 className="heading-xl">{item?.title?.rendered}</h1>
                 <div>
                   <Button

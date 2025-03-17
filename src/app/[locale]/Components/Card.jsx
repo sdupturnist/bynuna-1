@@ -214,6 +214,7 @@ export default function Card({
                   childCategory={childCategoryName}
                 />
 
+
                 <Link
                   href={`${homeUrl}${locale}/products/${mainCategoryName}/${subCategoryName}/${childCategoryName}/${data?.slug}`}
                   className="bg-white flex hover:bg-primary hover:text-white hover:[&>*]:text-white !h-[60px] rounded-full lg:size-[60px] size-[40px] transition-all items-center justify-center  border border-border"
@@ -250,7 +251,7 @@ export default function Card({
           </div>
           <div className="contents items-center justify-center w-full mt-2 min-h-[115px] sm:min-h-fit">
             <Link
-              href={`${homeUrl}${locale}/products/${mainCategoryName}/${subCategoryName}/${childCategoryName[0]}/${data?.slug}`}
+              href={`${homeUrl}${locale}/products/${mainCategoryName}/${subCategoryName}/${childCategoryName}/${data?.slug}`}
             >
               <h3 className="sm:text-[14px] text-[12px] sm:mb-3 mb-1 line-clamp-1 text-center">
                 <ProductName

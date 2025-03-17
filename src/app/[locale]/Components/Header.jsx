@@ -532,16 +532,14 @@ export default function Header({ locale }) {
                   <Link
                     onClick={(e) => setShowMegaMenu(!showMegaMenu)}
                     onTouchStart={(e) => setShowMegaMenu(!showMegaMenu)}
-                    href={`${homeUrl}${locale}/products/${category?.title
-                      .toLowerCase()
-                      .replace(/ /g, "-")}/`}
+                    href={`${homeUrl}${locale}/products/${category?.url?.split('/').filter(Boolean).pop()}/`}
                     className="primary-font text-primary mb-0 block text-[18px]"
                   >
                     <span
                       dangerouslySetInnerHTML={{
                         __html:
                           locale === "en"
-                            ? category?.title
+                            ? category?.url?.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')
                             : category?.acf?.arabic,
                       }}
                     />
@@ -567,18 +565,16 @@ export default function Header({ locale }) {
                                       {
                                         title:
                                           locale === "en"
-                                            ? subCategory?.title
+                                            ? subCategory?.url?.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')
                                             : subCategory?.acf?.arabic,
                                         mainCat: category?.title || "#",
                                         content: subCategory?.children.map(
                                           (childCategory, childIndex) => ({
                                             text:
                                               locale === "en"
-                                                ? childCategory?.title
+                                                ? childCategory?.url?.split('/').filter(Boolean).pop()
                                                 : childCategory?.acf?.arabic,
-                                            link: `${homeUrl}${locale}/products/${category?.title
-                                              ?.toLowerCase()
-                                              ?.replace(/ /g, "-")}/${
+                                            link: `${homeUrl}${locale}/products/${category?.url?.split('/').filter(Boolean).pop()}/${
                                               subCategory?.url
                                                 ?.split("/")
                                                 .slice(-2, -1)[0]
@@ -594,16 +590,15 @@ export default function Header({ locale }) {
                                   />
                                 ) : (
                                   <Link
-                                    href={`${homeUrl}${locale}/products/${subCategory?.title
-                                      .toLowerCase()
-                                      .replace(/ /g, "-")}/`}
+                                  onClick={(e) => setShowMegaMenu(false)}
+                                    href={`${homeUrl}${locale}/products/${category?.url?.split('/').filter(Boolean).pop()}/${subCategory?.url?.split('/').filter(Boolean).pop()}/`}
                                     className="w-full uppercase primary-font text-primary leading-[1.5em]  text-left font-medium transition-all  flex items-center justify-between"
                                   >
                                     <span
                                       dangerouslySetInnerHTML={{
                                         __html:
                                           locale === "en"
-                                            ? subCategory?.title
+                                            ? subCategory?.url?.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')
                                             : subCategory?.acf?.arabic,
                                       }}
                                     />

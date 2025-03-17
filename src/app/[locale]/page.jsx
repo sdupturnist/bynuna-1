@@ -65,7 +65,7 @@ export default async function Home({
 
   //PRODUCTS
   let products = await fetch(
-    `${apiUrl}wp-json/wc/v3/products/filter${woocommerceKey}&per_page=8`,
+    `${apiUrl}wp-json/custom/v1/products?per_page=8`,
 
     { 
       next: { revalidate: 60 },
@@ -73,6 +73,9 @@ export default async function Home({
   )
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
+
+
+    console.log(products)
 
   //SUBCAT
   let subCategoreis = await fetch(
