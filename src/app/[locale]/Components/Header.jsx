@@ -640,7 +640,7 @@ export default function Header({ locale }) {
             )}
           </div>
           <img
-                    src={`${homeUrl}images/brand-bg.webp`}
+                    src={`${homeUrl}images/brand-bg-large.webp`}
                     title={siteName}
                     alt={siteName}
                     className="block w-full object-contain mt-10"
