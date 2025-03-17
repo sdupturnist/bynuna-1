@@ -1229,7 +1229,7 @@ header .clicked ul {
 
 .mega-menu {
   @apply border-t border-border z-[2] min-h-screen overflow-auto sm:absolute fixed bottom-0 left-0  sm:max-w-full;
-  background: #fff url("/images/brand-bg.webp") no-repeat;
+  background: #fff;
   background-position: bottom left;
   background-size: 100%;
 }

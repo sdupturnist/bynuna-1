@@ -52,6 +52,7 @@ function Checkout() {
     setValidateAddress,
     showAddNewAddress,
     setShowAddNewAddress,
+    orderPlaceLoading
   } = useCheckoutContext();
 
   const { translation } = useLanguageContext();
@@ -221,6 +222,9 @@ function Checkout() {
       });
   };
 
+  if (orderPlaceLoading) {
+    return <LoadingItem  order/>;
+  }else {
   return (
     <main className="bg-light lg:bg-white">
       <section className="p-0 lg:pb-10">
@@ -446,6 +450,7 @@ function Checkout() {
       </section>
     </main>
   );
+}
 }
 
 export default withAuth(Checkout);

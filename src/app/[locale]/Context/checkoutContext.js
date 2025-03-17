@@ -17,7 +17,7 @@ export const CheckoutProvider = ({ children }) => {
   const [paymentId, setPaymentId] = useState("");
   const [identificationTerms, setIdentificationsTerms] = useState(false);
   const [validateGuestCheckoutForm, setValidateGuestCheckoutForm] = useState(false);
-  
+  const [orderPlaceLoading, setOrderPlaceLoading] = useState(false);
 
 
 
@@ -54,7 +54,7 @@ export const CheckoutProvider = ({ children }) => {
         validateGuestCheckoutForm, setValidateGuestCheckoutForm,
         paymentId, 
         setPaymentId,
-        
+        orderPlaceLoading, setOrderPlaceLoading
       }}>
       {children}
     </CheckoutContext.Provider>

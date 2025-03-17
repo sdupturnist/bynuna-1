@@ -75,6 +75,7 @@ export default function CashOnDeliveryPayment({ userData}) {
     identificationTerms,
     setIdentificationsTerms,
     setValidateGuestCheckoutForm,
+    setOrderPlaceLoading
   } = useCheckoutContext();
 
   const { token } = useJwt();
@@ -253,7 +254,10 @@ export default function CashOnDeliveryPayment({ userData}) {
         if (result.isConfirmed) {
           setLoading(true);
 
+          setOrderPlaceLoading(true);
+
           try {
+            
             // Prepare the order information for WooCommerce API
             const orderInfo = {
               transaction_id: "", // No transaction ID for COD
@@ -410,8 +414,10 @@ export default function CashOnDeliveryPayment({ userData}) {
                 expires: 1 / 1440,
               });
 
+              setOrderPlaceLoading(false);
               router.push(`${homeUrl}${locale}/checkout/success_order?user_type=${userEmail === undefined ? 'guest' : 'account'}`)
             } else {
+              setOrderPlaceLoading(false);
               throw new Error("Failed to create order in WooCommerce");
             }
           } catch (error) {

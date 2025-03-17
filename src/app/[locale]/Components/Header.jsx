@@ -454,11 +454,10 @@ export default function Header({ locale }) {
                     </div>
                   </Link>
                   <svg
-                   onClick={(e) => {
-                    setShowMegaMenu(!showMegaMenu),
-                        (document.body.style.overflow = "hidden")
-                  }}
-                  
+                    onClick={(e) => {
+                      setShowMegaMenu(!showMegaMenu),
+                        (document.body.style.overflow = "hidden");
+                    }}
                     className="lg:hidden cursor-pointer"
                     xmlns="http://www.w3.org/2000/svg"
                     width="20"
@@ -491,14 +490,13 @@ export default function Header({ locale }) {
               : "sm:h-[0px] sm:w-full w-[0px] bg-emerald-300 !p-0 !min-h-0 overflow-hidden"
           } mega-menu  pt-5 pb-1  transition-all `}
         >
-          <div className="container sm:pb-[200px] pb-[70px] grid sm:gap-8 gap-5">
+          <div className="container grid sm:gap-8 gap-5">
             {showMegaMenu && (
               <svg
-              onClick={(e) => {
-                setShowMegaMenu(!showMegaMenu),
-                    (document.body.style.overflow = "auto")
-              }}
-                
+                onClick={(e) => {
+                  setShowMegaMenu(!showMegaMenu),
+                    (document.body.style.overflow = "auto");
+                }}
                 className="close-nav"
                 xmlns="http://www.w3.org/2000/svg"
                 width="14"
@@ -532,14 +530,21 @@ export default function Header({ locale }) {
                   <Link
                     onClick={(e) => setShowMegaMenu(!showMegaMenu)}
                     onTouchStart={(e) => setShowMegaMenu(!showMegaMenu)}
-                    href={`${homeUrl}${locale}/products/${category?.url?.split('/').filter(Boolean).pop()}/`}
+                    href={`${homeUrl}${locale}/products/${category?.url
+                      ?.split("/")
+                      .filter(Boolean)
+                      .pop()}/`}
                     className="primary-font text-primary mb-0 block text-[18px]"
                   >
                     <span
                       dangerouslySetInnerHTML={{
                         __html:
                           locale === "en"
-                            ? category?.url?.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')
+                            ? category?.url
+                                ?.split("/")
+                                .filter(Boolean)
+                                .pop()
+                                ?.replace(/-/g, " ")
                             : category?.acf?.arabic,
                       }}
                     />
@@ -565,16 +570,26 @@ export default function Header({ locale }) {
                                       {
                                         title:
                                           locale === "en"
-                                            ? subCategory?.url?.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')
+                                            ? subCategory?.url
+                                                ?.split("/")
+                                                .filter(Boolean)
+                                                .pop()
+                                                ?.replace(/-/g, " ")
                                             : subCategory?.acf?.arabic,
                                         mainCat: category?.title || "#",
                                         content: subCategory?.children.map(
                                           (childCategory, childIndex) => ({
                                             text:
                                               locale === "en"
-                                                ? childCategory?.url?.split('/').filter(Boolean).pop()
+                                                ? childCategory?.url
+                                                    ?.split("/")
+                                                    .filter(Boolean)
+                                                    .pop()
                                                 : childCategory?.acf?.arabic,
-                                            link: `${homeUrl}${locale}/products/${category?.url?.split('/').filter(Boolean).pop()}/${
+                                            link: `${homeUrl}${locale}/products/${category?.url
+                                              ?.split("/")
+                                              .filter(Boolean)
+                                              .pop()}/${
                                               subCategory?.url
                                                 ?.split("/")
                                                 .slice(-2, -1)[0]
@@ -590,15 +605,25 @@ export default function Header({ locale }) {
                                   />
                                 ) : (
                                   <Link
-                                  onClick={(e) => setShowMegaMenu(false)}
-                                    href={`${homeUrl}${locale}/products/${category?.url?.split('/').filter(Boolean).pop()}/${subCategory?.url?.split('/').filter(Boolean).pop()}/`}
+                                    onClick={(e) => setShowMegaMenu(false)}
+                                    href={`${homeUrl}${locale}/products/${category?.url
+                                      ?.split("/")
+                                      .filter(Boolean)
+                                      .pop()}/${subCategory?.url
+                                      ?.split("/")
+                                      .filter(Boolean)
+                                      .pop()}/`}
                                     className="w-full uppercase primary-font text-primary leading-[1.5em]  text-left font-medium transition-all  flex items-center justify-between"
                                   >
                                     <span
                                       dangerouslySetInnerHTML={{
                                         __html:
                                           locale === "en"
-                                            ? subCategory?.url?.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')
+                                            ? subCategory?.url
+                                                ?.split("/")
+                                                .filter(Boolean)
+                                                .pop()
+                                                ?.replace(/-/g, " ")
                                             : subCategory?.acf?.arabic,
                                       }}
                                     />
@@ -614,6 +639,16 @@ export default function Header({ locale }) {
               ))
             )}
           </div>
+          <Images
+                    imageurl={`${homeUrl}images/brand-bg.webp`}
+                    quality="100"
+                    width="600"
+                    height="200"
+                    title={siteName}
+                    alt={siteName}
+                    classes="block w-full  object-contain mt-10"
+                    placeholder={true}
+                  />
         </div>
 
         {showMegaMenu && (

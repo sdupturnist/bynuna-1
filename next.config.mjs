@@ -8,6 +8,7 @@ const withNextIntl = createNextIntlPlugin();
 const nextConfig = {
     images: {
       domains: [
+        'localhost',
         'avataaars.io', 
         'admin.wellness4u.in',
         'secure.gravatar.com',
