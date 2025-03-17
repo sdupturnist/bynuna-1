@@ -528,8 +528,10 @@ export default function Header({ locale }) {
                   } md:border-none md:pb-0`}
                 >
                   <Link
-                    onClick={(e) => setShowMegaMenu(!showMegaMenu)}
-                    onTouchStart={(e) => setShowMegaMenu(!showMegaMenu)}
+                 onClick={(e) => {
+                  setShowMegaMenu(false),
+                    (document.body.style.overflow = "auto");
+                }}
                     href={`${homeUrl}${locale}/products/${category?.url
                       ?.split("/")
                       .filter(Boolean)
@@ -605,7 +607,10 @@ export default function Header({ locale }) {
                                   />
                                 ) : (
                                   <Link
-                                    onClick={(e) => setShowMegaMenu(false)}
+                                  onClick={(e) => {
+                                    setShowMegaMenu(false),
+                                      (document.body.style.overflow = "auto");
+                                  }}
                                     href={`${homeUrl}${locale}/products/${category?.url
                                       ?.split("/")
                                       .filter(Boolean)

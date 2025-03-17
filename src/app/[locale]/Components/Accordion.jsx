@@ -130,7 +130,10 @@ const Accordion = ({
         <div className="flex items-center justify-between">
           {!haveUrl ? (
             <Link
-              onClick={(e) => setShowMegaMenu(!showMegaMenu)}
+            onClick={(e) => {
+              setShowMegaMenu(false),
+                (document.body.style.overflow = "auto");
+            }}
               href={`${homeUrl}${locale}/products/${
                 mainCat && mainCat?.toLowerCase()?.replace(/ /g, "-")
               }/${title && title?.toLowerCase()?.replace(/ /g, "-")}/`}

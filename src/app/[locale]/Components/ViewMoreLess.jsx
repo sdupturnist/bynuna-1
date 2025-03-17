@@ -27,7 +27,10 @@ const ViewMoreLess = ({ items, footerNavigation }) => {
           items.slice(0, showAll ? items.length : limit).map((item, index) => (
             <li key={index}>
               {footerNavigation ? (
-                <Link onClick={(e) => setShowMegaMenu(false)} href={item.link}>
+                <Link  onClick={(e) => {
+                  setShowMegaMenu(false),
+                    (document.body.style.overflow = "auto");
+                }} href={item.link}>
                   <span
                     dangerouslySetInnerHTML={{
                       __html: item.text,
@@ -35,7 +38,12 @@ const ViewMoreLess = ({ items, footerNavigation }) => {
                   />
                 </Link>
               ) : (
-                <Link onClick={(e) => setShowMegaMenu(false)} href={item.link}>
+                <Link 
+                onClick={(e) => {
+                  setShowMegaMenu(false),
+                    (document.body.style.overflow = "auto");
+                }}
+                href={item.link}>
                   <span
                     dangerouslySetInnerHTML={{
                       __html: item.text,
