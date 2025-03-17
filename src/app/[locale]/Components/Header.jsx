@@ -639,15 +639,11 @@ export default function Header({ locale }) {
               ))
             )}
           </div>
-          <Images
-                    imageurl={`${homeUrl}${locale}/images/brand-bg.webp`}
-                    quality="100"
-                    width="600"
-                    height="200"
+          <img
+                    src={`${homeUrl}images/brand-bg.webp`}
                     title={siteName}
                     alt={siteName}
-                    classes="block w-full  object-contain mt-10"
-                    placeholder={true}
+                    className="block w-full object-contain mt-10"
                   />
         </div>
 
