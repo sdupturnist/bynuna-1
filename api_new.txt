@@ -1710,7 +1710,6 @@ function custom_wc_meta_filter( $data ) {
 
 //TEST
 // Hook to initialize the custom REST API endpoint
-
 add_action('rest_api_init', 'register_custom_product_api_endpoint');
 
 function register_custom_product_api_endpoint() {
@@ -1740,6 +1739,12 @@ function register_custom_product_api_endpoint() {
                     return is_array($param); // Expecting an array of category IDs.
                 },
             ),
+            'brands_new' => array(
+                'validate_callback' => function($param, $request, $key) {
+                    return is_array($param); // Expecting an array of brand IDs.
+                },
+                'default' => array(), // Default to an empty array if not passed.
+            ),
             'filter_items' => array(
                 'validate_callback' => function($param, $request, $key) {
                     return is_array($param); // Expecting an array of filter strings (e.g., Family~:Mauser).
@@ -1767,6 +1772,16 @@ function register_custom_product_api_endpoint() {
                     return is_numeric($param); // Ensure the value is a valid number.
                 },
             ),
+            '_offer_deal' => array( // New argument for _offer_deal
+                'validate_callback' => function($param, $request, $key) {
+                    return is_string($param) && in_array($param, ['yes', 'no']); // Expecting 'yes' or 'no'.
+                },
+            ),
+            'slug' => array( // New argument for slug
+                'validate_callback' => function($param, $request, $key) {
+                    return is_string($param); // Expecting a string (slug).
+                },
+            ),
         ),
     ));
 }
@@ -1780,11 +1795,14 @@ function get_custom_products(WP_REST_Request $request) {
     $main_categories_new = $request->get_param('main_categories_new');
     $sub_categories_new = $request->get_param('sub_categories_new');
     $child_categories_new = $request->get_param('child_categories_new');
+    $brands_new = $request->get_param('brands_new');
     $filter_items = $request->get_param('filter_items');
     $order_by = $request->get_param('order_by'); // 'price' or 'name' for ordering
     $order = $request->get_param('order'); // 'asc' or 'desc'
     $min_price = $request->get_param('min_price');
     $max_price = $request->get_param('max_price');
+    $_offer_deal = $request->get_param('_offer_deal'); // _offer_deal parameter
+    $slug = $request->get_param('slug'); // Slug parameter
 
     // Set up the query args.
     $args = array(
@@ -1792,6 +1810,11 @@ function get_custom_products(WP_REST_Request $request) {
         'posts_per_page' => $per_page, // Set posts per page to the per_page parameter value.
         'post_status' => 'publish',
     );
+
+    // If the slug parameter is provided, filter by product slug.
+    if ($slug) {
+        $args['name'] = $slug; // Filter by the product slug.
+    }
 
     // Initialize meta_query.
     $meta_query = array('relation' => 'AND');
@@ -1820,6 +1843,24 @@ function get_custom_products(WP_REST_Request $request) {
             'key'     => 'child_categories_new',
             'value'   => $child_categories_new,
             'compare' => 'IN',
+        );
+    }
+
+    // Add meta query for 'brands_new' if provided.
+    if ($brands_new) {
+        $meta_query[] = array(
+            'key'     => 'brands_new',
+            'value'   => $brands_new,
+            'compare' => 'IN',
+        );
+    }
+
+    // Add meta query for '_offer_deal' if provided.
+    if ($_offer_deal) {
+        $meta_query[] = array(
+            'key'     => '_offer_deal',
+            'value'   => $_offer_deal,
+            'compare' => '=', // Exact match 'no' or 'yes'
         );
     }
 
