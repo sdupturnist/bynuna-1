@@ -35,8 +35,8 @@ export let returnDays = 24; //24 hours
 export let homeUrl = process.env.NEXT_PUBLIC_SITE_URL
 //export let homeUrl = `https://ardalmarmoom.com/`;
 //export let homeUrl = `https://bynuna-chi.vercel.app/`;
-export let apiUrl = process.env.NEXT_PUBLIC_HOME_URL
-//export let apiUrl = `https://admin.bynuna.ae/`;
+export let apiUrl = process.env.NEXT_PUBLIC_API_URL
+
 
 
 //GENERAL CONFIG
@@ -44,8 +44,8 @@ export let siteName = "bynuna";
 export let siteAuthor = `${siteName} admin`;
 export let year = date.getFullYear();
 export let copyright = `©` + year + ` ` + siteName + " All rights reserved";
-export let siteLogo = `https://admin.ardalmarmoom.com/wp-content/uploads/2025/01/bynuna_logo.png`;
-export let siteLogoWhite = `https://admin.ardalmarmoom.com/wp-content/uploads/2025/01/bynuna_logo.png`;
+export let siteLogo = `${apiUrl}wp-content/uploads/2025/01/bynuna_logo.png`;
+export let siteLogoWhite = `${apiUrl}wp-content/uploads/2025/01/bynuna_logo.png`;
 
 //https://docs.totalpay.global/checkout_integration#request-parameters]
 //TOTALPAY

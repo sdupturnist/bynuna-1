@@ -29,6 +29,7 @@ import {
 import Link from "next/link";
 import { Suspense } from "react";
 import Image from "next/image";
+import OutOfStock from "@/app/[locale]/Components/OutOfStock";
 
 export default async function ProductSingle({
   params,
@@ -45,7 +46,7 @@ export default async function ProductSingle({
   );
 
   let allProductsData = await fetch(
-    `${apiUrl}wp-json/custom/v1/products?slug=${slug}&per_page=99`,
+    `${apiUrl}wp-json/custom/v1/products?per_page=1000`,
     {
       next: { revalidate: 60 },
     }
@@ -93,22 +94,22 @@ export default async function ProductSingle({
   let productReview = await productReviewData.json();
   let allProducts = await allProductsData.json();
 
-  const crossSellIds = singleProduct && singleProduct?.cross_sell_ids;
-  const upsellsIds = singleProduct && singleProduct?.upsell_ids;
+  const cross_sell_ids = singleProduct && singleProduct?.cross_sell_ids;
+  const upsell_ids = singleProduct && singleProduct?.upsell_ids;
 
   const crossSellProducts =
     allProducts &&
     allProducts.filter(
-      (product) => crossSellIds && crossSellIds.includes(product.id)
+      (product) => cross_sell_ids && cross_sell_ids.includes(product.id)
     );
 
   const upsellProducts =
     allProducts &&
     allProducts.filter(
-      (product) => upsellsIds && upsellsIds.includes(product.id)
+      (product) => upsell_ids && upsell_ids.includes(product.id)
     );
 
-  console.log(singleProduct?.acf?.arabic?.description);
+  
 
   const accordianItems = [
     singleProduct?.description || singleProduct?.acf?.arabic?.description
@@ -264,8 +265,12 @@ export default async function ProductSingle({
             title={
               locale === "en"
                 ? singleProduct?.name
-                : singleProduct?.acf?.arabic?.title
-                ? singleProduct?.acf?.arabic?.title
+                : singleProduct?.meta_data.filter(
+                    (item) => item.key === "_name_in_arabic"
+                  )[0]?.value
+                ? singleProduct?.meta_data.filter(
+                    (item) => item.key === "_name_in_arabic"
+                  )[0]?.value
                 : singleProduct?.name
             }
             mainCategory={
@@ -345,11 +350,11 @@ export default async function ProductSingle({
                   {locale === "en"
                     ? singleProduct?.name
                     : singleProduct?.meta_data.filter(
-                      (item) => item.key === "_name_in_arabic"
-                    )[0]?.value
+                        (item) => item.key === "_name_in_arabic"
+                      )[0]?.value
                     ? singleProduct?.meta_data.filter(
-                      (item) => item.key === "_name_in_arabic"
-                    )[0]?.value
+                        (item) => item.key === "_name_in_arabic"
+                      )[0]?.value
                     : singleProduct?.name}
                 </h1>
                 {productReview.length > 0 && (
@@ -403,6 +408,8 @@ export default async function ProductSingle({
 
               {singleProduct?.price && (
                 <div className="flex gap-3 items-center justify-center bg-white mt-6 sm:mt-7">
+                  <OutOfStock single status={singleProduct?.stock_status} />
+
                   <AddToCart
                     itemid={singleProduct?.id ?? null}
                     price={
@@ -439,6 +446,7 @@ export default async function ProductSingle({
                         )[0]?.value
                       )[0]?.slug
                     }
+                    stock={singleProduct?.stock_status}
                   />
                 </div>
               )}
@@ -460,34 +468,42 @@ export default async function ProductSingle({
             </div>
           </div>
 
-          <div className="bg-white grid spacing-gap">
+          <div className="bg-white grid sm:spacing-gap">
             {upsellProducts.length > 0 && (
-              <div className="mt-">
+              <div className="px-3 pt-5 lg:p-0">
                 <div className="section-header-card !p-0">
                   <SectionHeader
                     title="You may also like"
                     spacingSm
                     titleCenter
                   />
+                   <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3 sm:my-10 mb-5">
                   <ProductWrapper
                     data={upsellProducts && upsellProducts}
                     searchParams={searchParams}
+                       type="product"
                   />
+                </div>
                 </div>
               </div>
             )}
             {crossSellProducts && crossSellProducts.length > 0 && (
               <div className="border-t sm:border-black border-border sm:py-10 py-5">
+                  <div className="px-3 pb-5 lg:p-0">
                 <div className="section-header-card !p-0">
                   <SectionHeader
                     title="Related Products"
                     spacingSm
                     titleCenter
                   />
+                    <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3 sm:my-10 my-5">
                   <ProductWrapper
                     data={crossSellProducts && crossSellProducts}
                     searchParams={searchParams}
+                       type="product"
                   />
+                  </div>
+                </div>
                 </div>
               </div>
             )}

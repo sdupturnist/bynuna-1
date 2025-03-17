@@ -9,37 +9,18 @@ import { usePathname } from "next/navigation";
 export default function Nav({ data, locale }) {
   const pathname = usePathname();
 
-  const savedMenuInLocalStorage =
-    typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem(`${siteName}_menu`))
-      : null;
-
   const [loading, setLoading] = useState(true);
   const [clicked, setClicked] = useState(false);
-  const [menuData, setMenuData] = useState(
-    savedMenuInLocalStorage?.items || data
-  );
+  const [menuData, setMenuData] = useState(data?.items);
 
   useEffect(() => {
-    // Only update menuData if it has changed
-    if (
-      savedMenuInLocalStorage &&
-      JSON.stringify(savedMenuInLocalStorage) !== JSON.stringify(menuData)
-    ) {
-      setMenuData(savedMenuInLocalStorage);
-    } else if (
-      !savedMenuInLocalStorage &&
-      data &&
-      JSON.stringify(data) !== JSON.stringify(menuData)
-    ) {
-      setMenuData(data);
-    }
+    setMenuData(data);
 
     // Set loading to false when data or saved menu is available
-    if (savedMenuInLocalStorage || data) {
+    if (data) {
       setLoading(false);
     }
-  }, [data, savedMenuInLocalStorage, menuData]); // Added menuData to dependency array
+  }, [data, menuData]); // Added menuData to dependency array
 
   // Function to transform data into a hierarchical structure
   function buildNavTree(data) {
@@ -83,7 +64,7 @@ export default function Nav({ data, locale }) {
 
           let itemName = cleanUrl.split("/").pop();
 
-         // console.log(parentUrl)
+          // console.log(parentUrl)
 
           const itemUrl =
             item?.acf?.custom_url !== ""
@@ -105,12 +86,11 @@ export default function Nav({ data, locale }) {
               </Link>
               {/* Render children if they exist, passing the current item URL as the parent */}
 
-              
               {item.children &&
                 item.children.length > 0 &&
                 renderMenu(
                   item.children,
-                  `${parentUrl}${item?.url.split('/').filter(Boolean).pop()}/`
+                  `${parentUrl}${item?.url.split("/").filter(Boolean).pop()}/`
                 )}
             </li>
           );

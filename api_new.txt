@@ -61,15 +61,30 @@ add_action( 'wp_enqueue_scripts', 'hello_elementor_child_scripts_styles', 20 );
 
 // Add CORS headers to allow requests from your frontend (e.g., http://localhost:3000)
 function add_cors_headers() {
-    // Allow requests from specific origin (you can change this as needed)
-    header("Access-Control-Allow-Origin: http://localhost:3000");
-    
+    // Allow requests from specific origins (you can change this as needed)
+    $allowed_origins = [
+        'http://localhost:3000',      // Local development (e.g., React app)
+        'https://bynuna-chi.vercel.app', // Vercel app
+        'https://testwithupturnist.com', // Your domain
+        'https://bynuna.ae',          // Another production domain
+    ];
+
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? ''; // Get the origin of the request
+
+    // Check if the origin is allowed, if so, set the CORS header
+    if (in_array($origin, $allowed_origins)) {
+        header("Access-Control-Allow-Origin: $origin");
+    }
+
     // Allow specific HTTP methods (GET, POST, OPTIONS)
     header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-    
-    // Allow specific headers (for example, Content-Type)
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-WP-Nonce");
-    
+
+    // Allow specific headers (for example, Content-Type, Authorization, Cache-Control, etc.)
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-WP-Nonce, Cache-Control");
+
+    // Allow credentials (cookies, Authorization headers)
+    header("Access-Control-Allow-Credentials: true");
+
     // If the request is an OPTIONS request (preflight), return early
     if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
         exit(0);
@@ -78,6 +93,7 @@ function add_cors_headers() {
 
 // Hook into the `init` action to apply CORS headers before any output
 add_action('init', 'add_cors_headers');
+
 
 
 
@@ -95,33 +111,32 @@ function wpacg_bynuna_admin_color_scheme() {
 add_action('admin_init', 'wpacg_bynuna_admin_color_scheme');
 
 
-
 //HIDE WOOCOMERECE FIELDS
 function remove_product_data_tabs($tabs) {
-    if (!current_user_can('administrator')) { // Check if the user is not an administrator
-        unset($tabs['inventory']);            // Hide Inventory tab
+  
+        //unset($tabs['inventory']);            // Hide Inventory tab
         unset($tabs['shipping']);             // Hide Shipping tab
         // unset($tabs['linked_product']);    // Hide Linked Products tab
         unset($tabs['attributes']);           // Hide Attributes tab
         unset($tabs['advanced']);             // Hide Advanced tab
-    }
+    
     return $tabs;
 }
 add_filter('woocommerce_product_data_tabs', 'remove_product_data_tabs');
 
 function hide_product_tags_field() {
-    if (!current_user_can('administrator')) { // Check if the user is not an administrator
+   
         remove_meta_box('tagsdiv-post_tag', 'product', 'side'); // Hide Tags from the right sidebar
-    }
+   
 }
 add_action('admin_menu', 'hide_product_tags_field');
 
 add_action('admin_head', function () {
-    if (!current_user_can('administrator')) { // Check if the user is not an administrator
+   
         echo '<style>
-            .product-data-wrapper, .marketplace-suggestions_options, #tagsdiv-product_tag, .attribute_options { display: none !important; } /* Hides the Product Data section */
+          #product_catdiv, .sale_schedule, #product_branddiv, .form-field._tax_status_field, .form-field._tax_class_field, .product-data-wrapper, ._manage_stock_field, .inventory_sold_individually, .form-field._global_unique_id_field, .marketplace-suggestions_options, #tagsdiv-product_tag, .attribute_options { display: none !important; } /* Hides the Product Data section */
         </style>';
-    }
+    
 });
 
 
@@ -129,7 +144,7 @@ add_action('admin_head', function () {
 //WIDGET FOR ANALYTICS
 function custom_dashboard_widget() {
     // Fetch data from the API
-    $url = 'https://admin.bynuna.ae/wp-json/wc-analytics/reports/revenue/stats?consumer_key=ck_c10388e89a3e74feeaf32ec349bf9f810f8071bc&consumer_secret=cs_48ef9b20fbd7ca0883b3cb20e9cd0d78398f3d03&orderby=date&order=desc&after=2024-09-21T00%3A00%3A00&page=1&per_page=25&interval=day&_locale=user';
+    $url = 'https://admin.testwithupturnist.com/wp-json/wc-analytics/reports/revenue/stats?consumer_key=ck_c10388e89a3e74feeaf32ec349bf9f810f8071bc&consumer_secret=cs_48ef9b20fbd7ca0883b3cb20e9cd0d78398f3d03&orderby=date&order=desc&after=2024-09-21T00%3A00%3A00&page=1&per_page=25&interval=day&_locale=user';
     $response = wp_remote_get($url);
 
     if (is_wp_error($response)) {
@@ -404,7 +419,7 @@ function display_recent_orders() {
     $consumer_secret = 'cs_48ef9b20fbd7ca0883b3cb20e9cd0d78398f3d03';
     
     // Base API URL
-    $base_url = 'https://admin.bynuna.ae/wp-json/wc/v3/orders';
+    $base_url = 'https://admin.testwithupturnist.com/wp-json/wc/v3/orders';
 
     // Number of orders per page (set to 5 for the most recent 5 orders)
     $per_page = 5;
@@ -454,7 +469,7 @@ function display_recent_orders() {
 
             // Render each order row
             echo '<tr>';
-            echo '<td><a href="https://admin.bynuna.ae/wp-admin/post.php?post=' . $order_id . '&action=edit">#' . $order_id . '</a></td>';
+            echo '<td><a href="https://admin.testwithupturnist.com/wp-admin/post.php?post=' . $order_id . '&action=edit">#' . $order_id . '</a></td>';
             echo '<td>' . esc_html($customer_name) . '</td>';
             echo '<td style="' . $status_color . '">' . esc_html($order_status) . '</td>';
             echo '<td>' . esc_html($order_total) . '</td>';
@@ -1486,230 +1501,10 @@ function change_user_password( WP_REST_Request $request ) {
 
 
 //====================================REST API FOR CUSTOM PRODUCTS///////////////
-add_action( 'rest_api_init', function() {
-    register_rest_route( 'wc/v3', '/products/filter/', [
-        'methods'  => 'GET',
-        'callback' => 'custom_wc_meta_filter',
-        'permission_callback' => '__return_true',
-        'args' => [
-            'meta_key' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return is_string( $param );
-                }
-            ],
-            'meta_value' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return is_array( $param ) || is_string( $param );
-                }
-            ],
-            'min_price' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return is_numeric( $param );
-                }
-            ],
-            'max_price' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return is_numeric( $param );
-                }
-            ],
-            'per_page' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return is_numeric( $param ) && $param > 0;
-                },
-                'default' => 10 // Default per page if not set
-            ],
-            'featured' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return in_array($param, ['1', '0']);
-                },
-            ],
-            'sort_by' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return in_array($param, ['name', 'price']);
-                },
-                'default' => 'name' // Default sorting by title
-            ],
-            'order' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return in_array($param, ['asc', 'desc']);
-                },
-                'default' => 'asc' // Default sorting order (A-Z)
-            ],
-            'slug' => [
-                'required' => false,
-                'validate_callback' => function( $param, $request, $key ) {
-                    return is_string( $param );
-                }
-            ],
-        ]
-    ]);
-});
-
-// Custom product filtering by meta key, value, price range, per_page, featured status, sorting, and slug
-function custom_wc_meta_filter( $data ) {
-    $meta_key = isset( $data['meta_key'] ) ? $data['meta_key'] : '';
-    $meta_values = isset( $data['meta_value'] ) ? (array)$data['meta_value'] : []; // Convert to array if multiple values
-    $min_price = isset( $data['min_price'] ) ? floatval( $data['min_price'] ) : '';
-    $max_price = isset( $data['max_price'] ) ? floatval( $data['max_price'] ) : '';
-    $per_page = isset( $data['per_page'] ) ? intval( $data['per_page'] ) : 10;
-    $featured = isset( $data['featured'] ) ? $data['featured'] : null;  // Check for featured filter
-    $sort_by = isset( $data['sort_by'] ) ? $data['sort_by'] : 'name';  // Default sorting by title
-    $order = isset( $data['order'] ) ? $data['order'] : 'asc'; // Default sorting order
-    $slug = isset( $data['slug'] ) ? $data['slug'] : ''; // Slug filter
-
-    // Set up the query args for filtering products
-    $args = [
-        'post_type'      => 'product',
-        'posts_per_page' => $per_page, // Use the per_page value
-        'meta_query'     => [],
-        'tax_query'      => [],
-        'orderby'        => 'title', // Default sorting by title (product name)
-        'order'          => $order === 'asc' ? 'ASC' : 'DESC',  // Sort by name (A-Z or Z-A)
-    ];
-
-    // Filter by product slug if passed
-    if ( $slug ) {
-        $args['name'] = $slug;  // Filter by product slug
-    }
-
-    // Handle sorting by name
-    if ( $sort_by === 'name' ) {
-        $args['orderby'] = 'title'; // Sort by title (product name)
-        $args['order'] = $order === 'desc' ? 'DESC' : 'ASC'; // Sort A-Z or Z-A based on `order`
-    }
-
-    // Handle sorting by price
-    if ( $sort_by === 'price' ) {
-        $args['orderby'] = 'meta_value_num'; // Sort by numerical value (for price)
-        $args['meta_key'] = '_price'; // Meta key for product price
-        $args['order'] = $order === 'desc' ? 'DESC' : 'ASC'; // Sort by price ascending or descending
-    }
-
-    // Handle multiple meta_values for custom meta key filtering
-    if ( $meta_key && !empty($meta_values) ) {
-        $meta_query = [];
-        foreach ( $meta_values as $meta_value ) {
-            $meta_query[] = [
-                'key'     => $meta_key,
-                'value'   => $meta_value,
-                'compare' => 'LIKE'  // Use 'LIKE' for partial matches (e.g., color:red)
-            ];
-        }
-
-        // Combine the meta_query with OR relation to allow multiple values
-        $args['meta_query'][] = [
-            'relation' => 'OR',
-            ...$meta_query
-        ];
-    }
-
-    // Add price range filter if min_price or max_price is provided
-    if ( $min_price || $max_price ) {
-        $price_query = [
-            'relation' => 'AND',
-        ];
-
-        if ( $min_price ) {
-            $price_query[] = [
-                'key'     => '_price',
-                'value'   => $min_price,
-                'type'    => 'NUMERIC',
-                'compare' => '>='
-            ];
-        }
-
-        if ( $max_price ) {
-            $price_query[] = [
-                'key'     => '_price',
-                'value'   => $max_price,
-                'type'    => 'NUMERIC',
-                'compare' => '<='
-            ];
-        }
-
-        $args['meta_query'] = array_merge( $args['meta_query'], $price_query );
-    }
-
-    // Filter by featured status (if provided)
-    if ( ! is_null( $featured ) ) {
-        $args['meta_query'][] = [
-            'key'     => '_featured',  // Correct meta key for featured status in WooCommerce
-            'value'   => $featured,    // 1 for featured, 0 for not featured
-            'compare' => '='
-        ];
-    }
-
-    // Perform the query
-    $query = new WP_Query( $args );
-
-    $products = [];
-    foreach ( $query->posts as $post ) {
-        $product = wc_get_product( $post->ID );
-
-        // Manually build the response data with images and ACF fields
-        $product_data = $product->get_data();
-
-        // Featured Image
-        $featured_image_id = $product->get_image_id();
-        if ( $featured_image_id ) {
-            $featured_image_data = wp_get_attachment_image_src( $featured_image_id, 'full' );
-            if ( $featured_image_data ) {
-                $product_data['images']['featured'] = [
-                    'id'         => $featured_image_id,
-                    'url'        => $featured_image_data[0],
-                    'width'      => $featured_image_data[1],
-                    'height'     => $featured_image_data[2],
-                    'alt'        => get_post_meta( $featured_image_id, '_wp_attachment_image_alt', true )
-                ];
-            }
-        }
-
-        // Gallery Images
-        $gallery_image_ids = $product->get_gallery_image_ids();
-        if ( $gallery_image_ids ) {
-            $gallery_images = [];
-            foreach ( $gallery_image_ids as $gallery_image_id ) {
-                $gallery_image_data = wp_get_attachment_image_src( $gallery_image_id, 'full' );
-                if ( $gallery_image_data ) {
-                    $gallery_images[] = [
-                        'id'         => $gallery_image_id,
-                        'url'        => $gallery_image_data[0],
-                        'width'      => $gallery_image_data[1],
-                        'height'     => $gallery_image_data[2],
-                        'alt'        => get_post_meta( $gallery_image_id, '_wp_attachment_image_alt', true )
-                    ];
-                }
-            }
-            $product_data['images']['gallery'] = $gallery_images;
-        }
-
-        // Add ACF Fields to the product data
-        $acf_fields = get_fields($product->get_id()); // Fetch all ACF fields
-        if ($acf_fields) {
-            $product_data['acf'] = $acf_fields; // Add ACF data to the response
-        }
-
-        // Add price to the product data
-        $product_data['price'] = $product->get_price();
-
-        $products[] = $product_data;
-    }
-
-    return $products;
-}
 
 
 
 //TEST
-// Hook to initialize the custom REST API endpoint
 add_action('rest_api_init', 'register_custom_product_api_endpoint');
 
 function register_custom_product_api_endpoint() {
@@ -1720,7 +1515,7 @@ function register_custom_product_api_endpoint() {
         'args' => array(
             'per_page' => array(
                 'validate_callback' => function($param, $request, $key) {
-                    return is_numeric($param) && $param > 0 && $param <= 100; // Ensure valid range.
+                    return is_numeric($param) && $param > 0 && $param <= 2000; // Ensure valid range up to 2000
                 },
                 'default' => 10, // Set default value to 10 products per page.
             ),
@@ -1777,6 +1572,11 @@ function register_custom_product_api_endpoint() {
                     return is_string($param) && in_array($param, ['yes', 'no']); // Expecting 'yes' or 'no'.
                 },
             ),
+            '_star_product' => array( 
+                'validate_callback' => function($param, $request, $key) {
+                    return is_string($param) && in_array($param, ['yes', 'no']); // Expecting 'yes' or 'no'.
+                },
+            ),
             'slug' => array( // New argument for slug
                 'validate_callback' => function($param, $request, $key) {
                     return is_string($param); // Expecting a string (slug).
@@ -1802,6 +1602,7 @@ function get_custom_products(WP_REST_Request $request) {
     $min_price = $request->get_param('min_price');
     $max_price = $request->get_param('max_price');
     $_offer_deal = $request->get_param('_offer_deal'); // _offer_deal parameter
+    $_star_product = $request->get_param('_star_product'); 
     $slug = $request->get_param('slug'); // Slug parameter
 
     // Set up the query args.
@@ -1860,6 +1661,15 @@ function get_custom_products(WP_REST_Request $request) {
         $meta_query[] = array(
             'key'     => '_offer_deal',
             'value'   => $_offer_deal,
+            'compare' => '=', // Exact match 'no' or 'yes'
+        );
+    }
+
+
+    if ($_star_product) {
+        $meta_query[] = array(
+            'key'     => '_star_product',
+            'value'   => $_star_product,
             'compare' => '=', // Exact match 'no' or 'yes'
         );
     }
@@ -2046,6 +1856,7 @@ function get_custom_products(WP_REST_Request $request) {
     // Return the products as a response.
     return rest_ensure_response($products);
 }
+
 
 ///////////////
 

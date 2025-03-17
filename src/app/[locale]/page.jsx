@@ -65,17 +65,14 @@ export default async function Home({
 
   //PRODUCTS
   let products = await fetch(
-    `${apiUrl}wp-json/custom/v1/products?per_page=8`,
+    `${apiUrl}wp-json/custom/v1/products?_star_product=yes&per_page=8`,
 
-    { 
+    {
       next: { revalidate: 60 },
     }
   )
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
-
-
-    console.log(products)
 
   //SUBCAT
   let subCategoreis = await fetch(
@@ -87,8 +84,6 @@ export default async function Home({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
-
-
   return (
     <>
       <section className="sm:h-[70vh] h-[50vh] p-0 overflow-hidden sm:text-start text-center">
@@ -99,40 +94,48 @@ export default async function Home({
           <CategorySlider locale={locale} />
         </div>
       </section>
-    
-     {products?.length !== 0 &&  <section className="p-0 lg:pt-10 sm:pt-5 text-center">
-        <div className="container border-t sm:border-black border-border spacing-normal spacing-gap">
-          <h2 className="heading-lg">
-            {page[0]?.acf?.featured_products?.featured_products_heading}
-          </h2>
-          <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-8 gap-3">
-            <ProductWrapper
-              locale={locale}
-              data={products && products}
-              searchParams={searchParams}
-              type="product"
-              
-            />
+
+      {products?.length !== 0 && (
+        <section className="p-0 lg:pt-10 sm:pt-5 text-center">
+          <div className="container border-t sm:border-black border-border spacing-normal spacing-gap">
+            <h2 className="heading-lg">
+              {page[0]?.acf?.featured_products?.featured_products_heading}
+            </h2>
+            <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-8 gap-3">
+              <ProductWrapper
+                locale={locale}
+                data={products && products}
+                searchParams={searchParams}
+                type="product"
+              />
+            </div>
           </div>
-        </div>
-      </section>
-}
+        </section>
+      )}
       <section className="p-0 text-center">
-        <ul className={`${products?.length === 0 ? 'sm:mt-10' : ''} sm:max-w-[90%] mx-auto border-t sm:border-black border-border spacing sub-cat-list`}>
-         
-         {subCategoreis &&  subCategoreis?.map((item, index) => (
-                  
-                   <Card
-                     type='subcategory'
-                     key={index}
-                     data={item}
-                     locale={locale}
-                    />
-                 ))}
-          
+        <div className="container border-t sm:border-black border-border spacing-normal spacing-gap">
+           <h2 className="heading-lg">
+              {page[0]?.acf?.featured_subcategories_heading}
+            </h2>
+            </div>
+        <ul
+          className={`${
+            products?.length === 0 ? "sm:mt-10" : ""
+          } sm:max-w-[90%] mx-auto sub-cat-list`}
+        >
+          {subCategoreis &&
+            subCategoreis?.map((item, index) => (
+              <Card
+                type="subcategory"
+                key={index}
+                data={item}
+                locale={locale}
+              />
+            ))}
         </ul>
+        
       </section>
-      <section className="p-0 text-center">
+      <section className="text-center">
         <div className="container conatiner-fixed border-b sm:border-black border-border spacing !pt-0">
           <div className="md:max-w-[767px] mx-auto grid gap-5">
             <h2 className="heading-lg">

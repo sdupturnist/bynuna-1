@@ -1489,6 +1489,10 @@ div:where(.swal2-container) div:where(.swal2-actions) .btn-success {
 .general-content {
   @apply leading-relaxed;
 }
+.blog-content table,
+.general-content table {
+  width: 100% !important;
+}
 .blog-content a,
 .blog-content p,
 .general-content a,
@@ -2115,6 +2119,8 @@ html[lang=ar] * {
 
 .react-slider img {
   border: solid thin #eee !important;
+  -o-object-fit: contain;
+     object-fit: contain;
 }
 
 .react-slider__ul {
@@ -2128,6 +2134,15 @@ html[lang=ar] * {
 .react-slider__ul li.active img {
   content: normal !important;
   position: relative !important;
+  min-height: 50px;
+}
+
+.react-slider__picture:after {
+  display: none !important;
+}
+
+.react-slider img {
+  @apply aspect-square;
 }
 
 .success-animation {
@@ -2183,4 +2198,11 @@ html[lang=ar] * {
   100% {
     box-shadow: inset 0px 0px 0px 30px #4bb71b;
   }
+}
+.out-of-stock-single {
+  @apply text-center  bg-red-100  font-semibold text-red-400 border-b border-red-100 text-[10px] inline-block leading-[1.5rem] pt-[0.9px] uppercase px-2;
+}
+
+.out-of-stock {
+  @apply absolute text-center bottom-0 right-0  bg-red-100 left-0 font-semibold text-red-400 border-b border-red-100 text-[10px] block leading-[1.5rem] pt-[0.9px] uppercase px-2;
 }/*# sourceMappingURL=theme.css.map */

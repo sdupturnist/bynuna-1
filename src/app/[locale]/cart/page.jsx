@@ -1,13 +1,16 @@
 import CartView from "../Components/CartView";
 import PageHeader from "../Components/PageHeader";
-import { apiUrl, homeUrl, metaStaticData, siteLogo, siteName } from "../Utils/variables";
+import {
+  apiUrl,
+  homeUrl,
+  metaStaticData,
+  siteLogo,
+  siteName,
+} from "../Utils/variables";
 
-export default async function Cart({params: { locale }}) {
-  
-
-
+export default async function Cart({ params: { locale } }) {
   let pageData = await fetch(
-    `${apiUrl}wp-json/wp/v2/pages?slug=cart&lang=${locale || 'en'}`,
+    `${apiUrl}wp-json/wp/v2/pages?slug=cart&lang=${locale || "en"}`,
     {
       next: { revalidate: 60 },
     }
@@ -15,14 +18,13 @@ export default async function Cart({params: { locale }}) {
 
   let [page] = await pageData.json();
 
-
   return (
     <section className="bg-light lg:bg-white p-0">
       <div className="p-0 lg:pb-10">
-     <PageHeader title={page?.title?.rendered} />
+        <PageHeader title={page?.title?.rendered} />
         <div className="mobile-container-fixed">
           <div className="lg:pt-5 max-w-[999px] mx-auto grid sm:gap-12 gap-5">
-            <CartView locale={locale}/>
+            <CartView locale={locale} />
           </div>
         </div>
       </div>
@@ -30,10 +32,7 @@ export default async function Cart({params: { locale }}) {
   );
 }
 
-
-
 export async function generateMetadata({ params, searchParams }, parent) {
-
   const staticData = metaStaticData;
 
   try {
@@ -47,8 +46,6 @@ export async function generateMetadata({ params, searchParams }, parent) {
 
     const [pageData] = await page.json();
 
-
-
     // Return metadata object with dynamic values, or fall back to static values
     return {
       title:
@@ -58,7 +55,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
       description:
         pageData?.yoast_head_json?.og_description || staticData.og_description,
 
-      author: siteName+' Admin',
+      author: siteName + " Admin",
       viewport: "width=device-width, initial-scale=1",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
@@ -86,8 +83,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
         staticData.twitter_image,
       openGraph: {
         images: [
-          pageData?.yoast_head_json?.og_image?.[0]?.url ||
-            staticData.ogImage,
+          pageData?.yoast_head_json?.og_image?.[0]?.url || staticData.ogImage,
         ],
       },
     };

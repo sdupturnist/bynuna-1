@@ -182,9 +182,7 @@ export default function Header({ locale }) {
   }
 
   const organizedData = buildHierarchy(
-    headerMenu || (savedMenuInLocalStorage && savedMenuInLocalStorage)
-      ? savedMenuInLocalStorage?.items
-      : headerMenu?.items
+    headerMenu && headerMenu?.items
   );
 
   useEffect(() => {
@@ -306,7 +304,7 @@ export default function Header({ locale }) {
                   <Nav
                     locale={locale}
                     header
-                    data={headerMenu && headerMenu?.items}
+                    data={headerMenu && headerMenu}
                   />
                 </div>
                 <div className="w-full lg:w-auto flex items-center justify-end  gap-6">

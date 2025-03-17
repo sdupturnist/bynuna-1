@@ -21,7 +21,7 @@ export default function Pagination({ currentPage, totalPages, itemsShowPerPage }
   };
 
   return (
-    <div className="flex gap-2 items-center justify-center text-center sm:mt-10 mt-7 mx-auto">
+    <div className="flex gap-2 items-center justify-center text-center sm:mt-10 mt-3 mb-2 mx-auto">
       <button
         ref={loadMoreButtonRef}
         onClick={handleLoadMore}

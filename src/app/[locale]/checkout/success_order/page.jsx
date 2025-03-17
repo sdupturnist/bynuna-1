@@ -12,7 +12,7 @@ export default function SuccessOrder() {
   const searchParams = useSearchParams();
   const userType = searchParams?.get("user_type") || "account";  // Access query parameter properly
 
-  console.log(userType);
+
 
   const {
     setCartItems,

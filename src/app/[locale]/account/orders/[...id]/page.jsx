@@ -356,7 +356,9 @@ export default function OrderItem() {
                       order?.status === "order-delivered") && (
                       <button
                         className="btn btn-primary"
-                        onTouchStart={(e) => setShowReturnOrder(!showReturnOrder)}
+                        onTouchStart={(e) =>
+                          setShowReturnOrder(!showReturnOrder)
+                        }
                         onClick={(e) => setShowReturnOrder(!showReturnOrder)}
                       >
                         {getTranslation(
@@ -368,32 +370,35 @@ export default function OrderItem() {
                     )}
 
                   {(order?.status === "completed" ||
-                    order?.status === "order-delivered")  &&
+                    order?.status === "order-delivered") &&
                     showReturnOrder && (
                       <ReturnOrderForm
                         userInfo={userData && userData}
                         data={order && order}
                       />
                     )}
-                  {order?.status !== "completed" && order?.status !== "order-delivered" && (
-                    <>
-                      {!cancelForm && (
-                        <Button
-                          classes="btn-mobile-full"
-                          label="Cancel order"
-                          action={() => setCancelForm(!cancelForm)}
-                        />
-                      )}
+                  {order?.status !== "completed" &&
+                    order?.status !== "order-delivered" && 
+                    order?.status !== "return-initiated" &&
+                    (
+                      <>
+                        {!cancelForm && (
+                          <Button
+                            classes="btn-mobile-full"
+                            label="Cancel order"
+                            action={() => setCancelForm(!cancelForm)}
+                          />
+                        )}
 
-                      {cancelForm && (
-                        <CancelOrderForm
-                          data={order}
-                          userInfo={userData}
-                          orderedDate={order && order?.date_completed}
-                        />
-                      )}
-                    </>
-                  )}
+                        {cancelForm && (
+                          <CancelOrderForm
+                            data={order}
+                            userInfo={userData}
+                            orderedDate={order && order?.date_completed}
+                          />
+                        )}
+                      </>
+                    )}
                 </div>
               </div>
             </section>

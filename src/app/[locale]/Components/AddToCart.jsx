@@ -33,7 +33,8 @@ export default function AddToCart({
   isNeedLicence,
   category,
   subCategory,
-  childCategory
+  childCategory,
+  stock
 }) {
 
 
@@ -419,6 +420,8 @@ subCategory,
 
       {card ? (
         <>
+        
+{stock !== 'outofstock' &&
           <button
             className={`${
               isInCart ? "bg-primary text-white" : "bg-white"
@@ -442,6 +445,7 @@ subCategory,
                         )}
          </span>
           </button>
+}
         </>
       ) : (
         <div className="items-end flex justify-between lg:mt-0 gap-3">
@@ -508,6 +512,7 @@ subCategory,
             {!inCartPage && (
               <>
                 {!isInCart && (
+                  stock !== 'outofstock' &&
                   <button
                     onClick={() => {
                       handleCartAction(name, image, price, name, isNeedLicence, category, subCategory, childCategory);
@@ -529,7 +534,9 @@ subCategory,
                   </button>
                 )}
 
-                {isInCart && (
+                {isInCart && 
+                 stock !== 'outofstock' &&
+                (
                   <Link
                     href={`${homeUrl}${locale}/cart`}
                     className="btn !min-h-14 px-8 w-fit"

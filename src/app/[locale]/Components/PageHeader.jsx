@@ -201,20 +201,19 @@ export default function PageHeader({
     return (
       <div className="bg-white border-b border-border sm:py-5 py-3">
         <div className="container flex justify-between">
-          <h1 className="sm:text-lg text-lg font-bold text-center uppercase">
+          <h1 className="sm:text-lg text-lg font-bold sm:text-center uppercase">
             {getTranslation(
               translation[0]?.translations,
               title,
               locale || "en"
             )}
           </h1>
-          <p className="primary-font">
+          <p className="primary-font truncate max-w-[40%]">
             {getTranslation(
               translation[0]?.translations,
               "Hello",
               locale || "en"
-            )}
-            <span className="px-2">{data?.first_name || ""}</span>
+            )}, <span className="px-1">{data?.first_name || ""}</span>
           </p>
         </div>
       </div>

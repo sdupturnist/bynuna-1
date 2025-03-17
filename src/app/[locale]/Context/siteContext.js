@@ -67,35 +67,62 @@ export const SiteProvider = ({ children }) => {
 
   //HEADER MENUS
 
-  
-
   const headerMenuData = async () => {
 
-if(localStorage.getItem(`${siteName}_menu`)){
-  return false
-}
-
-
-    try {
-      const response = await fetch(
-        `${apiUrl}wp-json/custom/v1/menus/header-menu`,
-        // `${apiUrl}wp-json/custom/v1/menus/test`,
-        {
-          next: { revalidate: 60 },
+   
+    
+    
+        try {
+          const response = await fetch(
+            `${apiUrl}wp-json/custom/v1/menus/header-menu`,
+            // `${apiUrl}wp-json/custom/v1/menus/test`,
+            {
+              next: { revalidate: 60 },
+            }
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch header menus");
+          }
+          const data = await response.json();
+         setHeaderMenu(data);
+         // console.log('ddddddddd',data)
+    
+        } catch (error) {
+          console.error(error);
         }
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch header menus");
-      }
-      const data = await response.json();
-      typeof window !== "undefined" && localStorage.setItem(`${siteName}_menu`, JSON.stringify(data))
-      setHeaderMenu(data);
-     // console.log('ddddddddd',data)
+      };
 
-    } catch (error) {
-      console.error(error);
-    }
-  };
+      
+
+
+
+//   const headerMenuData = async () => {
+
+// if(localStorage.getItem(`${siteName}_menu`)){
+//   return false
+// }
+
+
+//     try {
+//       const response = await fetch(
+//         `${apiUrl}wp-json/custom/v1/menus/header-menu`,
+//         // `${apiUrl}wp-json/custom/v1/menus/test`,
+//         {
+//           next: { revalidate: 60 },
+//         }
+//       );
+//       if (!response.ok) {
+//         throw new Error("Failed to fetch header menus");
+//       }
+//       const data = await response.json();
+//       typeof window !== "undefined" && localStorage.setItem(`${siteName}_menu`, JSON.stringify(data))
+//       setHeaderMenu(data);
+//      // console.log('ddddddddd',data)
+
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   };
 
   //FOOTER MENUS
 

@@ -49,7 +49,7 @@ function LoginForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          //   Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache", // Prevent caching
         },
         body: JSON.stringify({
           email,
@@ -126,8 +126,8 @@ function LoginForm() {
     <>
       {error && <Alerts title={error} status="red" />}{" "}
       {/* Display error if any */}
-      <form onSubmit={handleLogin}>
-        <div className="grid gap-4">
+      <form onSubmit={handleLogin} >
+        <div className="grid gap-4 mt-4">
           <FloatingLabelInput
             type="email"
             className="input"

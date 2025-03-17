@@ -10,12 +10,10 @@ const nextConfig = {
       domains: [
         'localhost',
         'avataaars.io', 
-        'admin.wellness4u.in',
+        'admin.testwithupturnist.com',
         'secure.gravatar.com',
-        'ardalmarmoom.com',
         'via.placeholder.com',
         'admin.bynuna.ae',
-        'admin.ardalmarmoom.com'
       ],
     },
     

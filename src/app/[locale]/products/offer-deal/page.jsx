@@ -64,13 +64,21 @@ export default async function BrandPage({
     .catch((error) => console.error("Error:", error));
 
   let totalProducts = await fetch(
-    `${apiUrl}wp-json/custom/v1/products?_offer_deal=yes&per_page=1000`,
+    `${apiUrl}wp-json/custom/v1/products?_offer_deal=yes${
+      updatedString ? updatedString : ""
+    }&per_page=1000&order_by=${sortby || "name"}&order=${
+      sortVal || "asc"
+    }&min_price=${min_price ? min_price : 0}&max_price=${
+      max_price ? max_price : 0
+    }`,
     {
       next: { revalidate: 60 },
     }
   )
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
+
+ 
 
   return (
     <div className="bg-bggray">

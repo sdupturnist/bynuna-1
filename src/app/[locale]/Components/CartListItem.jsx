@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCartContext } from "../Context/cartContext";
 import AddToCart from "./AddToCart";
 import {
+  apiUrl,
   convertStringToJSON,
   getTranslation,
   homeUrl,
@@ -14,6 +15,7 @@ import Images from "./Images";
 import Price from "./Price";
 import { useLanguageContext } from "../Context/LanguageContext";
 import { useParams, useRouter } from "next/navigation";
+import Alerts from "./Alerts";
 
 export default function CartListItem({}) {
   const router = useRouter();
@@ -24,45 +26,108 @@ export default function CartListItem({}) {
 
   const { translation } = useLanguageContext();
 
+  const [products, setProducts] = useState([]);
+  const [outOfStockItems, setOutOfStockItems] = useState([]);
+
+  const getAllProducts = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}wp-json/custom/v1/products?per_page=1000`,
+        {
+          next: { revalidate: 60 },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch products");
+      }
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   // Load items from localStorage on component mount
   useEffect(() => {
+    getAllProducts();
+
     // Get the cart items from localStorage
     const storedItems =
       typeof window !== "undefined" && localStorage.getItem(`${siteName}_cart`);
 
     // Ensure cartItems is always an array
     setCartItems(storedItems ? JSON.parse(storedItems) : []);
-  }, [setCartItems]);
+  }, [setCartItems, router]);
 
   // Merge and map the cart with product details
   const mergedCart =
     Array.isArray(cartItems) &&
-    cartItems.map((item) => {
-      const product =
-        Array.isArray(cartListedItems) &&
-        cartListedItems.find((p) => p.id === item.product_id); // Find the corresponding product
+    cartItems
+      .map((item) => {
+        const product =
+          Array.isArray(cartListedItems) &&
+          cartListedItems.find((p) => p.id === item.product_id); // Find the corresponding product
 
-      return {
-        product_id: item?.product_id,
-        quantity: item?.quantity,
-        name: product?.name,
-        slug: product?.slug,
-        permalink: product?.permalink,
-        price: product?.price,
-        categories: product?.categories,
-        image: product?.images[0]?.src, // Get the first image if available
-        isNeedLicence: item?.isNeedLicence,
-        category: item?.category,
-        sub_category: item?.sub_category,
-        child_category: item?.child_category,
-      };
+        // Check if the product is out of stock
+        const isOutOfStock = product?.stock_status === "outofstock";
+
+        // If the product is out of stock, return null or skip it
+        if (isOutOfStock) {
+          return null;
+        }
+
+        return {
+          product_id: item?.product_id,
+          quantity: item?.quantity,
+          name: product?.name,
+          slug: product?.slug,
+          permalink: product?.permalink,
+          price: product?.price,
+          categories: product?.categories,
+          image: product?.images[0]?.src, // Get the first image if available
+          isNeedLicence: item?.isNeedLicence,
+          category: item?.category,
+          sub_category: item?.sub_category,
+          child_category: item?.child_category,
+        };
+      })
+      .filter(Boolean); // Filter out any null values (out of stock items)
+
+  useEffect(() => {
+    const outOfStock = cartItems.filter((item) => {
+      const product = cartListedItems.find((p) => p.id === item.product_id);
+      return product?.stock_status === "outofstock";
     });
 
+    if (outOfStock.length > 0) {
+      setOutOfStockItems(outOfStock);
 
-    
+      // Remove out-of-stock items from localStorage
+      const updatedCartItems = cartItems.filter((item) => {
+        const product = cartListedItems.find((p) => p.id === item.product_id);
+        return product?.stock_status !== "outofstock";
+      });
+
+      // Update cartItems state and localStorage
+      setCartItems(updatedCartItems);
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          `${siteName}_cart`,
+          JSON.stringify(updatedCartItems)
+        );
+      }
+    }
+  }, [cartItems, cartListedItems]);
 
   return (
     <>
+      {/* Show message for out-of-stock items */}
+      {outOfStockItems.length > 0 && (
+        <Alerts status="red" stock data={outOfStockItems && outOfStockItems} />
+      )}
+
+      {/* Render remaining cart items */}
       <ul className="added-cart-list">
         {mergedCart &&
           mergedCart.map((item, index) => (
@@ -94,8 +159,8 @@ export default function CartListItem({}) {
                     />
                   </Link>
                   <div className="w-full grid items-center">
-                    <Link 
-                       href={`${homeUrl}${locale}/products/${item?.category}/${item?.sub_category}/${item?.child_category}/${item?.slug}`}
+                    <Link
+                      href={`${homeUrl}${locale}/products/${item?.category}/${item?.sub_category}/${item?.child_category}/${item?.slug}`}
                     >
                       <h3 className="product-title font-semibold sm:font-medium mb-1">
                         {item?.name}
@@ -138,7 +203,6 @@ export default function CartListItem({}) {
                     childCategory={item?.child_category}
                   />
                 )}
-
               </div>
               {item?.isNeedLicence === 1 && (
                 <div className="border-t border-red-300 bg-red-300 bg-opacity-10 text-xs p-2">

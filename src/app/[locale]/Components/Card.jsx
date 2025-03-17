@@ -18,6 +18,7 @@ import Avatar from "./Avatar";
 import ReadMore from "./ReadMore";
 import { Suspense } from "react";
 import ProductName from "./ProductName";
+import OutOfStock from "./OutOfStock";
 
 export default function Card({
   title,
@@ -53,7 +54,15 @@ export default function Card({
               placeholder={true}
             />
             <h3 className="heading-md mt-5 text-center line-clamp-2">
-              <ProductName title={data?.title?.rendered || data?.name} />
+              <ProductName
+                title={
+                  locale === "en"
+                    ? data?.title?.rendered || data?.name
+                    : data?.acf?.title_arabic
+                    ? data?.acf?.title_arabic
+                    : data?.title?.rendered || data?.name
+                }
+              />
             </h3>
           </div>
         </Link>
@@ -82,7 +91,15 @@ export default function Card({
               placeholder={true}
             />
             <h3 className="heading-md mt-5 text-center line-clamp-2">
-              <ProductName title={data?.title?.rendered} />
+              <ProductName
+                title={
+                  locale === "en"
+                    ? data?.title?.rendered
+                    : data?.acf?.title_arabic
+                    ? data?.acf?.title_arabic
+                    : data?.title?.rendered
+                }
+              />
             </h3>
           </div>
         </Link>
@@ -111,7 +128,15 @@ export default function Card({
               placeholder={true}
             />
             <h3 className="heading-md mt-5 text-center line-clamp-2">
-              <ProductName title={data?.title?.rendered} />
+              <ProductName
+                title={
+                  locale === "en"
+                    ? data?.title?.rendered
+                    : data?.acf?.title_arabic
+                    ? data?.acf?.title_arabic
+                    : data?.title?.rendered
+                }
+              />
             </h3>
           </div>
         </Link>
@@ -141,7 +166,15 @@ export default function Card({
               placeholder={true}
             />
             <h3 className="heading-md mt-5 text-center line-clamp-2">
-              <ProductName title={title} />
+              <ProductName
+                title={
+                  locale === "en"
+                    ? title
+                    : data?.acf?.title_arabic
+                    ? data?.acf?.title_arabic
+                    : title
+                }
+              />
             </h3>
           </div>
         </Link>
@@ -169,8 +202,16 @@ export default function Card({
             />
 
             <div className="grid gap-3">
-              <h3 className="heading-sm secondary-font font mt-2 lowercase first-letter:capitalize">
-                <ProductName title={data?.title?.rendered} />
+              <h3 className="heading-sm secondary-font font mt-2">
+                <ProductName
+                  title={
+                    locale === "en"
+                      ? data?.title?.rendered
+                      : data?.acf?.title_arabic
+                      ? data?.acf?.title_arabic
+                      : data?.title?.rendered
+                  }
+                />
               </h3>
             </div>
           </div>
@@ -185,6 +226,7 @@ export default function Card({
       <div className="relative product-item p-0">
         <div className="grid  gap-[10px] h-full">
           <div className="img-box">
+            <OutOfStock status={data?.stock_status} />
             {data?.review_count > 0 && (
               <ReviewCount
                 average={data?.average_rating}
@@ -212,8 +254,8 @@ export default function Card({
                   category={mainCategoryName}
                   subCategory={subCategoryName}
                   childCategory={childCategoryName}
+                  stock={data?.stock_status}
                 />
-
 
                 <Link
                   href={`${homeUrl}${locale}/products/${mainCategoryName}/${subCategoryName}/${childCategoryName}/${data?.slug}`}
@@ -258,8 +300,12 @@ export default function Card({
                   title={
                     locale === "en"
                       ? data?.name
-                      : data?.acf?.arabic?.title
-                      ? data?.acf?.arabic?.title
+                      : data?.meta_data.filter(
+                          (item) => item.key === "_name_in_arabic"
+                        )[0]?.value
+                      ? data?.meta_data.filter(
+                          (item) => item.key === "_name_in_arabic"
+                        )[0]?.value
                       : data?.name
                   }
                 />
@@ -286,6 +332,7 @@ export default function Card({
                 category={mainCategoryName}
                 subCategory={subCategoryName}
                 childCategory={childCategoryName}
+                stock={data?.stock_status}
               />
             </div>
           </div>
@@ -316,9 +363,7 @@ export default function Card({
             placeholder={true}
           />
           <div className="grid gap-3">
-            <h3 className="heading-md mt-5 lowercase first-letter:capitalize">
-              {data?.title?.rendered}
-            </h3>
+            <h3 className="heading-md mt-5">{data?.title?.rendered}</h3>
             <small className="text-black text-xs font-normal leading-tight">
               {formatDateString(data?.date)}
             </small>
