@@ -50,6 +50,7 @@ export const metadata = {
   twitterSite: metaTwitterSite,
   twitterCreator: metaTwitterCreator,
   twitterImage: metaTwitterImage,
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", // Disable zoom
 };
 
 // Specify the font weights here
@@ -67,18 +68,9 @@ export default async function RootLayout({ children }) {
   const locale = await getLocale()
 
 
-  // const messages = await getMessages()
 
-  // if (!routing.includes(locale)) {
-  //   notFound()
-  // }
-
-
-
-  
   return (
     <html lang={locale} dir={locale === 'en' ? 'ltr' : 'rtl'}>
-       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
       <body>
         <ClientProvider>
           <NextTopLoader
@@ -113,32 +105,3 @@ export default async function RootLayout({ children }) {
 
   
 }
-
-
-
-
-// import { NextIntlClientProvider } from "next-intl"
-// import { getMessages } from "next-intl/server"
-// import { notFound } from "next/navigation"
-// import { routing } from "@/i18n/routing"
-
-// export default async function LocaleLayout({ children, params: { locale } }) {
-//   // Ensure that the incoming `locale` is valid
-//   if (!routing.locales.includes(locale)) {
-//     notFound()
-//   }
-
-//   // Providing all messages to the client
-//   // side is the easiest way to get started
-//   const messages = await getMessages()
-
-//   return (
-//     <html lang={locale}>
-//       <body>
-//         <NextIntlClientProvider messages={messages}>
-//           {children}
-//         </NextIntlClientProvider>
-//       </body>
-//     </html>
-//   )
-// }
