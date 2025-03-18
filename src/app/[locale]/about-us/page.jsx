@@ -61,7 +61,7 @@ export async function generateMetadata({ params, searchParams }, parent) {
         pageData?.yoast_head_json?.og_description || staticData.og_description,
 
       author: siteName+' Admin',
-      viewport: "width=device-width, initial-scale=1",
+      viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
         canonical: homeUrl,
