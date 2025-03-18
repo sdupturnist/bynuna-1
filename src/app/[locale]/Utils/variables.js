@@ -144,7 +144,7 @@ export let metaDescription =
 export let metaAuthor = "BYNUNA Team";
 export let metaKeywords =
   "Military Equipment, Hunting Gear, Shooting Equipment, Law Enforcement Gear, Outdoor Sports Equipment, UAE Hunting Store, UAE Military Supplier, Hunting and Shooting UAE, Outdoor Sports UAE, Law Enforcement UAE, Best Military Brands, Bynuna Hunting & Shooting Equipment.";
-export let metaViewport = "width=device-width, initial-scale=1";
+export let metaViewport = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
 export let metaRobots = "index, follow";
 
 // Open Graph Tags
