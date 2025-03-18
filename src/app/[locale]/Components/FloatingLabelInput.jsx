@@ -47,7 +47,7 @@ const FloatingLabelInput = ({
           onBlur={handleBlur}
           {...(required ? { required: true } : {})}
           ref={inputRef}
-          className={`${className} peer w-full input !min-h-24  placeholder-transparent text-[14px] placeholder:text-[12px]`}
+          className={`${className} peer w-full pt-3 input !min-h-24  placeholder-transparent text-[14px] placeholder:text-[12px]`}
         >
           {" "}
         </textarea>
