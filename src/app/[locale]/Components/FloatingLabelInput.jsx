@@ -43,8 +43,8 @@ const FloatingLabelInput = ({
           name={name}
          // placeholder={focused ? "" : label}
           onChange={onChange}
-       //   onFocus={handleFocus}
-        //  onBlur={handleBlur}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           {...(required ? { required: true } : {})}
           ref={inputRef}
           className={`${className} peer w-full input !min-h-24  placeholder-transparent text-[14px] placeholder:text-[12px]`}
@@ -58,8 +58,8 @@ const FloatingLabelInput = ({
           type={type}
           defaultValue={defaultValue || ""}
           onChange={onChange}
-       //   onFocus={handleFocus}
-       //   onBlur={handleBlur}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           {...(required ? { required: true } : {})}
           className={`peer w-full input  placeholder-transparent text-[14px] placeholder:text-[12px] ${className} ${
             focused || value ? "pt-5" : "pt-3"
@@ -74,15 +74,15 @@ const FloatingLabelInput = ({
           type={type}
           value={value || ""}
           onChange={onChange}
-          //onFocus={handleFocus}
-         // onBlur={handleBlur}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           {...(required ? { required: true } : {})}
           className={`peer w-full input  placeholder-transparent text-[14px] placeholder:text-[12px] ${className} `}
           placeholder={focused ? "" : label}
           ref={inputRef} // Attach the ref to the input
         />
       )}
-      {/* {textarea ? (
+      {textarea ? (
         <label
           htmlFor={id}
           className={`absolute bg-white transform uppercase transition-all cursor-pointer text-start label-input w-fit ${
@@ -106,7 +106,7 @@ const FloatingLabelInput = ({
         >
           {label}
         </label>
-      )} */}
+      )}
     </div>
   );
 };

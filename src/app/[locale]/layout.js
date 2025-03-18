@@ -53,6 +53,15 @@ export const metadata = {
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no", // Disable zoom
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  // interactiveWidget: 'resizes-visual', // You can keep this if you plan to use it
+};
+
+
 // Specify the font weights here
 const inter = Inter({ subsets: ["latin"] });
 const cairo = Cairo({ subsets: ["latin"] });
