@@ -166,7 +166,7 @@ export default function Address() {
                         >
                           <li>
                             <Link
-                             onTouchStart={(e) => setEditData(item)}
+                            
                               onClick={(e) => setEditData(item)}
                               href={`${homeUrl}${locale}/account/address/edit/${item?.id}`}
                             >
@@ -179,7 +179,7 @@ export default function Address() {
                           </li>
                           <li>
                             <button 
-                              onTouchStart={(e) => deleteAddress(item?.id)}
+                             
                             onClick={(e) => deleteAddress(item?.id)}
                             >
                               {getTranslation(

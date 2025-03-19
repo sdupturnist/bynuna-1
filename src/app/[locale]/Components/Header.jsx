@@ -181,9 +181,7 @@ export default function Header({ locale }) {
     return filteredChildren;
   }
 
-  const organizedData = buildHierarchy(
-    headerMenu && headerMenu?.items
-  );
+  const organizedData = buildHierarchy(headerMenu && headerMenu?.items);
 
   useEffect(() => {
     setVisibleDiv(showNavCatItem); // Set the visible div based on the active value
@@ -234,27 +232,10 @@ export default function Header({ locale }) {
                 >
                   {currencies &&
                     currencies?.map((item, index) => (
-                      <li
-                        key={index}
-                        onClick={handleClick}
-                        onTouchStart={handleClick}
-                      >
+                      <li key={index} onClick={handleClick}>
                         <button
                           className=""
                           onClick={(e) => {
-                            setActiveCurrency(item?.title?.rendered),
-                              typeof window !== "undefined" &&
-                                localStorage.setItem(
-                                  `${siteName}_currency`,
-                                  item?.title?.rendered
-                                ),
-                              typeof window !== "undefined" &&
-                                localStorage.setItem(
-                                  `${siteName}_currency_symbol`,
-                                  item?.acf?.symbol
-                                );
-                          }}
-                          onTouchStart={(e) => {
                             setActiveCurrency(item?.title?.rendered),
                               typeof window !== "undefined" &&
                                 localStorage.setItem(
@@ -301,19 +282,12 @@ export default function Header({ locale }) {
               </div>
               <div className="flex justify-between w-full">
                 <div className="hidden lg:flex w-full items-center justify-center">
-                  <Nav
-                    locale={locale}
-                    header
-                    data={headerMenu && headerMenu}
-                  />
+                  <Nav locale={locale} header data={headerMenu && headerMenu} />
                 </div>
                 <div className="w-full lg:w-auto flex items-center justify-end  gap-6">
                   {/* SEARCH ICON */}
                   <svg
                     onClick={(e) =>
-                      setSearchMobileVisible(!searchMobileVisible)
-                    }
-                    onTouchStart={(e) =>
                       setSearchMobileVisible(!searchMobileVisible)
                     }
                     className="cursor-pointer hover:opacity-30 transition-all"
@@ -360,11 +334,11 @@ export default function Header({ locale }) {
                       >
                         {validUserTocken && (
                           <>
-                            <li
-                              onClick={handleClick}
-                              onTouchStart={handleClick}
-                            >
-                              <Link href={`${homeUrl}${locale}/account`}>
+                            <li>
+                              <Link
+                                onClick={handleClick}
+                                href={`${homeUrl}${locale}/account`}
+                              >
                                 {getTranslation(
                                   translation[0]?.translations,
                                   "Account",
@@ -372,10 +346,7 @@ export default function Header({ locale }) {
                                 )}
                               </Link>
                             </li>
-                            <li
-                              onClick={handleClick}
-                              onTouchStart={handleClick}
-                            >
+                            <li onClick={handleClick}>
                               <Logout small />
                             </li>
                           </>
@@ -526,10 +497,10 @@ export default function Header({ locale }) {
                   } md:border-none md:pb-0`}
                 >
                   <Link
-                 onClick={(e) => {
-                  setShowMegaMenu(false),
-                    (document.body.style.overflow = "auto");
-                }}
+                    onClick={(e) => {
+                      setShowMegaMenu(false),
+                        (document.body.style.overflow = "auto");
+                    }}
                     href={`${homeUrl}${locale}/products/${category?.url
                       ?.split("/")
                       .filter(Boolean)
@@ -605,10 +576,10 @@ export default function Header({ locale }) {
                                   />
                                 ) : (
                                   <Link
-                                  onClick={(e) => {
-                                    setShowMegaMenu(false),
-                                      (document.body.style.overflow = "auto");
-                                  }}
+                                    onClick={(e) => {
+                                      setShowMegaMenu(false),
+                                        (document.body.style.overflow = "auto");
+                                    }}
                                     href={`${homeUrl}${locale}/products/${category?.url
                                       ?.split("/")
                                       .filter(Boolean)
@@ -643,20 +614,17 @@ export default function Header({ locale }) {
             )}
           </div>
           <img
-                    src={`${homeUrl}images/brand-bg-large.webp`}
-                    title={siteName}
-                    alt={siteName}
-                    className="block w-full object-contain mt-10"
-                  />
+            src={`${homeUrl}images/brand-bg-large.webp`}
+            title={siteName}
+            alt={siteName}
+            className="block w-full object-contain mt-10"
+          />
         </div>
 
         {showMegaMenu && (
           <div
             className="backdrop-megamenu cursor-pointer absolute"
             onClick={(e) => {
-              setShowMegaMenu(!showMegaMenu);
-            }}
-            onTouchStart={(e) => {
               setShowMegaMenu(!showMegaMenu);
             }}
           ></div>
