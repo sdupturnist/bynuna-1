@@ -22,9 +22,12 @@ const LanguageSelector = () => {
     const currentPath = pathname.replace(/^\/(en|ar)/, "");
 
     // Change the URL to reflect the selected language and keep the current path
-    router.push(`/${newLanguage}${currentPath}`).finally(() => {
-      setLoading(false); // Set loading state to false after navigation
-    });
+    router.push(`/${newLanguage}${currentPath}`);
+
+    // After a small delay, set loading to false to simulate completion of the action
+    setTimeout(() => {
+      setLoading(false);
+    }, 500); // You can adjust the timeout duration as needed
   };
 
   return (

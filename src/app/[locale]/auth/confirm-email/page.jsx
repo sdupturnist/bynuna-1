@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { useRouter } from "nextjs-toploader/app";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+
 import { WelcomeEmailTemplate } from "../../Utils/MailTemplates";
 import LoadingItem from "../../Components/LoadingItem";
 import { sendMail } from "../../Utils/Mail";

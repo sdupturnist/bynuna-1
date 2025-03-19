@@ -4,10 +4,9 @@ import { useAuthContext } from "../Context/authContext";
 import { isLoggined } from "../Utils/checkAuth";
 import WriteReviewForm from "./Forms/WriteReviewForm";
 import ModalPopup from "./ModalPopup";
-import { useRouter } from 'nextjs-toploader/app';
 import { getTranslation, siteName } from "../Utils/variables";
 import { useLanguageContext } from "../Context/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 
 export default function WriteReview({ productId,  }) {

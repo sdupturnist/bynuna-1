@@ -21,7 +21,6 @@ import {
   metaViewport,
   siteName,
 } from "./Utils/variables";
-import NextTopLoader from "nextjs-toploader";
 import ConfirmAge from "./Components/ConfirmAge";
 import { notFound } from "next/navigation"
 
@@ -82,19 +81,6 @@ export default async function RootLayout({ children }) {
     <html lang={locale} dir={locale === 'en' ? 'ltr' : 'rtl'}>
       <body>
         <ClientProvider>
-          <NextTopLoader
-            color="white"
-            initialPosition={0.08}
-            crawlSpeed={200}
-            height={5}
-            crawl={true}
-            showSpinner={true}
-            easing="ease"
-            shadow={false}
-            speed={200}
-            zIndex={1600}
-            showAtBottom={false}
-          />
           <Header 
           locale={locale}
           />

@@ -2,9 +2,8 @@
 import { useEffect, useState, useRef } from "react";
 import { ReactSearchAutocomplete } from "react-search-autocomplete";
 import { getTranslation, homeUrl } from "../Utils/variables";
-import { useRouter } from "nextjs-toploader/app";
 import { useLanguageContext } from "../Context/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSiteContext } from "../Context/siteContext";
 
 export default function Search({}) {

@@ -1,11 +1,10 @@
 "use client";
 
-import { useRouter } from "nextjs-toploader/app";
 import { homeUrl, getTranslation, siteName } from "../Utils/variables";
 import { useAuthContext } from "../Context/authContext";
 import Cookies from "js-cookie"; // Import js-cookie
 import { useLanguageContext } from "../Context/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 
 export default function Logout({ small}) {

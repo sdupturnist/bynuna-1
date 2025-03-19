@@ -8,11 +8,10 @@ import {
   homeUrl,
 } from "../../Utils/variables";
 import Alerts from "../Alerts";
-import { useRouter } from "nextjs-toploader/app";
 import FloatingLabelInput from "../FloatingLabelInput";
 import { useJwt } from "../../Context/jwtContext";
 import { useLanguageContext } from "../../Context/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { sendMail } from "../../Utils/Mail";
 
 export default function PasswordResetRequest() {

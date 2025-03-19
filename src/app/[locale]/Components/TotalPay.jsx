@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from 'nextjs-toploader/app';
+
 import Swal from "sweetalert2";
 import { useCartContext } from "../Context/cartContext";
 import { useCheckoutContext } from "../Context/checkoutContext";
@@ -22,6 +22,7 @@ import { useSiteContext } from "../Context/siteContext";
 import CryptoJS from "crypto-js";
 import { useAuthContext } from "../Context/authContext";
 import { useLanguageContext } from "../Context/LanguageContext";
+import { useRouter } from "next/navigation";
 
 
 export default function TotalPay({locale}) {

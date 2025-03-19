@@ -1,6 +1,7 @@
 'use client';
 
-import { useRouter } from 'nextjs-toploader/app';
+
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
 
 export default function Pagination({ currentPage, totalPages, itemsShowPerPage }) {

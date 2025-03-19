@@ -76,8 +76,8 @@ function add_cors_headers() {
         header("Access-Control-Allow-Origin: $origin");
     }
 
-    // Allow specific HTTP methods (GET, POST, OPTIONS)
-    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    // Allow specific HTTP methods (GET, POST, OPTIONS, PUT)
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT");
 
     // Allow specific headers (for example, Content-Type, Authorization, Cache-Control, etc.)
     header("Access-Control-Allow-Headers: Content-Type, Authorization, X-WP-Nonce, Cache-Control");
@@ -97,6 +97,7 @@ add_action('init', 'add_cors_headers');
 
 
 
+
 //COLOR SCHEME
 function wpacg_bynuna_admin_color_scheme() {
   //Get the theme directory
@@ -109,6 +110,7 @@ function wpacg_bynuna_admin_color_scheme() {
   );
 }
 add_action('admin_init', 'wpacg_bynuna_admin_color_scheme');
+
 
 
 //HIDE WOOCOMERECE FIELDS

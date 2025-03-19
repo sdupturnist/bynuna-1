@@ -7,7 +7,6 @@ import {
   siteName,
 } from "../../Utils/variables";
 import { useEffect, useState } from "react";
-import { useRouter } from "nextjs-toploader/app";
 import Alerts from "../Alerts";
 import { sendMail } from "../../Utils/Mail";
 import Link from "next/link";
@@ -16,7 +15,7 @@ import ModalPopup from "../ModalPopup";
 import FloatingLabelInput from "../FloatingLabelInput";
 import DatePicker from "react-datepicker";
 import { useLanguageContext } from "../../Context/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import LoadingItem from "../LoadingItem";
 
 export default function Signup() {

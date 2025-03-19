@@ -8,17 +8,16 @@ import { useCartContext } from "../Context/cartContext";
 import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
 import AddToWishList from "./AddToWishList";
 import Link from "next/link";
-import { apiUrl, getTranslation, homeUrl, siteName } from "../Utils/variables";
+import { getTranslation, homeUrl, siteName } from "../Utils/variables";
 import Notification from "./Notification";
 import Swal from "sweetalert2";
 import { userId } from "../Utils/UserInfo";
 import { useAuthContext } from "../Context/authContext";
 
-import { useRouter } from "nextjs-toploader/app";
 
 import { useLanguageContext } from "../Context/LanguageContext";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 export default function AddToCart({
   itemid,

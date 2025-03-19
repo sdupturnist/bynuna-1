@@ -1565,3 +1565,41 @@ html[lang="ar"] {
 {
   @apply absolute text-center bottom-0 right-0  bg-red-100 left-0 font-semibold text-red-400 border-b border-red-100 text-[10px] block leading-[1.5rem] pt-[0.9px] uppercase px-2
 }
+
+
+
+.image-gallery-content .image-gallery-slide-wrapper{
+  @apply border border-border aspect-square flex items-center justify-center
+}
+
+.image-gallery-content.fullscreen .image-gallery-slide-wrapper{
+  @apply aspect-auto min-h-[80vh] border-none
+}
+
+
+.image-gallery-thumbnails-container{
+  @apply pt-3 pb-10 flex gap-3 items-center justify-center
+}
+
+.image-gallery-thumbnail{
+  @apply border border-border aspect-square
+}
+
+
+.image-gallery-left-nav .image-gallery-svg, .image-gallery-right-nav .image-gallery-svg {
+  height: 50px;
+  width: 50px;
+}
+
+
+@media (hover: hover) and (pointer: fine) {
+  .image-gallery-icon:hover {
+      color: $PRIMARY_COLOR !important;
+  }
+}
+
+
+.image-gallery-icon {
+
+ filter: drop-shadow(0 0px 0px #1a1a1a) !important;
+}

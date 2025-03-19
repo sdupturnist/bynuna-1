@@ -1,9 +1,9 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from 'nextjs-toploader/app';
 import { apiUrl, homeUrl, siteName, woocommerceKey } from "../Utils/variables";
 import Cookies from "js-cookie";  // Import js-cookie
+import { useRouter } from "next/navigation";
 
 const AuthContext = createContext();
 

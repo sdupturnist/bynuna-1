@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import "react-country-state-city/dist/react-country-state-city.css";
-import { useParams } from "next/navigation";
-import { useRouter } from "nextjs-toploader/app";
+import { useParams, useRouter } from "next/navigation";
 import { apiUrl, getTranslation } from "../../Utils/variables";
 import Alerts from "../Alerts";
 import { useAuthContext } from "../../Context/authContext";
@@ -123,20 +122,7 @@ export default function UpdateAddressForm({ addressCount }) {
       ],
     };
 
-    // {
-    //   address: {
-    //     firstName: firstName || updateAddress?.full_name,
-    //     lastName: "",
-    //     country: country || updateAddress?.country,
-    //     houseName: houseName || updateAddress?.address_1,
-    //     street: street || updateAddress?.address_2,
-    //     landmark: "" || updateAddress?.landmark,
-    //     state: state || updateAddress?.state,
-    //     city: city || updateAddress?.city,
-    //     pinCode: "" || updateAddress?.pincode,
-    //     phone: phone || updateAddress?.phone,
-    //   },
-    // };
+   
 
     try {
       // Submit the review

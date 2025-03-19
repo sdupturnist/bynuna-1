@@ -5,8 +5,7 @@ import {
   getTranslation,
   homeUrl,
 } from "../Utils/variables";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
-import { useRouter } from "nextjs-toploader/app";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { ArrowLeftIcon, Bars2Icon } from "@heroicons/react/24/solid";
 import Images from "./Images";
 import DropDown from "./DropDown";

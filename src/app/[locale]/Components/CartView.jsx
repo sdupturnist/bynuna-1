@@ -6,13 +6,12 @@ import AmountList from "./AmountList";
 import CouponCode from "./CouponCode";
 import { useCartContext } from "../Context/cartContext";
 import { getTranslation, homeUrl, siteName } from "../Utils/variables";
-import { useRouter } from "nextjs-toploader/app";
 import { useAuthContext } from "../Context/authContext"; // import useAuthContext here
 import Swal from "sweetalert2";
 import PaymentOptions from "./PaymentOptions";
 import Alerts from "./Alerts";
 import { useLanguageContext } from "../Context/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 export default function CartView() {
   const router = useRouter();

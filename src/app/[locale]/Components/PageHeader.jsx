@@ -3,10 +3,9 @@
 import { useState } from "react";
 import Filter from "./Filter";
 import { useSiteContext } from "../Context/siteContext";
-import { useRouter } from "nextjs-toploader/app";
 import { getTranslation, siteName } from "../Utils/variables";
 import { useLanguageContext } from "../Context/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 export default function PageHeader({
   title,

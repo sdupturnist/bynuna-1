@@ -109,8 +109,6 @@ export default async function ProductSingle({
       (product) => upsell_ids && upsell_ids.includes(product.id)
     );
 
-  
-
   const accordianItems = [
     singleProduct?.description || singleProduct?.acf?.arabic?.description
       ? {
@@ -477,33 +475,33 @@ export default async function ProductSingle({
                     spacingSm
                     titleCenter
                   />
-                   <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3 sm:my-10 mb-5">
-                  <ProductWrapper
-                    data={upsellProducts && upsellProducts}
-                    searchParams={searchParams}
-                       type="product"
-                  />
-                </div>
+                  <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3 sm:my-10 mb-5">
+                    <ProductWrapper
+                      data={upsellProducts && upsellProducts}
+                      searchParams={searchParams}
+                      type="product"
+                    />
+                  </div>
                 </div>
               </div>
             )}
             {crossSellProducts && crossSellProducts.length > 0 && (
               <div className="border-t sm:border-black border-border sm:py-10 py-5">
-                  <div className="px-3 pb-5 lg:p-0">
-                <div className="section-header-card !p-0">
-                  <SectionHeader
-                    title="Related Products"
-                    spacingSm
-                    titleCenter
-                  />
+                <div className="px-3 pb-5 lg:p-0">
+                  <div className="section-header-card !p-0">
+                    <SectionHeader
+                      title="Related Products"
+                      spacingSm
+                      titleCenter
+                    />
                     <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3 sm:my-10 my-5">
-                  <ProductWrapper
-                    data={crossSellProducts && crossSellProducts}
-                    searchParams={searchParams}
-                       type="product"
-                  />
+                      <ProductWrapper
+                        data={crossSellProducts && crossSellProducts}
+                        searchParams={searchParams}
+                        type="product"
+                      />
+                    </div>
                   </div>
-                </div>
                 </div>
               </div>
             )}
@@ -580,7 +578,8 @@ export async function generateMetadata({ params, searchParams }, parent) {
         pageData?.yoast_head_json?.og_description || staticData.og_description,
 
       author: siteAuthor || staticData.author, // Dynamic author or static fallback
-      viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+      viewport:
+        "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
         canonical: `${homeUrl}${locale}/products/${

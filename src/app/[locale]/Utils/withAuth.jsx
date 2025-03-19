@@ -1,12 +1,11 @@
 'use client';
-import { useRouter } from 'nextjs-toploader/app';
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../Context/authContext";
 import { homeUrl, siteName } from "./variables";
 import { useCartContext } from "../Context/cartContext";
 import Cookies from "js-cookie"; 
 import LoadingItem from '../Components/LoadingItem';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 
 

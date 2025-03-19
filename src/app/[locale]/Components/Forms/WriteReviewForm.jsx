@@ -12,13 +12,12 @@ import { useState } from "react";
 
 import { sendMail } from "../../Utils/Mail";
 import { useAuthContext } from "../../Context/authContext";
-import { useRouter } from "nextjs-toploader/app";
 import { useJwt } from "../../Context/jwtContext";
 import { useLanguageContext } from "../../Context/LanguageContext";
 import Alerts from "../Alerts";
 import FloatingLabelInput from "../FloatingLabelInput";
 import LoadingItem from "../LoadingItem";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 
 export default function WriteReviewForm({ productId}) {

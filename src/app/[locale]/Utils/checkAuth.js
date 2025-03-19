@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+
 import { homeUrl } from "./variables";
 import Swal from "sweetalert2";
 

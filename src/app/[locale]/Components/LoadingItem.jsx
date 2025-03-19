@@ -50,7 +50,7 @@ export default function LoadingItem({
       )}
 
       {fullscreen && (
-        <div className="bg-white fixed inset-0 z-[999] flex items-center justify-center">
+        <div className="bg-white fixed inset-0 z-[999] flex items-center justify-center opacity-90">
           <div className="text-center grid gap-5 items-center justify-center">
             <span
               className={`${classes} loading loading-spinner text-primary mx-auto`}

@@ -1,7 +1,6 @@
 "use client"; // This is necessary to enable React in this file
 
 import React, { useState, useLayoutEffect } from "react";
-import { useRouter } from "nextjs-toploader/app";
 import Swal from "sweetalert2";
 import { useCartContext } from "../Context/cartContext";
 import { useCheckoutContext } from "../Context/checkoutContext";
@@ -24,7 +23,7 @@ import {
 import { OrderPlacedEmailTemplate } from "../Utils/MailTemplates";
 import { useSiteContext } from "../Context/siteContext";
 import { use } from 'react';
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { userEmail } from "../Utils/UserInfo";
 
 export default function CashOnDeliveryPayment({ userData}) {

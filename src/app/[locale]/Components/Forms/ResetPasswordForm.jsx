@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { useRouter } from 'nextjs-toploader/app';
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { apiUrl, getTranslation, homeUrl, siteName } from "../../Utils/variables";
 import Alerts from "../Alerts";
 import FloatingLabelInput from "../FloatingLabelInput";

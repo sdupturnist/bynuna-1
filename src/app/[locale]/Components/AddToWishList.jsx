@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { HeartIcon } from "@heroicons/react/24/solid";
 import { userId } from "../Utils/UserInfo"; // Assuming userId is coming from this file
 import { isLoggined } from "../Utils/checkAuth";
-import { useRouter } from "nextjs-toploader/app";
+
 import LoadingItem from "./LoadingItem";
 import { useAuthContext } from "../Context/authContext";
 import {
@@ -15,7 +15,7 @@ import {
 } from "../Utils/variables";
 import { useSiteContext } from "../Context/siteContext";
 import { useLanguageContext } from "../Context/LanguageContext";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 export default function AddToWishList({
   productId,

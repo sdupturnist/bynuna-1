@@ -70,7 +70,12 @@ export default async function BlogSingle({ params, params: { locale } }) {
                   <div className="grid sm:grid-cols-2 sm:gap-8 gap-5">
                     {blogs &&
                       blogs.map((item, index) => (
-                        <Card key={index} data={item} type="blog" locale={locale} />
+                        <Card
+                          key={index}
+                          data={item}
+                          type="blog"
+                          locale={locale}
+                        />
                       ))}
                   </div>
                 </>
@@ -110,7 +115,8 @@ export async function generateMetadata({ params, searchParams }, parent) {
         pageData?.yoast_head_json?.og_description || staticData.og_description,
 
       author: siteAuthor || staticData.author, // Dynamic author or static fallback
-      viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+      viewport:
+        "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
       robots: pageData?.yoast_head_json?.robots || staticData.robots,
       alternates: {
         canonical: `${homeUrl}${locale}/blogs/${pageData?.slug}`,
