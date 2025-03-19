@@ -156,7 +156,7 @@ export default function Address() {
                     className="border border-border p-7 relative"
                   >
                     <div className="pb-2">
-                      <div className="dropdown dropdown-end absolute manage-address top-5">
+                      <div className="dropdown dropdown-end absolute manage-address top-5  p-3">
                         <div tabIndex={0} role="button">
                           <i className="bi bi-three-dots"></i>
                         </div>
