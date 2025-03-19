@@ -1,4 +1,4 @@
-import LoadingItem from "../Components/LoadingItem"
+import LoadingItem from "../../Components/LoadingItem"
 
 
 
