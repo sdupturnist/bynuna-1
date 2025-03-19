@@ -83,13 +83,14 @@ export default async function RootLayout({ children }) {
       <body>
         <ClientProvider>
           <NextTopLoader
-            color="#fff"
+            color="white"
             initialPosition={0.08}
             crawlSpeed={200}
-            height={3}
+            height={5}
             crawl={true}
-            showSpinner={false}
+            showSpinner={true}
             easing="ease"
+            shadow={false}
             speed={200}
             zIndex={1600}
             showAtBottom={false}
