@@ -188,10 +188,10 @@ export default function Header({ locale }) {
   }, [showNavCatItem]);
 
   const handleClick = () => {
-    const elem = document.activeElement;
-    if (elem) {
-      elem?.blur();
-    }
+    // const elem = document.activeElement;
+    // if (elem) {
+    //   elem?.blur();
+    // }
   };
 
   return (
