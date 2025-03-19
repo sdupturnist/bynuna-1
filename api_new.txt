@@ -3628,3 +3628,303 @@ function get_child_categories_data( $data ) {
 
     return new WP_REST_Response( 'No child categories found', 404 );
 }
+
+
+//HIDE ADD NEW CONTACT INFO
+
+// CONTACT INFO
+
+// 1. Hide "Add New" from the Admin Menu
+function hide_add_new_from_admin_menu_contact_info() {
+    remove_submenu_page('edit.php?post_type=contact-info', 'post-new.php?post_type=contact-info');
+}
+add_action('admin_menu', 'hide_add_new_from_admin_menu_contact_info', 999);
+
+// 2. Hide "Add New" from the Admin Bar
+function hide_add_new_from_admin_bar_contact_info($wp_admin_bar) {
+    $wp_admin_bar->remove_node('new-contact-info');
+}
+add_action('admin_bar_menu', 'hide_add_new_from_admin_bar_contact_info', 999);
+
+// 3. Hide "Add New" from the Post Listing Page (Button)
+function hide_add_new_button_for_contact_info() {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'contact-info') {
+        ?>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var addNewButton = document.querySelector('.page-title-action[href*="post-new.php?post_type=contact-info"]');
+                if (addNewButton) {
+                    addNewButton.style.display = 'none';  // Hides the "Add New" button
+                }
+            });
+        </script>
+        <?php
+    }
+}
+add_action('admin_footer', 'hide_add_new_button_for_contact_info');
+
+// 4. Hide "Move to Trash" and "Delete" from the Post Listing Page and Bulk Actions
+function hide_trash_and_delete_bulk_action_contact_info($actions) {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'contact-info') {
+        unset($actions['trash']); // Remove the "Move to Trash" option from bulk actions
+    }
+    return $actions;
+}
+add_filter('bulk_actions-edit-contact-info', 'hide_trash_and_delete_bulk_action_contact_info');
+
+// 5. Hide "Move to Trash" from Individual Post Action Links
+function hide_trash_on_edit_page_contact_info($actions, $post) {
+    if ($post->post_type === 'contact-info') {
+        unset($actions['trash']); // Remove "Move to Trash" from post action links on the edit page
+    }
+    return $actions;
+}
+add_filter('post_row_actions', 'hide_trash_on_edit_page_contact_info', 10, 2);
+
+// CURRENCY
+
+// 1. Hide "Add New" from the Admin Menu for 'currency'
+function hide_add_new_from_admin_menu_currency() {
+    remove_submenu_page('edit.php?post_type=currency', 'post-new.php?post_type=currency');
+}
+add_action('admin_menu', 'hide_add_new_from_admin_menu_currency', 999);
+
+// 2. Hide "Add New" from the Admin Bar for 'currency'
+function hide_add_new_from_admin_bar_currency($wp_admin_bar) {
+    $wp_admin_bar->remove_node('new-currency');
+}
+add_action('admin_bar_menu', 'hide_add_new_from_admin_bar_currency', 999);
+
+// 3. Hide "Add New" from the Post Listing Page (Button) for 'currency'
+function hide_add_new_button_for_currency() {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'currency') {
+        ?>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var addNewButton = document.querySelector('.page-title-action[href*="post-new.php?post_type=currency"]');
+                if (addNewButton) {
+                    addNewButton.style.display = 'none';  // Hides the "Add New" button
+                }
+            });
+        </script>
+        <?php
+    }
+}
+add_action('admin_footer', 'hide_add_new_button_for_currency');
+
+// 4. Hide "Move to Trash" and "Delete" from Bulk Actions for 'currency'
+function hide_trash_and_delete_bulk_action_currency($actions) {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'currency') {
+        unset($actions['trash']); // Remove the "Move to Trash" option from bulk actions
+    }
+    return $actions;
+}
+add_filter('bulk_actions-edit-currency', 'hide_trash_and_delete_bulk_action_currency');
+
+// 5. Hide "Move to Trash" from Individual Post Action Links for 'currency'
+function hide_trash_on_edit_page_currency($actions, $post) {
+    if ($post->post_type === 'currency') {
+        unset($actions['trash']); // Remove "Move to Trash" from post action links on the edit page
+    }
+    return $actions;
+}
+add_filter('post_row_actions', 'hide_trash_on_edit_page_currency', 10, 2);
+
+// SHIPPING CHARGE
+
+// 1. Hide "Add New" from the Admin Menu for 'shipping-charge'
+function hide_add_new_from_admin_menu_shipping_charge() {
+    remove_submenu_page('edit.php?post_type=shipping-charge', 'post-new.php?post_type=shipping-charge');
+}
+add_action('admin_menu', 'hide_add_new_from_admin_menu_shipping_charge', 999);
+
+// 2. Hide "Add New" from the Admin Bar for 'shipping-charge'
+function hide_add_new_from_admin_bar_shipping_charge($wp_admin_bar) {
+    $wp_admin_bar->remove_node('new-shipping-charge');
+}
+add_action('admin_bar_menu', 'hide_add_new_from_admin_bar_shipping_charge', 999);
+
+// 3. Hide "Add New" from the Post Listing Page (Button) for 'shipping-charge'
+function hide_add_new_button_for_shipping_charge() {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'shipping-charge') {
+        ?>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var addNewButton = document.querySelector('.page-title-action[href*="post-new.php?post_type=shipping-charge"]');
+                if (addNewButton) {
+                    addNewButton.style.display = 'none';  // Hides the "Add New" button
+                }
+            });
+        </script>
+        <?php
+    }
+}
+add_action('admin_footer', 'hide_add_new_button_for_shipping_charge');
+
+// 4. Hide "Move to Trash" and "Delete" from Bulk Actions for 'shipping-charge'
+function hide_trash_and_delete_bulk_action_shipping_charge($actions) {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'shipping-charge') {
+        unset($actions['trash']); // Remove the "Move to Trash" option from bulk actions
+    }
+    return $actions;
+}
+add_filter('bulk_actions-edit-shipping-charge', 'hide_trash_and_delete_bulk_action_shipping_charge');
+
+// 5. Hide "Move to Trash" from Individual Post Action Links for 'shipping-charge'
+function hide_trash_on_edit_page_shipping_charge($actions, $post) {
+    if ($post->post_type === 'shipping-charge') {
+        unset($actions['trash']); // Remove "Move to Trash" from post action links on the edit page
+    }
+    return $actions;
+}
+add_filter('post_row_actions', 'hide_trash_on_edit_page_shipping_charge', 10, 2);
+
+// FAQ
+
+// 1. Hide "Add New" from the Admin Menu for 'faq'
+function hide_add_new_from_admin_menu_faq() {
+    remove_submenu_page('edit.php?post_type=faq', 'post-new.php?post_type=faq');
+}
+add_action('admin_menu', 'hide_add_new_from_admin_menu_faq', 999);
+
+// 2. Hide "Add New" from the Admin Bar for 'faq'
+function hide_add_new_from_admin_bar_faq($wp_admin_bar) {
+    $wp_admin_bar->remove_node('new-faq');
+}
+add_action('admin_bar_menu', 'hide_add_new_from_admin_bar_faq', 999);
+
+// 3. Hide "Add New" from the Post Listing Page (Button) for 'faq'
+function hide_add_new_button_for_faq() {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'faq') {
+        ?>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var addNewButton = document.querySelector('.page-title-action[href*="post-new.php?post_type=faq"]');
+                if (addNewButton) {
+                    addNewButton.style.display = 'none';  // Hides the "Add New" button
+                }
+            });
+        </script>
+        <?php
+    }
+}
+add_action('admin_footer', 'hide_add_new_button_for_faq');
+
+// 4. Hide "Move to Trash" and "Delete" from Bulk Actions for 'faq'
+function hide_trash_and_delete_bulk_action_faq($actions) {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'faq') {
+        unset($actions['trash']); // Remove the "Move to Trash" option from bulk actions
+    }
+    return $actions;
+}
+add_filter('bulk_actions-edit-faq', 'hide_trash_and_delete_bulk_action_faq');
+
+// 5. Hide "Move to Trash" from Individual Post Action Links for 'faq'
+function hide_trash_on_edit_page_faq($actions, $post) {
+    if ($post->post_type === 'faq') {
+        unset($actions['trash']); // Remove "Move to Trash" from post action links on the edit page
+    }
+    return $actions;
+}
+add_filter('post_row_actions', 'hide_trash_on_edit_page_faq', 10, 2);
+
+// SECURITY PAYMENTS
+
+// 1. Hide "Add New" from the Admin Menu for 'security-payments'
+function hide_add_new_from_admin_menu_security_payments() {
+    remove_submenu_page('edit.php?post_type=security-payments', 'post-new.php?post_type=security-payments');
+}
+add_action('admin_menu', 'hide_add_new_from_admin_menu_security_payments', 999);
+
+// 2. Hide "Add New" from the Admin Bar for 'security-payments'
+function hide_add_new_from_admin_bar_security_payments($wp_admin_bar) {
+    $wp_admin_bar->remove_node('new-security-payments');
+}
+add_action('admin_bar_menu', 'hide_add_new_from_admin_bar_security_payments', 999);
+
+// 3. Hide "Add New" from the Post Listing Page (Button) for 'security-payments'
+function hide_add_new_button_for_security_payments() {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'security-payments') {
+        ?>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var addNewButton = document.querySelector('.page-title-action[href*="post-new.php?post_type=security-payments"]');
+                if (addNewButton) {
+                    addNewButton.style.display = 'none';  // Hides the "Add New" button
+                }
+            });
+        </script>
+        <?php
+    }
+}
+add_action('admin_footer', 'hide_add_new_button_for_security_payments');
+
+// 4. Hide "Move to Trash" and "Delete" from Bulk Actions for 'security-payments'
+function hide_trash_and_delete_bulk_action_security_payments($actions) {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'security-payments') {
+        unset($actions['trash']); // Remove the "Move to Trash" option from bulk actions
+    }
+    return $actions;
+}
+add_filter('bulk_actions-edit-security-payments', 'hide_trash_and_delete_bulk_action_security_payments');
+
+// 5. Hide "Move to Trash" from Individual Post Action Links for 'security-payments'
+function hide_trash_on_edit_page_security_payments($actions, $post) {
+    if ($post->post_type === 'security-payments') {
+        unset($actions['trash']); // Remove "Move to Trash" from post action links on the edit page
+    }
+    return $actions;
+}
+add_filter('post_row_actions', 'hide_trash_on_edit_page_security_payments', 10, 2);
+
+// DELIVERY AND RETURNS
+
+// 1. Hide "Add New" from the Admin Menu for 'delivery-and-returns'
+function hide_add_new_from_admin_menu_delivery_and_returns() {
+    remove_submenu_page('edit.php?post_type=delivery-and-returns', 'post-new.php?post_type=delivery-and-returns');
+}
+add_action('admin_menu', 'hide_add_new_from_admin_menu_delivery_and_returns', 999);
+
+// 2. Hide "Add New" from the Admin Bar for 'delivery-and-returns'
+function hide_add_new_from_admin_bar_delivery_and_returns($wp_admin_bar) {
+    $wp_admin_bar->remove_node('new-delivery-and-returns');
+}
+add_action('admin_bar_menu', 'hide_add_new_from_admin_bar_delivery_and_returns', 999);
+
+// 3. Hide "Add New" from the Post Listing Page (Button) for 'delivery-and-returns'
+function hide_add_new_button_for_delivery_and_returns() {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'delivery-and-returns') {
+        ?>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var addNewButton = document.querySelector('.page-title-action[href*="post-new.php?post_type=delivery-and-returns"]');
+                if (addNewButton) {
+                    addNewButton.style.display = 'none';  // Hides the "Add New" button
+                }
+            });
+        </script>
+        <?php
+    }
+}
+add_action('admin_footer', 'hide_add_new_button_for_delivery_and_returns');
+
+// 4. Hide "Move to Trash" and "Delete" from Bulk Actions for 'delivery-and-returns'
+function hide_trash_and_delete_bulk_action_delivery_and_returns($actions) {
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'delivery-and-returns') {
+        unset($actions['trash']); // Remove the "Move to Trash" option from bulk actions
+    }
+    return $actions;
+}
+add_filter('bulk_actions-edit-delivery-and-returns', 'hide_trash_and_delete_bulk_action_delivery_and_returns');
+
+// 5. Hide "Move to Trash" from Individual Post Action Links for 'delivery-and-returns'
+function hide_trash_on_edit_page_delivery_and_returns($actions, $post) {
+    if ($post->post_type === 'delivery-and-returns') {
+        unset($actions['trash']); // Remove "Move to Trash" from post action links on the edit page
+    }
+    return $actions;
+}
+add_filter('post_row_actions', 'hide_trash_on_edit_page_delivery_and_returns', 10, 2);
+
+
+
