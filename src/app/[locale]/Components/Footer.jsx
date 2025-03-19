@@ -16,6 +16,7 @@ import Images from "./Images";
 import { useLanguageContext } from "../Context/LanguageContext";
 import { useRouter } from "next/navigation";
 
+
 export default function Footer({ locale }) {
   const { contactData, footerMenu, footerMenuPages } = useSiteContext();
 

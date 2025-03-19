@@ -23,6 +23,7 @@ export default function Alerts({
   check,
   stock,
   data,
+  confirmEmail
 }) {
   const router = useRouter();
   const params = useParams();
@@ -188,7 +189,7 @@ export default function Alerts({
                 <Link href={url} className="btn btn-primary">
                   {getTranslation(
                     translation[0]?.translations,
-                    "Back to home",
+                    confirmEmail ? "Login to your account" : "Back to shop",
                     locale || "en"
                   )}
                 </Link>

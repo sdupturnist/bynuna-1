@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { WelcomeEmailTemplate } from "../../Utils/MailTemplates";
 import LoadingItem from "../../Components/LoadingItem";
 import { sendMail } from "../../Utils/Mail";
@@ -70,7 +69,13 @@ const ConfirmEmailContent = () => {
           throw new Error("Failed to create customer");
         }
 
+
         if (response.ok) {
+
+
+          setIsConfirmed(true);
+
+
           await sendMail({
             sendTo: email,
             subject: `Welcome to ${siteName}`,
@@ -82,7 +87,7 @@ const ConfirmEmailContent = () => {
           });
 
           setIsConfirmed(true);
-          router.push(`${homeUrl}${locale}/auth/login?confirmEmailLogin=true`);
+         // router.push(`${homeUrl}${locale}/auth/login?confirmEmailLogin=true`);
         }
       } catch (err) {
         // console.log(err);
@@ -108,9 +113,11 @@ const ConfirmEmailContent = () => {
           noPageUrl
         />
       )}
+
+      {console.log(isConfirmed)}
       {isConfirmed ? (
         <Alerts
-          noPageUrl
+          confirmEmail
           noLogo
           title="Email Confirmed Successfully!"
           large
@@ -119,11 +126,11 @@ const ConfirmEmailContent = () => {
             "Go to login",
             locale || "en"
           )}
-          url={`${homeUrl}${locale}/auth/login`}
+          url={`${homeUrl}${locale}/auth/login?confirmEmailLogin=true`}
           desc={`Your email has been successfully confirmed. You can now access your account `}
         />
       ) : (
-        !error && (
+         (
           <section>
             <div className="grid gap-5 items-center justify-center text-center">
               <LoadingItem classes="mx-auto" spinner />
