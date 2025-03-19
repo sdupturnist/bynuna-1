@@ -206,7 +206,7 @@ export default function Header({ locale }) {
     >
       <div className="bg-primary uppercase [&>*]:text-xs py-1 sm:py-0">
         <div className="container flex justify-between items-center">
-          <small className="block text-white sm:text-xs text-[10px]">
+          <small className="block text-white sm:text-xs text-[12px]">
             {getTranslation(
               translation[0]?.translations,
               "Next Dispatch",
@@ -216,15 +216,15 @@ export default function Header({ locale }) {
             <DispatchTime />
           </small>
           <div className="flex">
-            <div className="sm:pr-3 pr-1 flex items-center">
+            <div className="sm:pr-3 pr-1 flex items-center bg-green-400">
               <div className="dropdown dropdown-end">
                 <div
                   tabIndex={0}
-                  className=" sm:p-2 p-1 text-white flex gap-1 items-center justify-center sm:text-xs text-[10px]"
+                  className=" sm:p-2 p-1 px-3 text-white flex gap-1 items-center justify-center sm:text-xs text-[12px]"
                   role="button"
                 >
                   {activeCurrency}
-                  <i className="bi bi-chevron-down sm:text-xs text-[10px]"></i>
+                  <i className="bi bi-chevron-down sm:text-xs text-[12px]"></i>
                 </div>
                 <ul
                   tabIndex={0}

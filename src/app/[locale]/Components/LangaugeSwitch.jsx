@@ -31,7 +31,7 @@ const LanguageSelector = () => {
     <div
       className={`${
         pathname.startsWith("/en") ? 'arabic-font' : ''
-      } text-white text-[10px] cursor-pointer bg-red-400 p-1 flex items-center justify-center`}
+      } text-white text-[12px] cursor-pointer bg-red-400 py-1 px-2 flex items-center justify-center`}
       onClick={handleLanguageToggle}
     >
       {loading ? (
