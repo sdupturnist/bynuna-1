@@ -287,6 +287,8 @@ export default function Header({ locale }) {
                 <div className="w-full lg:w-auto flex items-center justify-end  gap-6">
                   {/* SEARCH ICON */}
                   <svg
+                  onTouchEnd={(e) =>
+                    setSearchMobileVisible(!searchMobileVisible)}
                     onClick={(e) =>
                       setSearchMobileVisible(!searchMobileVisible)
                     }
