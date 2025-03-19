@@ -125,7 +125,7 @@ export default function AddNewAddressForm({ onAddressAdded }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+          //  Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(requestData),
         }
@@ -153,7 +153,7 @@ export default function AddNewAddressForm({ onAddressAdded }) {
 
         try {
           const addressResponse = await fetch(
-            `${apiUrl}wp-json/custom/v1/customer/${userId}/get-addresses`,
+            `${apiUrl}wp-json/custom/v1/customer/${userData && userData?.id}/get-addresses`,
             {
               next: { revalidate: 60 },
             }

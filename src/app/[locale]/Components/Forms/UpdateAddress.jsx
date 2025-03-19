@@ -3,10 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import "react-country-state-city/dist/react-country-state-city.css";
 import { useParams } from "next/navigation";
 import { useRouter } from "nextjs-toploader/app";
-import {
-  apiUrl,
-  getTranslation,
-} from "../../Utils/variables";
+import { apiUrl, getTranslation } from "../../Utils/variables";
 import Alerts from "../Alerts";
 import { useAuthContext } from "../../Context/authContext";
 import FloatingLabelInput from "../FloatingLabelInput";
@@ -26,20 +23,25 @@ import { useLanguageContext } from "../../Context/LanguageContext";
 import { userId } from "../../Utils/UserInfo";
 import LoadingItem from "../LoadingItem";
 import { ReactSearchAutocomplete } from "react-search-autocomplete";
+import { useSiteContext } from "../../Context/siteContext";
 
 export default function UpdateAddressForm({ addressCount }) {
   const id = useParams();
 
   const router = useRouter();
-  const params = useParams();  
-  const locale = params.locale; 
+  const params = useParams();
+  const locale = params.locale;
 
   const [updateAddress, setUpdateAddress] = useState([]);
+
+  const { setSavedAddress } = useSiteContext();
 
   const fetchAddressData = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}wp-json/custom/v1/customer/${userId}/get-address/${id?.id}`
+        `${apiUrl}wp-json/custom/v1/customer/${
+          userData && userData?.id
+        }/get-address/${id?.id}`
       );
       const data = await response.json();
       setUpdateAddress(data);
@@ -51,7 +53,6 @@ export default function UpdateAddressForm({ addressCount }) {
   useEffect(() => {
     fetchAddressData();
   }, [updateAddress]);
-
 
   const { translation } = useLanguageContext();
 
@@ -140,12 +141,14 @@ export default function UpdateAddressForm({ addressCount }) {
     try {
       // Submit the review
       const response = await fetch(
-        `${apiUrl}wp-json/custom/v1/customer/${userId}/update-address?address_id=${id?.id}`,
+        `${apiUrl}wp-json/custom/v1/customer/${
+          userData && userData?.id
+        }/update-address?address_id=${id?.id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            // Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(requestData),
         }
@@ -168,12 +171,26 @@ export default function UpdateAddressForm({ addressCount }) {
         setStreet("");
         setHousename("");
 
+        try {
+          const addressResponse = await fetch(
+            `${apiUrl}wp-json/custom/v1/customer/${
+              userData && userData?.id
+            }/get-addresses`,
+            {
+              next: { revalidate: 60 },
+            }
+          );
+          const addressResponseData = await addressResponse.json();
+          setSavedAddress(addressResponseData);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+
         router.back();
-        
       } else {
         const errorResponse = await response.json();
         console.error(
-          "Failed to submit review",
+          "Failed to update address",
           response.status,
           errorResponse
         );
@@ -192,7 +209,6 @@ export default function UpdateAddressForm({ addressCount }) {
 
   //LOCATION CHOOSE
 
-  
   // List of GCC countries
   const gccCountries = [
     "Bahrain",
@@ -419,9 +435,8 @@ export default function UpdateAddressForm({ addressCount }) {
     };
   }, []);
 
-
-   // List of important places in the GCC region
-   const places = [
+  // List of important places in the GCC region
+  const places = [
     { id: 0, name: "Dubai" },
     { id: 1, name: "Abu Dhabi" },
     { id: 2, name: "Sharjah" },
@@ -611,90 +626,91 @@ export default function UpdateAddressForm({ addressCount }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} autoComplete="none" style={{
-
-    opacity:  updateAddress?.length === 0 && '0.3',
-    pointerEvents:  updateAddress?.length === 0 && 'none'
-     
-
-    }}>
-        <div className="grid gap-8">
-          {status && (
-            <Alerts
-              status="green"
-              title={getTranslation(
-                translation[0]?.translations,
-                "You have successfully added your new address.",
-                locale || 'en'
-              )}
-            />
-          )}
-          {error && (
-            <Alerts
-              status="red"
-              title={getTranslation(
-                translation[0]?.translations,
-                "There was an issue adding your new address. Please try again.",
-                locale || 'en'
-              )}
-            />
-          )}
-          <FloatingLabelInput
-            defaultValue={
-              (updateAddress && updateAddress?.full_name) ||
-              updateAddress?.shipping?.firstName
-            }
-            type="text"
-            className="input"
-            label={getTranslation(
+    <form
+      onSubmit={handleSubmit}
+      autoComplete="none"
+      style={{
+        opacity: updateAddress?.length === 0 && "0.3",
+        pointerEvents: updateAddress?.length === 0 && "none",
+      }}
+    >
+      <div className="grid gap-8">
+        {status && (
+          <Alerts
+            status="green"
+            title={getTranslation(
               translation[0]?.translations,
-              "Full Name",
-              locale || 'en'
+              "You have successfully added your new address.",
+              locale || "en"
             )}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-            autoComplete="none"
           />
-
-          <FloatingLabelInput
-            defaultValue={
-              (updateAddress && updateAddress?.phone) ||
-              updateAddress?.shipping?.phone
-            }
-            type="number"
-            className="input"
-            label={getTranslation(
+        )}
+        {error && (
+          <Alerts
+            status="red"
+            title={getTranslation(
               translation[0]?.translations,
-              "Contact Number",
-              locale || 'en'
+              "There was an issue adding your new address. Please try again.",
+              locale || "en"
             )}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-            autoComplete="none"
           />
+        )}
+        <FloatingLabelInput
+          defaultValue={
+            (updateAddress && updateAddress?.full_name) ||
+            updateAddress?.shipping?.firstName
+          }
+          type="text"
+          className="input"
+          label={getTranslation(
+            translation[0]?.translations,
+            "Full Name",
+            locale || "en"
+          )}
+          onChange={(e) => setFirstName(e.target.value)}
+          required
+          autoComplete="none"
+        />
 
-          <div className="grid gap-5">
-            <small className="uppercase text-sm font-light text-primary flex w-full">
-              {getTranslation(
-                translation[0]?.translations,
-                "Select address from map",
-                locale || 'en'
-              )}
-            </small>
+        <FloatingLabelInput
+          defaultValue={
+            (updateAddress && updateAddress?.phone) ||
+            updateAddress?.shipping?.phone
+          }
+          type="number"
+          className="input"
+          label={getTranslation(
+            translation[0]?.translations,
+            "Contact Number",
+            locale || "en"
+          )}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+          autoComplete="none"
+        />
 
-            <div className="relative flex w-full z-10">
-                      <div className="w-full">
-                        <ReactSearchAutocomplete
-                          items={places}
-                          onSearch={handleOnSearch}
-                          onSelect={handleOnSelect}
-                          formatResult={formatResult}
-                          value={searchQuery}
-                          // onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                      </div>
-          
-                      {/* <input
+        <div className="grid gap-5">
+          <small className="uppercase text-sm font-light text-primary flex w-full">
+            {getTranslation(
+              translation[0]?.translations,
+              "Select address from map",
+              locale || "en"
+            )}
+          </small>
+
+          <div className="relative flex w-full z-10">
+            <div className="w-full">
+              <ReactSearchAutocomplete
+                items={places}
+                onSearch={handleOnSearch}
+                onSelect={handleOnSelect}
+                formatResult={formatResult}
+                value={searchQuery}
+                // onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* <input
                         type="text"
                         placeholder={getTranslation(
                           translation[0]?.translations,
@@ -705,85 +721,85 @@ export default function UpdateAddressForm({ addressCount }) {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="input join-item w-full"
                       /> */}
-                      <button
-                        className="btn join-item border border-border"
-                        type="button"
-                        onClick={handleSearch}
-                      >
-                        {getTranslation(translation[0]?.translations, "Search", locale)}
-                      </button>
-                    </div>
-
-            <div
-              id="map"
-              ref={mapRef}
-              className="w-full min-h-[50vh] border border-border relative"
-            ></div>
+            <button
+              className="btn join-item border border-border"
+              type="button"
+              onClick={handleSearch}
+            >
+              {getTranslation(translation[0]?.translations, "Search", locale)}
+            </button>
           </div>
-          <FloatingLabelInput
-            defaultValue={
-              (updateAddress && updateAddress?.address_1) ||
-              updateAddress?.shipping?.address_1
-            }
-            type="text"
-            className="input"
-            label={getTranslation(
-              translation[0]?.translations,
-              "Address",
-              locale || 'en'
-            )}
-            onChange={(e) => setHousename(e.target.value)}
-            required
-            autoComplete="none"
-            value={houseName}
-          />
 
-          <FloatingLabelInput
-            defaultValue={street}
-            type="text"
-            className="input"
-            label={getTranslation(
-              translation[0]?.translations,
-              "Street",
-              locale || 'en'
-            )}
-            onChange={(e) => setStreet(e.target.value)}
-            required
-            autoComplete="none"
-            value={street}
-          />
+          <div
+            id="map"
+            ref={mapRef}
+            className="w-full min-h-[50vh] border border-border relative"
+          ></div>
+        </div>
+        <FloatingLabelInput
+          defaultValue={
+            (updateAddress && updateAddress?.address_1) ||
+            updateAddress?.shipping?.address_1
+          }
+          type="text"
+          className="input"
+          label={getTranslation(
+            translation[0]?.translations,
+            "Address",
+            locale || "en"
+          )}
+          onChange={(e) => setHousename(e.target.value)}
+          required
+          autoComplete="none"
+          value={houseName}
+        />
 
-          <FloatingLabelInput
-            defaultValue={city}
-            type="text"
-            className="input"
-            label={getTranslation(
-              translation[0]?.translations,
-              "City",
-              locale || 'en'
-            )}
-            onChange={(e) => setCity(e.target.value)}
-            required
-            autoComplete="none"
-            value={city}
-          />
+        <FloatingLabelInput
+          defaultValue={street}
+          type="text"
+          className="input"
+          label={getTranslation(
+            translation[0]?.translations,
+            "Street",
+            locale || "en"
+          )}
+          onChange={(e) => setStreet(e.target.value)}
+          required
+          autoComplete="none"
+          value={street}
+        />
 
-          <FloatingLabelInput
-            defaultValue={state}
-            type="text"
-            className="input"
-            label={getTranslation(
-              translation[0]?.translations,
-              "State",
-              locale || 'en'
-            )}
-            onChange={(e) => setstate(e.target.value)}
-            required
-            autoComplete="none"
-            value={state}
-          />
+        <FloatingLabelInput
+          defaultValue={city}
+          type="text"
+          className="input"
+          label={getTranslation(
+            translation[0]?.translations,
+            "City",
+            locale || "en"
+          )}
+          onChange={(e) => setCity(e.target.value)}
+          required
+          autoComplete="none"
+          value={city}
+        />
 
-          {/* <FloatingLabelInput
+        <FloatingLabelInput
+          defaultValue={state}
+          type="text"
+          className="input"
+          label={getTranslation(
+            translation[0]?.translations,
+            "State",
+            locale || "en"
+          )}
+          onChange={(e) => setstate(e.target.value)}
+          required
+          autoComplete="none"
+          value={state}
+        />
+
+        {/* <FloatingLabelInput
             defaultValue={country}
             type="text"
             className="input"
@@ -798,7 +814,7 @@ export default function UpdateAddressForm({ addressCount }) {
             value={country}
           /> */}
 
-<div className="w-full">
+        <div className="w-full">
           {/* <label className=" bg-white block mb-2 transform transition-all cursor-pointer text-start label-input w-fit   uppercase text-primary  text-[12px] ">
             {getTranslation(translation[0]?.translations, "Country", locale)}
           </label> */}
@@ -838,30 +854,31 @@ export default function UpdateAddressForm({ addressCount }) {
           </select>
         </div>
 
-          <div>
-            <button 
-             disabled={loading}
-            className="btn btn-primary btn-mobile-full" type="submit">
-              {loading ? (
-                <>
-                  <LoadingItem dot classes="bg-white size-4" />
-                  {getTranslation(
-                    translation[0]?.translations,
-                    "Update in progress...",
-                    locale || 'en'
-                  )}
-                </>
-              ) : (
-                getTranslation(
+        <div>
+          <button
+            disabled={loading}
+            className="btn btn-primary btn-mobile-full"
+            type="submit"
+          >
+            {loading ? (
+              <>
+                <LoadingItem dot classes="bg-white size-4" />
+                {getTranslation(
                   translation[0]?.translations,
-                  "Update Address",
-                  locale || 'en'
-                )
-              )}
-            </button>
-          </div>
+                  "Update in progress...",
+                  locale || "en"
+                )}
+              </>
+            ) : (
+              getTranslation(
+                translation[0]?.translations,
+                "Update Address",
+                locale || "en"
+              )
+            )}
+          </button>
         </div>
- 
+      </div>
     </form>
   );
 }
