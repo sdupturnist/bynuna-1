@@ -216,7 +216,7 @@ export default function Header({ locale }) {
             <DispatchTime />
           </small>
           <div className="flex">
-            <div className="sm:pr-3 pr-1 flex items-center bg-green-400">
+            <div className="sm:pr-3 pr-1 flex items-center ">
               <div className="dropdown dropdown-end">
                 <div
                   tabIndex={0}
@@ -305,14 +305,11 @@ export default function Header({ locale }) {
                   </svg>
 
                   {validUserTocken ? (
-                    <div className="dropdown dropdown-bottom dropdown-end bg-red-500">
-                      <div  tabIndex={0}
+                    <div className="dropdown dropdown-bottom dropdown-end ">
+                      <svg
+                        tabIndex={0}
                         role="button"
-                        className="cursor-pointer hover:opacity-30 transition-all">
-                        adasdasdasd
-                      </div>
-                      {/* <svg
-                       
+                        className="cursor-pointer hover:opacity-30 transition-all "
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
                         height="20"
@@ -329,7 +326,7 @@ export default function Header({ locale }) {
                           strokeLinecap="square"
                           d="M10 10.976a4.91 4.91 0 1 0 0-9.818 4.91 4.91 0 0 0 0 9.818Z"
                         />
-                      </svg> */}
+                      </svg>
 
                       <ul
                         tabIndex={0}
