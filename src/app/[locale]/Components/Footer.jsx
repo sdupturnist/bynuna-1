@@ -15,7 +15,7 @@ import Accordion from "./Accordion";
 import Images from "./Images";
 import { useLanguageContext } from "../Context/LanguageContext";
 import { useRouter } from "next/navigation";
-
+import { DivideIcon } from "@heroicons/react/20/solid";
 
 export default function Footer({ locale }) {
   const { contactData, footerMenu, footerMenuPages } = useSiteContext();
@@ -110,8 +110,7 @@ export default function Footer({ locale }) {
         <div className="container spacing-normal">
           <div className="md:flex grid justify-between items-start sm:pb-12 pb-5 sm:gap-[50px] gap-[20px]">
             <div className="grid gap-2 md:border-none sm:order-1 order-2 sm:border-b sm:border-t-0 border-t border-border sm:pt-0 pt-4 sm:pb-10 md:pb-0">
-             
-            <div className="footer-logo">
+              <div className="footer-logo">
                 <Link href={homeUrl} className="block">
                   <Images
                     imageurl={siteLogo}
@@ -126,12 +125,26 @@ export default function Footer({ locale }) {
                 </Link>
               </div>
 
-              <p>{contactData?.acf?.address}</p>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: contactData?.acf?.address,
+                }}
+              />
+
               <Link href={`tel:${contactData?.acf?.phone}`}>
-                {" "}
+                {getTranslation(
+                  translation[0]?.translations,
+                  "Phone.",
+                  locale || "en"
+                )}{" "}
                 {contactData?.acf?.phone}
               </Link>
               <Link href={`mailto:${contactData?.acf?.email}`}>
+                {getTranslation(
+                  translation[0]?.translations,
+                  "Email.",
+                  locale || "en"
+                )}{" "}
                 {contactData?.acf?.email}
               </Link>
               <div className="mt-3">
@@ -160,16 +173,22 @@ export default function Footer({ locale }) {
                         items={[
                           {
                             haveUrl: category?.acf?.no_url,
-                            title:  locale === "en"
-                            ? category?.title
-                            : category?.acf?.arabic ? category?.acf?.arabic : category?.title,
+                            title:
+                              locale === "en"
+                                ? category?.title
+                                : category?.acf?.arabic
+                                ? category?.acf?.arabic
+                                : category?.title,
                             content: getSubCategoriesByParentId(
                               footerMenu?.items,
                               String(category?.id)
                             )?.map((subCategory, childIndex) => ({
-                              text:  locale === "en"
-                              ? subCategory?.title
-                              : subCategory?.acf?.arabic ? subCategory?.acf?.arabic : subCategory?.title,
+                              text:
+                                locale === "en"
+                                  ? subCategory?.title
+                                  : subCategory?.acf?.arabic
+                                  ? subCategory?.acf?.arabic
+                                  : subCategory?.title,
                               link: `${homeUrl}${locale}/products/${
                                 subCategory?.url?.split("/").slice(-2, -1)[0]
                               }/`,
@@ -194,15 +213,19 @@ export default function Footer({ locale }) {
                             title:
                               locale === "en"
                                 ? category?.title
-                                : category?.acf?.arabic ? category?.acf?.arabic : category?.title,
+                                : category?.acf?.arabic
+                                ? category?.acf?.arabic
+                                : category?.title,
                             content: getSubCategoriesByParentId(
                               footerMenuPages?.items,
                               String(category?.id)
                             )?.map((subCategory, childIndex) => ({
                               text:
                                 locale === "en"
-                                ? subCategory?.title
-                                : subCategory?.acf?.arabic ? subCategory?.acf?.arabic : subCategory?.title,
+                                  ? subCategory?.title
+                                  : subCategory?.acf?.arabic
+                                  ? subCategory?.acf?.arabic
+                                  : subCategory?.title,
                               link: `${homeUrl}${locale}/${subCategory?.url
                                 .replace(/%20/g, " ")
                                 .split("/")

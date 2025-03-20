@@ -9,13 +9,31 @@ import {
   siteName,
 } from "../../Utils/variables";
 
-export default function SignupPage() {
+export default async function SignupPage() {
+
+
+
+  //CUSTOMERS
+  let customers = await fetch(
+    `${apiUrl}wp-json/custom/v1/customers?per_page=100`, 
+    {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-store',  // Ensures no caching
+      },
+    }
+  )
+    .then((response) => response.json())
+    .catch((error) => console.error("Error:", error));
+
+    
+
   return (
     <section className="pb-0 grid sm:gap-10 gap-6 sm:pt-20 pt-8">
       <div className="container container-fixed">
         <div className="max-w-lg mx-auto sm:border sm:border-border sm:px-[50px] px-[20px] sm:pt-[50px] sm:pb-[50px] grid gap-2">
           <SectionHeader title="Create a account" titleCenter />
-          <Register />
+          <Register customers={customers} />
         </div>
       </div>
       <Images

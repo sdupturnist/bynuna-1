@@ -18,7 +18,7 @@ import { useLanguageContext } from "../../Context/LanguageContext";
 import { useParams, useRouter } from "next/navigation";
 import LoadingItem from "../LoadingItem";
 
-export default function Signup() {
+export default function Signup({customers}) {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale;
@@ -34,6 +34,7 @@ export default function Signup() {
   const [error, setError] = useState(null);
   const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [passwordTooShort, setPasswordTooShort] = useState(false);
+  const [emailAlreadyHave, setEmailAlreadyHave] = useState(false);
   const [loading, setLoading] = useState(false);
   const [privacyContent, setPrivacyContent] = useState([]);
 
@@ -67,6 +68,10 @@ export default function Signup() {
       .catch((error) => {
         console.error("Error fetching data:", error);
       });
+
+
+      const isEmailExist = customers && customers?.some(user => user.email === email);
+
 
   useEffect(() => {
     setPrivacyContent(privacy);
@@ -114,6 +119,17 @@ export default function Signup() {
     }
 
     setPasswordMismatch(false);
+
+
+
+if (isEmailExist) {
+  setEmailAlreadyHave(true)
+  setLoading(false);
+  return;
+} 
+
+setEmailAlreadyHave(false)
+
 
     try {
       const token = Math.random().toString(36).substring(2);
@@ -184,8 +200,18 @@ export default function Signup() {
             status="red"
           />
         )}
+            {emailAlreadyHave && (
+          <Alerts
+            title={getTranslation(
+              translation[0]?.translations,
+              "Email already in use. Please try another.",
+              locale || "en"
+            )}
+            status="red"
+          />
+        )}
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-5">
+          <div className="grid gap-5 mt-3">
             <FloatingLabelInput
               type="text"
               label={getTranslation(

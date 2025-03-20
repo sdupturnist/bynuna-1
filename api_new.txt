@@ -41,57 +41,43 @@ add_action( 'wp_enqueue_scripts', 'hello_elementor_child_scripts_styles', 20 );
 //ADMIN UI
 
 
-
-
-// function add_cors_http_header() {
-//     header("Access-Control-Allow-Origin: https://wellness-for-you-ecommerce.vercel.app");
-//     header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-//     header("Access-Control-Allow-Headers: Content-Type, Authorization");
-// }
-
-// add_action('init', 'add_cors_http_header');
-
-// function add_cors_headers_to_rest_api() {
-//     header("Access-Control-Allow-Origin: https://wellness-for-you-ecommerce.vercel.app");
-//     header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-//     header("Access-Control-Allow-Headers: Content-Type, Authorization");
-// }
-
-// add_action('rest_api_init', 'add_cors_headers_to_rest_api');
-
-// Add CORS headers to allow requests from your frontend (e.g., http://localhost:3000)
+// Add CORS headers to handle cross-origin requests
 function add_cors_headers() {
-    // Allow requests from specific origins (you can change this as needed)
+    // Define the allowed origins (you can change these based on your environment)
     $allowed_origins = [
         'http://localhost:3000',      // Local development (e.g., React app)
         'https://bynuna-chi.vercel.app', // Vercel app
-        'https://testwithupturnist.com', // Your domain
+        'https://testwithupturnist.com', // Your production domain
         'https://bynuna.ae',          // Another production domain
+        'https://admin.testwithupturnist.com', // Your subdomain or admin panel
     ];
 
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? ''; // Get the origin of the request
+    // Get the origin of the request (the domain making the request)
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? ''; 
 
-    // Check if the origin is allowed, if so, set the CORS header
+    // Check if the origin is in the allowed list
     if (in_array($origin, $allowed_origins)) {
+        // If the origin is allowed, set the Access-Control-Allow-Origin header
         header("Access-Control-Allow-Origin: $origin");
     }
 
     // Allow specific HTTP methods (GET, POST, OPTIONS, PUT)
     header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT");
 
-    // Allow specific headers (for example, Content-Type, Authorization, Cache-Control, etc.)
+    // Allow specific headers (for example, Content-Type, Authorization, X-WP-Nonce, Cache-Control, etc.)
     header("Access-Control-Allow-Headers: Content-Type, Authorization, X-WP-Nonce, Cache-Control");
 
     // Allow credentials (cookies, Authorization headers)
     header("Access-Control-Allow-Credentials: true");
 
-    // If the request is an OPTIONS request (preflight), return early
+    // Handle preflight OPTIONS request (i.e., when the browser checks if it's safe to make the actual request)
     if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        // Exit early as we don't need to proceed with the rest of the request
         exit(0);
     }
 }
 
-// Hook into the `init` action to apply CORS headers before any output
+// Hook into the WordPress 'init' action to apply the CORS headers before any output is sent
 add_action('init', 'add_cors_headers');
 
 
@@ -2869,6 +2855,11 @@ function add_customer_address(WP_REST_Request $request) {
         return new WP_REST_Response('Cannot add an address with invalid data (0 or empty)', 400);
     }
     
+    // Add the "street" field to the new address if not already present
+    if (!isset($new_address['street'])) {
+        $new_address['street'] = ''; // Default value or empty string
+    }
+
     // Get the existing customer
     $customer = new WC_Customer($customer_id);
     if (!$customer->get_id()) {
@@ -2910,6 +2901,11 @@ function update_customer_address(WP_REST_Request $request) {
         return new WP_REST_Response('Invalid address data', 400);
     }
     
+    // Ensure "street" is part of the updated address data
+    if (!isset($updated_address['street'])) {
+        $updated_address['street'] = ''; // Default value or empty string if not provided
+    }
+
     // Get the existing customer
     $customer = new WC_Customer($customer_id);
     if (!$customer->get_id()) {
@@ -2972,6 +2968,7 @@ function delete_customer_address(WP_REST_Request $request) {
     
     return new WP_REST_Response('Address deleted successfully', 200);
 }
+
 
 
 
@@ -3928,3 +3925,56 @@ add_filter('post_row_actions', 'hide_trash_on_edit_page_delivery_and_returns', 1
 
 
 
+
+//GET CURRENT CUSTOMERS
+function get_customers_by_role( $data ) {
+    // Get the per_page query parameter (default to 10 if not provided)
+    $per_page = isset( $data['per_page'] ) ? (int) $data['per_page'] : 10;
+    
+    // Get all users with the 'customer' role
+    $args = array(
+        'role'    => 'customer', // The 'customer' role
+        'number'  => $per_page,  // Set the number of users per page
+        'fields'  => array( 'ID', 'user_login', 'user_email' ), // Specify the fields to return
+    );
+    
+    // Get users from the database
+    $users = get_users( $args );
+
+    // Prepare the user data to return in the API response
+    $user_data = array();
+    foreach ( $users as $user ) {
+        $user_data[] = array(
+            'id'    => $user->ID,
+            'login' => $user->user_login,
+            'email' => $user->user_email,
+        );
+    }
+
+    // Return the users as a REST API response
+    return new WP_REST_Response( $user_data, 200 );
+}
+
+// Register the custom REST API endpoint
+add_action( 'rest_api_init', function() {
+    register_rest_route( 'custom/v1', '/customers', array(
+        'methods'             => 'GET', // Only allow GET requests
+        'callback'            => 'get_customers_by_role', // The function that will be called
+        'args'                => array(
+            'per_page' => array(
+                'required' => false,
+                'validate_callback' => function( $param, $request, $key ) {
+                    // Validate that per_page is a number
+                    return is_numeric( $param );
+                }
+            ),
+        ),
+    ));
+});
+
+
+
+
+
+// Disable new user registration email
+remove_action( 'user_register', 'wp_send_new_user_notifications', 10, 1 );

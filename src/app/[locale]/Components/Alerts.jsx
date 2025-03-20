@@ -23,7 +23,7 @@ export default function Alerts({
   check,
   stock,
   data,
-  confirmEmail
+  confirmEmail,
 }) {
   const router = useRouter();
   const params = useParams();
@@ -140,7 +140,7 @@ export default function Alerts({
       )}
       {large && !cartEmpty && !stock && (
         <section className="pb-0 grid sm:gap-10 gap-6 sm:pt-20 pt-8 text-center">
-          <div className="container container-fixed grid gap-3">
+          <div className="container container-fixed grid sm:gap-5 gap-3">
             {loading && (
               <LoadingItem spinner classes="text-center mx-auto mb-5" />
             )}
@@ -186,7 +186,7 @@ export default function Alerts({
             )}
             {!noPageUrl && (
               <div className="text-center mt-3">
-                <Link href={url} className="btn btn-primary">
+                <Link href={url || '#'} className="btn btn-primary">
                   {getTranslation(
                     translation[0]?.translations,
                     confirmEmail ? "Login to your account" : "Back to shop",
@@ -208,6 +208,7 @@ export default function Alerts({
           />
         </section>
       )}
+   
     </>
   );
 }

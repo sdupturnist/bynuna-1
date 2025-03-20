@@ -5,51 +5,39 @@ import { AuthProvider } from "./Context/authContext";
 import { CartProvider } from "./Context/cartContext";
 import { CheckoutProvider } from "./Context/checkoutContext";
 import { SiteProvider } from "./Context/siteContext";
-import useOnlineStatus from "./hooks/useOnlineStatus";
-import Alerts from "./Components/Alerts";
+import useNetworkStatus from "./Components/NetworkErrorPage"; // Assuming this hook exists
 import ConfirmAge from "./Components/ConfirmAge";
 import { siteName } from "./Utils/variables";
 import Cookies from "js-cookie";
 import { LanguageProvider } from "./Context/LanguageContext";
 import { JwtProvider } from "./Context/jwtContext";
+import Images from "./Components/Images";
 
 export default function ClientProvider({ children }) {
-  const isOnline = useOnlineStatus();
-  const [showNoInternet, setShowNoInternet] = useState(false);
-  const isAgeConfirmed = Cookies.get(`${siteName}_ageConfirmed`);
-
+  const { isOnline, loading } = useNetworkStatus();
   const [age, setAge] = useState(false);
-  const [showConfirmAge, setShowConfirmAge] = useState(false); // New state for confirming age
+  const [showConfirmAge, setShowConfirmAge] = useState(false);
+
+  const isAgeConfirmed = Cookies.get(`${siteName}_ageConfirmed`);
 
   useEffect(() => {
     setAge(isAgeConfirmed);
 
-    if (!isOnline) {
-      setShowNoInternet(true);
-    } else {
-      setShowNoInternet(false);
-    }
-
-    // Set timeout to show ConfirmAge after a certain time (e.g., 3 seconds)
     const timeoutId = setTimeout(() => {
-      setShowConfirmAge(true);
-    }, 2000); // 3000ms = 3 seconds
+      if (!isAgeConfirmed) {
+        setShowConfirmAge(true);
+      }
+    }, 2000);
 
-    // Cleanup the timeout when the component unmounts or when conditions change
     return () => clearTimeout(timeoutId);
-  }, [isOnline, isAgeConfirmed]);
+  }, [isAgeConfirmed]);
 
-  if (showNoInternet) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center p-5 text-center text-xl bg-white z-50">
-        <Alerts
-          large
-          title="No Internet Connection!"
-          desc="Please check your network connection and try again."
-          noPageUrl
-        />
-      </div>
-    );
+  const handleRetry = () => {
+    location.reload();
+  };
+
+  if (loading) {
+    return null;
   }
 
   return (
@@ -59,9 +47,53 @@ export default function ClientProvider({ children }) {
           <CartProvider>
             <CheckoutProvider>
               <SiteProvider>
-                {!age && showConfirmAge && <ConfirmAge />}{" "}
-                {/* Show after timeout */}
-                {children}
+                {/* Only show the offline message when the user is offline */}
+                {!isOnline ? (
+                  <section className="pb-0 grid sm:gap-10 gap-6 sm:pt-20 pt-8 text-center h-screen">
+                    <div className="container container-fixed grid items-center justify-center h-[70vh]">
+                      <div className="grid">
+                        <Images
+                          imageurl="/images/wifi.png"
+                          quality="100"
+                          width="250"
+                          height="250"
+                          alt="You are offline. Please check your internet connection."
+                          title="You are offline. Please check your internet connection."
+                          classes="block sm:w-[120px] w-[100px] opacity-60 mx-auto"
+                          placeholder={true}
+                        />
+                        <h1 className="heading-lg  text-center text-primary mt-5">
+                          You are offline. Please check your internet
+                          connection.
+                        </h1>
+
+                        <div>
+                          <button
+                            onClick={handleRetry}
+                            className="btn btn-primary mt-7 sm:mt-10"
+                          >
+                            Try Again
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <Images
+                      imageurl="/images/brand-bg.webp"
+                      quality="100"
+                      width="1500"
+                      height="300"
+                      alt="Bynuna"
+                      title="Bynuna"
+                      classes="block w-full mx-auto absolute bottom-0"
+                      placeholder={true}
+                    />
+                  </section>
+                ) : (
+                  children
+                )}
+
+                {/* Show age confirmation modal if not confirmed */}
+                {!age && showConfirmAge && <ConfirmAge />}
               </SiteProvider>
             </CheckoutProvider>
           </CartProvider>

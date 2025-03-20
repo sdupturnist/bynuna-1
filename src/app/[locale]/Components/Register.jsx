@@ -6,7 +6,7 @@ import Signup from "./Forms/Signup";
 import { useAuthContext } from "../Context/authContext";
 import { useRouter } from "next/navigation";
 
-export default function Register() {
+export default function Register({customers}) {
   const { auth } = useAuthContext();
 
   const router = useRouter();
@@ -17,5 +17,5 @@ export default function Register() {
     }
   }, [auth]);
 
-  return <Signup />;
+  return <Signup customers={customers} />;
 }

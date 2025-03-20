@@ -101,12 +101,7 @@ export default function Header({ locale }) {
     };
   }, [lastScrollY]); // Dependency array with lastScrollY to re-trigger on scroll
 
-  const savedMenuInLocalStorage =
-    typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem(`${siteName}_menu`))
-      : null;
-
-  const topLevelItems = savedMenuInLocalStorage?.items?.filter(
+  const topLevelItems = headerMenu?.items?.filter(
     (item) => item.parent === "0"
   );
 
@@ -287,8 +282,9 @@ export default function Header({ locale }) {
                 <div className="w-full lg:w-auto flex items-center justify-end  gap-6">
                   {/* SEARCH ICON */}
                   <svg
-                  onTouchEnd={(e) =>
-                    setSearchMobileVisible(!searchMobileVisible)}
+                    onTouchEnd={(e) =>
+                      setSearchMobileVisible(!searchMobileVisible)
+                    }
                     onClick={(e) =>
                       setSearchMobileVisible(!searchMobileVisible)
                     }
