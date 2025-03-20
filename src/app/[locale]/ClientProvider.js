@@ -52,7 +52,7 @@ export default function ClientProvider({ children }) {
                   <section className="pb-0 grid sm:gap-10 gap-6 sm:pt-20 pt-8 text-center h-screen">
                     <div className="container container-fixed grid items-center justify-center h-[70vh]">
                       <div className="grid">
-                        <Images
+                        {/* <Images
                           imageurl="/images/wifi.png"
                           quality="100"
                           width="250"
@@ -61,7 +61,7 @@ export default function ClientProvider({ children }) {
                           title="You are offline. Please check your internet connection."
                           classes="block sm:w-[120px] w-[100px] opacity-60 mx-auto"
                           placeholder={true}
-                        />
+                        /> */}
                         <h1 className="heading-lg  text-center text-primary mt-5">
                           You are offline. Please check your internet
                           connection.

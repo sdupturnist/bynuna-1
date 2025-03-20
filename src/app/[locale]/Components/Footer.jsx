@@ -243,14 +243,13 @@ export default function Footer({ locale }) {
           </div>
           <div className="sm:text-center sm:py-8 py-3 border-t border-border">
             <p>
-              ©{" "}
-              {`${year} ${getTranslation(
+            © {`${year} ${getTranslation(
                 translation[0]?.translations,
-                "bynuna",
+                "Bynuna",
                 locale || "en"
-              )} ${getTranslation(
+              )}. ${getTranslation(
                 translation[0]?.translations,
-                "All rights reserved",
+                "All Rights Reserved!",
                 locale || "en"
               )}`}
             </p>
