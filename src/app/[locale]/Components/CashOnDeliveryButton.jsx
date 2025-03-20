@@ -22,18 +22,16 @@ import {
 } from "../Utils/variables";
 import { OrderPlacedEmailTemplate } from "../Utils/MailTemplates";
 import { useSiteContext } from "../Context/siteContext";
-import { use } from 'react';
+import { use } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { userEmail } from "../Utils/UserInfo";
 
-export default function CashOnDeliveryPayment({ userData}) {
-
-  
+export default function CashOnDeliveryPayment({ userData }) {
   const params = useParams();
   const locale = params.locale;
 
-
-  const { activeCurrencySymbol, currencies, activeCurrency } = useSiteContext();
+  const { activeCurrencySymbol, currencies, activeCurrency, savedAddress } =
+    useSiteContext();
 
   const {
     cartItems,
@@ -74,7 +72,7 @@ export default function CashOnDeliveryPayment({ userData}) {
     identificationTerms,
     setIdentificationsTerms,
     setValidateGuestCheckoutForm,
-    setOrderPlaceLoading
+    setOrderPlaceLoading,
   } = useCheckoutContext();
 
   const { token } = useJwt();
@@ -82,14 +80,7 @@ export default function CashOnDeliveryPayment({ userData}) {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  //const { locale } = router; 
-
-
-
-
-
-
-
+  //const { locale } = router;
 
   const { translation } = useLanguageContext();
 
@@ -112,7 +103,7 @@ export default function CashOnDeliveryPayment({ userData}) {
       getTranslation(
         translation[0]?.translations,
         "Please select a billing address",
-        locale || 'en'
+        locale || "en"
       )
     );
   const notifyTerms = () =>
@@ -120,7 +111,7 @@ export default function CashOnDeliveryPayment({ userData}) {
       getTranslation(
         translation[0]?.translations,
         "You must accept the terms and conditions to proceed.",
-        locale || 'en'
+        locale || "en"
       )
     );
 
@@ -129,7 +120,7 @@ export default function CashOnDeliveryPayment({ userData}) {
       getTranslation(
         translation[0]?.translations,
         "Please check to confirm identification for collection.",
-        locale || 'en'
+        locale || "en"
       )
     );
 
@@ -138,21 +129,16 @@ export default function CashOnDeliveryPayment({ userData}) {
       getTranslation(
         translation[0]?.translations,
         "Please fill the  billing address completely.",
-        locale || 'en'
+        locale || "en"
       )
     );
 
   const hasLicenceItems =
     cartItems && cartItems?.some((item) => item?.isNeedLicence === 1);
 
- 
-    
-
   // Handle the payment and order creation logic
   const handlePayment = async () => {
-  
-  
-   if (guestUser) {
+    if (guestUser) {
       if (!validateGuestCheckoutForm) {
         validateGuestaddressForm();
         return;
@@ -194,7 +180,7 @@ export default function CashOnDeliveryPayment({ userData}) {
         title: getTranslation(
           translation[0]?.translations,
           "Are you sure?",
-          locale || 'en'
+          locale || "en"
         ),
         //  text: `Do you need to confirm your order with Cash on Delivery?`,
         html:
@@ -203,13 +189,13 @@ export default function CashOnDeliveryPayment({ userData}) {
                ${getTranslation(
                  translation[0]?.translations,
                  "Do you need to confirm your order with Cash on Delivery?.",
-                 locale || 'en'
+                 locale || "en"
                )}
                 </span> 
                  ${getTranslation(
                    translation[0]?.translations,
                    "The total order amount is",
-                   locale || 'en'
+                   locale || "en"
                  )}
                  ${activeCurrencySymbol}${convertCurrency(
                 parseInt(payAmount),
@@ -219,20 +205,20 @@ export default function CashOnDeliveryPayment({ userData}) {
                 ${getTranslation(
                   translation[0]?.translations,
                   "which is approximately AED",
-                  locale || 'en'
+                  locale || "en"
                 )}
               ${payAmount}
                ${getTranslation(
                  translation[0]?.translations,
                  "based on the current exchange rate. Please note that the payment will be processed in AED. The exact amount will depend on the exchange rate at the time of payment, so kindly be aware of any potential fluctuations.",
-                 locale || 'en'
+                 locale || "en"
                )} 
               </p>`
             : `<p>
              ${getTranslation(
                translation[0]?.translations,
                "Do you need to confirm your order with Cash on Delivery?",
-               locale || 'en'
+               locale || "en"
              )} 
             </p>`,
         icon: false,
@@ -240,12 +226,12 @@ export default function CashOnDeliveryPayment({ userData}) {
         confirmButtonText: getTranslation(
           translation[0]?.translations,
           "Yes",
-          locale || 'en'
+          locale || "en"
         ),
         cancelButtonText: getTranslation(
           translation[0]?.translations,
           "Cancel",
-          locale || 'en'
+          locale || "en"
         ),
         reverseButtons: true,
       })
@@ -256,7 +242,6 @@ export default function CashOnDeliveryPayment({ userData}) {
           setOrderPlaceLoading(true);
 
           try {
-            
             // Prepare the order information for WooCommerce API
             const orderInfo = {
               transaction_id: "", // No transaction ID for COD
@@ -344,6 +329,31 @@ export default function CashOnDeliveryPayment({ userData}) {
             );
 
             if (response.ok) {
+
+              setCartItems([]);
+              setCartSubTotal(0);
+              setCartTotal(0);
+              setCouponCode(false);
+              setDiscount(0);
+              setValidateTerms(false);
+              setValidateAddress(false);
+              setPaymentTerms(false);
+              setLoading(false);
+              typeof window !== "undefined" &&
+                localStorage.removeItem(`${siteName}_cart`);
+              Cookies.set(`${siteName}_checkout_success`, "true", {
+                expires: 1 / 1440,
+              });
+
+              setOrderPlaceLoading(false);
+              
+              router.push(
+                `${homeUrl}${locale}/checkout/success_order?user_type=${
+                  userEmail === undefined ? "guest" : "account"
+                }`
+              );
+
+
               //   // Send email notification to the user
               await sendMail({
                 sendTo: userData?.email || billingAddress?.email,
@@ -398,23 +408,7 @@ export default function CashOnDeliveryPayment({ userData}) {
                 ),
               });
 
-              setCartItems([]);
-              setCartSubTotal(0);
-              setCartTotal(0);
-              setCouponCode(false);
-              setDiscount(0);
-              setValidateTerms(false);
-              setValidateAddress(false);
-              setPaymentTerms(false);
-              setLoading(false);
-              typeof window !== "undefined" &&
-                localStorage.removeItem(`${siteName}_cart`);
-              Cookies.set(`${siteName}_checkout_success`, "true", {
-                expires: 1 / 1440,
-              });
-
-              setOrderPlaceLoading(false);
-              router.push(`${homeUrl}${locale}/checkout/success_order?user_type=${userEmail === undefined ? 'guest' : 'account'}`)
+              
             } else {
               setOrderPlaceLoading(false);
               throw new Error("Failed to create order in WooCommerce");
@@ -435,23 +429,25 @@ export default function CashOnDeliveryPayment({ userData}) {
 
   return (
     <>
-      <button
-        disabled={loading}
-        onClick={handlePayment}
-        className="btn btn-primary"
-      >
-        {loading
-          ? getTranslation(
-              translation[0]?.translations,
-              "Order Processing...",
-              locale || 'en'
-            )
-          : getTranslation(
-              translation[0]?.translations,
-              "Proceed to Checkout",
-              locale || 'en'
-            )}
-      </button>
+      {savedAddress && (
+        <button
+          disabled={loading}
+          onClick={handlePayment}
+          className="btn btn-primary"
+        >
+          {loading
+            ? getTranslation(
+                translation[0]?.translations,
+                "Order Processing...",
+                locale || "en"
+              )
+            : getTranslation(
+                translation[0]?.translations,
+                "Proceed to Checkout",
+                locale || "en"
+              )}
+        </button>
+      )}
       <div className="absolute">
         <ToastContainer
           position="top-right"

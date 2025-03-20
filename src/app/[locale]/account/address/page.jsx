@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  apiUrl,
-  getTranslation,
-  homeUrl,
-} from "../../Utils/variables";
+import { apiUrl, getTranslation, homeUrl } from "../../Utils/variables";
 import Loading from "../../Components/LoadingItem";
 import Swal from "sweetalert2";
 import { useSiteContext } from "../../Context/siteContext";
@@ -22,42 +18,36 @@ export default function Address() {
   const locale = params.locale;
 
   const { userData } = useAuthContext();
- // const [savedAddress, setSavedAddress ] = useState([]);
-  
+  // const [savedAddress, setSavedAddress ] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const { translation } = useLanguageContext();
-  const { setEditData, savedAddress, setSavedAddress  } = useSiteContext();
- 
-
-
+  const { setEditData, savedAddress, setSavedAddress } = useSiteContext();
 
   const fetchCustomerData = async () => {
     if (userData?.id) {
-    try {
-      const addressResponse = await fetch(
-        `${apiUrl}wp-json/custom/v1/customer/${userData?.id}/get-addresses`,
-        {
-          next: { revalidate: 60 },
-        }
-      );
-      const addressResponseData = await addressResponse.json();
-      setSavedAddress(addressResponseData);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+      try {
+        const addressResponse = await fetch(
+          `${apiUrl}wp-json/custom/v1/customer/${userData?.id}/get-addresses`,
+          {
+            next: { revalidate: 60 },
+          }
+        );
+        const addressResponseData = await addressResponse.json();
+        setSavedAddress(addressResponseData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     }
-  }
   };
 
   // Fetch data on component mount
   useEffect(() => {
-  
-      fetchCustomerData();
-   
-  }, [userData?.id, savedAddress, router]); 
+    fetchCustomerData();
+  }, [userData?.id, savedAddress, router]);
 
   // Handle address deletion
   const deleteAddress = (id) => {
@@ -166,7 +156,6 @@ export default function Address() {
                         >
                           <li>
                             <Link
-                            
                               onClick={(e) => setEditData(item)}
                               href={`${homeUrl}${locale}/account/address/edit/${item?.id}`}
                             >
@@ -178,10 +167,7 @@ export default function Address() {
                             </Link>
                           </li>
                           <li>
-                            <button 
-                             
-                            onClick={(e) => deleteAddress(item?.id)}
-                            >
+                            <button onClick={(e) => deleteAddress(item?.id)}>
                               {getTranslation(
                                 translation[0]?.translations,
                                 "Delete",

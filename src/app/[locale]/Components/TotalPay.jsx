@@ -24,16 +24,14 @@ import { useAuthContext } from "../Context/authContext";
 import { useLanguageContext } from "../Context/LanguageContext";
 import { useRouter } from "next/navigation";
 
-
-export default function TotalPay({locale}) {
+export default function TotalPay({ locale }) {
   const router = useRouter();
-   
 
-    const { translation } = useLanguageContext();
+  const { translation } = useLanguageContext();
 
-  const { activeCurrencySymbol, currencies, activeCurrency } = useSiteContext();
+  const { activeCurrencySymbol, currencies, activeCurrency, savedAddress } = useSiteContext();
 
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { userData } = useAuthContext();
   const {
@@ -55,12 +53,13 @@ export default function TotalPay({locale}) {
     eligibleFreeShipping,
   } = useCartContext();
 
-
-
-
-
-  const { billingAddress, paymentTerms, identificationTerms, validateGuestCheckoutForm, setValidateGuestCheckoutForm } =
-    useCheckoutContext();
+  const {
+    billingAddress,
+    paymentTerms,
+    identificationTerms,
+    validateGuestCheckoutForm,
+    setValidateGuestCheckoutForm,
+  } = useCheckoutContext();
 
   const [orders, setOrders] = useState([]);
 
@@ -69,12 +68,12 @@ export default function TotalPay({locale}) {
       currency.slug === String(activeCurrency).toLowerCase().replace(/ /g, "-")
   );
 
- const notifyAddress = () =>
+  const notifyAddress = () =>
     toast.error(
       getTranslation(
         translation[0]?.translations,
         "Please select a billing address",
-        locale || 'en'
+        locale || "en"
       )
     );
   const notifyTerms = () =>
@@ -82,7 +81,7 @@ export default function TotalPay({locale}) {
       getTranslation(
         translation[0]?.translations,
         "You must accept the terms and conditions to proceed.",
-        locale || 'en'
+        locale || "en"
       )
     );
 
@@ -91,7 +90,7 @@ export default function TotalPay({locale}) {
       getTranslation(
         translation[0]?.translations,
         "Please check to confirm identification for collection.",
-        locale || 'en'
+        locale || "en"
       )
     );
 
@@ -100,10 +99,10 @@ export default function TotalPay({locale}) {
       getTranslation(
         translation[0]?.translations,
         "Please fill the  billing address completely.",
-        locale || 'en'
+        locale || "en"
       )
     );
-   
+
   const hasLicenceItems =
     cartItems && cartItems?.some((item) => item?.isNeedLicence === 1);
 
@@ -179,69 +178,70 @@ export default function TotalPay({locale}) {
     });
 
     swalWithBootstrapButtons
-        .fire({
-            title: getTranslation(
-                      translation[0]?.translations,
-                      "Are you sure?",
-                      locale || 'en'
-                    ),
-                    //  text: `Do you need to confirm your order with Cash on Delivery?`,
-                    html:
-                      activeCurrency !== "AED"
-                        ? `<p className="mb-3"><span className="font-bold block mb-1">
+      .fire({
+        title: getTranslation(
+          translation[0]?.translations,
+          "Are you sure?",
+          locale || "en"
+        ),
+        //  text: `Do you need to confirm your order with Cash on Delivery?`,
+        html:
+          activeCurrency !== "AED"
+            ? `<p className="mb-3"><span className="font-bold block mb-1">
                            ${getTranslation(
                              translation[0]?.translations,
                              "Do you need to confirm your order?",
-                             locale || 'en'
+                             locale || "en"
                            )}
                             </span> 
                              ${getTranslation(
                                translation[0]?.translations,
                                "The total order amount is",
-                               locale || 'en'
+                               locale || "en"
                              )}
                              ${activeCurrencySymbol}${convertCurrency(
-                            parseInt(payAmount),
-                            currency?.acf?.currency_rate
-                          )}, 
+                parseInt(payAmount),
+                currency?.acf?.currency_rate
+              )}, 
                          
                             ${getTranslation(
                               translation[0]?.translations,
                               "which is approximately AED",
-                              locale || 'en'
+                              locale || "en"
                             )}
                           ${payAmount}
                            ${getTranslation(
                              translation[0]?.translations,
                              "based on the current exchange rate. Please note that the payment will be processed in AED. The exact amount will depend on the exchange rate at the time of payment, so kindly be aware of any potential fluctuations.",
-                             locale || 'en'
+                             locale || "en"
                            )} 
                           </p>`
-                        : `<p>
+            : `<p>
                          ${getTranslation(
                            translation[0]?.translations,
                            "Do you need to confirm your order?",
-                           locale || 'en'
+                           locale || "en"
                          )} 
                         </p>`,
-             icon: false,
-                    showCancelButton: true,
-                    confirmButtonText: getTranslation(
-                      translation[0]?.translations,
-                      "Yes",
-                      locale || 'en'
-                    ),
-                    cancelButtonText: getTranslation(
-                      translation[0]?.translations,
-                      "Cancel",
-                      locale || 'en'
-                    ),
-                    reverseButtons: true,
-                  })
+        icon: false,
+        showCancelButton: true,
+        confirmButtonText: getTranslation(
+          translation[0]?.translations,
+          "Yes",
+          locale || "en"
+        ),
+        cancelButtonText: getTranslation(
+          translation[0]?.translations,
+          "Cancel",
+          locale || "en"
+        ),
+        reverseButtons: true,
+      })
       .then(async (result) => {
         if (result.isConfirmed) {
-
-          const orderNumber = `order-${orders?.length === 0 ? 1 : orders[0]?.id + 1}`;
+          const orderNumber = `order-${
+            orders?.length === 0 ? 1 : orders[0]?.id + 1
+          }`;
           const orderAmount = payAmount.toFixed(2);
           const orderCurrency = "AED";
           const orderDescription = `order items:${orderItemsDescription}`;
@@ -257,8 +257,6 @@ export default function TotalPay({locale}) {
 
           const md5Hash = CryptoJS.MD5(toMD5).toString();
           const sha1Hash = CryptoJS.SHA1(md5Hash).toString(CryptoJS.enc.Hex);
-
-      
 
           try {
             // Step 1: Create the order ID from the server
@@ -282,7 +280,9 @@ export default function TotalPay({locale}) {
                   currency: "AED",
                   description: orderDescription,
                   cancel_url: `${homeUrl}${locale}/checkout/cancel`,
-                  success_url: `${homeUrl}${locale}/checkout/success?payment=success&hash=${sha1Hash}&orderId=${String(orderNumber)}`,
+                  success_url: `${homeUrl}${locale}/checkout/success?payment=success&hash=${sha1Hash}&orderId=${String(
+                    orderNumber
+                  )}`,
                   expiry_url: `${homeUrl}${locale}/checkout/expiry`,
                   customer: {
                     name: billingAddress?.firstName,
@@ -299,117 +299,113 @@ export default function TotalPay({locale}) {
             );
 
             const data = await response.json();
-            
 
             if (data) {
-          
-              typeof window !== "undefined" &&   sessionStorage.setItem(
-                `${siteName}_email_data`,
-                JSON.stringify([
-                  {
-                    discount: discount || 0,
-                    cartSubTotal: cartSubTotal,
-                    shippingChargeFinal: parseInt(shippingChargeFinal), // Assuming this is the actual shipping charge
-                    eligibleFreeShipping: eligibleFreeShipping, // This is for checking if free shipping is eligible
-                    activeCurrencySymbol: activeCurrencySymbol, // Currency symbol
-                    vat: vat, // VAT percentage or value
-                    vatAmount: vatAmount, // VAT amount
-                    finalDiscount: finalDiscount, // The final discount after all calculations
-                    currency: currency, // Currency type (e.g., USD, EUR)
-                  }
-                 
-                ])
-              );
+              typeof window !== "undefined" &&
+                sessionStorage.setItem(
+                  `${siteName}_email_data`,
+                  JSON.stringify([
+                    {
+                      discount: discount || 0,
+                      cartSubTotal: cartSubTotal,
+                      shippingChargeFinal: parseInt(shippingChargeFinal), // Assuming this is the actual shipping charge
+                      eligibleFreeShipping: eligibleFreeShipping, // This is for checking if free shipping is eligible
+                      activeCurrencySymbol: activeCurrencySymbol, // Currency symbol
+                      vat: vat, // VAT percentage or value
+                      vatAmount: vatAmount, // VAT amount
+                      finalDiscount: finalDiscount, // The final discount after all calculations
+                      currency: currency, // Currency type (e.g., USD, EUR)
+                    },
+                  ])
+                );
 
-              typeof window !== "undefined" &&  sessionStorage.setItem(
-                `${siteName}_order_data`,
-                JSON.stringify([
-                  {
-                    userData: userData,
-                    transaction_id: (orders[0] && orderNumber) || "", // No transaction ID for COD
-                    customer_id: userData?.id || 1,
-                    payment_method: "totalpay", // Payment method for COD
-                    payment_method_title: "Totalpay", // Payment method title
-                    set_paid: true, // Mark as unpaid for COD
-                    billing: {
-                      first_name: billingAddress?.firstName || "",
-                      last_name: billingAddress?.firstName || "",
-                      address_1: billingAddress?.houseName || "",
-                      address_2: billingAddress?.street || "",
-                      street: billingAddress?.street || "",
-                      city: billingAddress?.city || "",
-                      state: billingAddress?.state || "",
-                      postcode: billingAddress?.postcode || "",
-                      country: billingAddress?.country || "",
-                      email: userData?.email || billingAddress?.email || "",
-                      phone: userData?.phone || billingAddress?.phone || "",
-                    },
-                    shipping: {
-                      first_name: billingAddress?.firstName || "",
-                      last_name: billingAddress?.firstName || "",
-                      address_1: billingAddress?.houseName || "",
-                      address_2: billingAddress?.street || "",
-                      street: billingAddress?.street || "",
-                      city: billingAddress?.city || "",
-                      state: billingAddress?.state || "",
-                      postcode: billingAddress?.postcode || "",
-                      country: billingAddress?.country || "",
-                      email: userData?.email || billingAddress?.email || "",
-                      phone: userData?.phone || billingAddress?.phone || "",
-                    },
-                    tax_lines: [
-                      {
-                          "id": 1200,
-                          "rate_code": "VAT-1",
-                          "rate_id": 2,
-                          "label": "VAT",
-                          "compound": false,
-                          "tax_total": "0.00",
-                          "shipping_tax_total": "0.00",
-                          "rate_percent": 5,
-                          "meta_data": []
-                      }
-                  ],
-                    line_items: filteredItems || [],
-                    coupon_lines:
-                      (couponCode && [
+              typeof window !== "undefined" &&
+                sessionStorage.setItem(
+                  `${siteName}_order_data`,
+                  JSON.stringify([
+                    {
+                      userData: userData,
+                      transaction_id: (orders[0] && orderNumber) || "", // No transaction ID for COD
+                      customer_id: userData?.id || 1,
+                      payment_method: "totalpay", // Payment method for COD
+                      payment_method_title: "Totalpay", // Payment method title
+                      set_paid: true, // Mark as unpaid for COD
+                      billing: {
+                        first_name: billingAddress?.firstName || "",
+                        last_name: billingAddress?.firstName || "",
+                        address_1: billingAddress?.houseName || "",
+                        address_2: billingAddress?.street || "",
+                        street: billingAddress?.street || "",
+                        city: billingAddress?.city || "",
+                        state: billingAddress?.state || "",
+                        postcode: billingAddress?.postcode || "",
+                        country: billingAddress?.country || "",
+                        email: userData?.email || billingAddress?.email || "",
+                        phone: userData?.phone || billingAddress?.phone || "",
+                      },
+                      shipping: {
+                        first_name: billingAddress?.firstName || "",
+                        last_name: billingAddress?.firstName || "",
+                        address_1: billingAddress?.houseName || "",
+                        address_2: billingAddress?.street || "",
+                        street: billingAddress?.street || "",
+                        city: billingAddress?.city || "",
+                        state: billingAddress?.state || "",
+                        postcode: billingAddress?.postcode || "",
+                        country: billingAddress?.country || "",
+                        email: userData?.email || billingAddress?.email || "",
+                        phone: userData?.phone || billingAddress?.phone || "",
+                      },
+                      tax_lines: [
                         {
-                          code: couponCodeName,
-                          amount: finalDiscount,
-                          discount_type: discountType,
+                          id: 1200,
+                          rate_code: "VAT-1",
+                          rate_id: 2,
+                          label: "VAT",
+                          compound: false,
+                          tax_total: "0.00",
+                          shipping_tax_total: "0.00",
+                          rate_percent: 5,
+                          meta_data: [],
                         },
-                      ]) ||
-                      [],
-                    shipping_lines: eligibleFreeShipping === false
-                      ? [
+                      ],
+                      line_items: filteredItems || [],
+                      coupon_lines:
+                        (couponCode && [
                           {
-                            method_id: "flat_rate",
-                            method_title: "Flat Rate",
-                            total: shippingCharge?.acf?.Active_Shipping_Charge?.charge,
+                            code: couponCodeName,
+                            amount: finalDiscount,
+                            discount_type: discountType,
                           },
-                        ]
-                      : [
-                          {
-                            method_id: "free_shipping",
-                            method_title: "Free Shipping",
-                            total: "0",
-                          },
-                        ],
-                  }
-                ])
-              );
+                        ]) ||
+                        [],
+                      shipping_lines:
+                        eligibleFreeShipping === false
+                          ? [
+                              {
+                                method_id: "flat_rate",
+                                method_title: "Flat Rate",
+                                total:
+                                  shippingCharge?.acf?.Active_Shipping_Charge
+                                    ?.charge,
+                              },
+                            ]
+                          : [
+                              {
+                                method_id: "free_shipping",
+                                method_title: "Free Shipping",
+                                total: "0",
+                              },
+                            ],
+                    },
+                  ])
+                );
 
-            
-
-              typeof window !== "undefined" && 
-               sessionStorage.getItem(`${siteName}_email_data`) && 
-               typeof window !== "undefined" && 
-                sessionStorage.getItem(`${siteName}_order_data`) && 
-              router.replace(data?.redirect_url);
-             
-              
-
-            
+              typeof window !== "undefined" &&
+                sessionStorage.getItem(`${siteName}_email_data`) &&
+                typeof window !== "undefined" &&
+                sessionStorage.getItem(`${siteName}_order_data`) &&
+                router.replace(data?.redirect_url);
             }
           } catch (error) {
             console.error("Error during payment process: ", error);
@@ -420,19 +416,21 @@ export default function TotalPay({locale}) {
 
   return (
     <div className="w-full">
+       {savedAddress &&
       <button className="btn btn-primary !w-full" onClick={handlePayment}>
         {loading
-                 ? getTranslation(
-                     translation[0]?.translations,
-                     "Order Processing...",
-                     locale || 'en'
-                   )
-                 : getTranslation(
-                     translation[0]?.translations,
-                     "Proceed to Checkout",
-                     locale || 'en'
-                   )} 
+          ? getTranslation(
+              translation[0]?.translations,
+              "Order Processing...",
+              locale || "en"
+            )
+          : getTranslation(
+              translation[0]?.translations,
+              "Proceed to Checkout",
+              locale || "en"
+            )}
       </button>
+}
       <div className="absolute">
         <ToastContainer
           position="top-right"

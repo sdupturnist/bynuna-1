@@ -2235,4 +2235,8 @@ html[lang=ar] * {
 }
 .image-gallery-icon {
   filter: drop-shadow(0 0px 0px #1a1a1a) !important;
+}
+
+.modal-box {
+  overflow: hidden !important;
 }/*# sourceMappingURL=theme.css.map */

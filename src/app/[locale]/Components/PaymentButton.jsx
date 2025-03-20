@@ -6,7 +6,7 @@ import CashOnDeliveryPayment from "./CashOnDeliveryButton";
 import TotalPay from "./TotalPay";
 
 
-export default function PaymentButton({ message, type, onClose, locale }) {
+export default function PaymentButton({ message, type, onClose, locale, }) {
   
   const {userData} = useAuthContext()
   const { paymentMethodOption } = useCheckoutContext();

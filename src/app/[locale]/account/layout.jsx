@@ -10,13 +10,16 @@ import { useAuthContext } from "../Context/authContext";
 import { useParams, usePathname } from "next/navigation";
 import withAuth from "../Utils/withAuth";
 import LoadingItem from "../Components/LoadingItem";
+import { getTranslation } from "../Utils/variables";
+import { useLanguageContext } from "../Context/LanguageContext";
 
-function AccountLayout({ children}) {
+function AccountLayout({ children }) {
   const pathname = usePathname();
 
-    const params = useParams();  
-    const locale = params.locale; 
+  const params = useParams();
+  const locale = params.locale;
 
+  const { translation } = useLanguageContext();
 
   const { validUserTocken, userData } = useAuthContext();
 
@@ -47,7 +50,15 @@ function AccountLayout({ children}) {
               <div>
                 <SectionHeader
                   locale={locale}
-                   title={pathname?.split("/").pop()?.replace(/-/g, " ")}
+                  title={
+                    pathname.includes("account/address/edit")
+                      ? getTranslation(
+                          translation[0]?.translations,
+                          "Edit Address",
+                          locale || "en"
+                        )
+                      : pathname?.split("/").pop()?.replace(/-/g, " ")
+                  }
                 />
               </div>
               <div className="sm:pt-3">{children}</div>
