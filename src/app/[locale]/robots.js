@@ -4,7 +4,7 @@ export default function robots() {
         userAgent: '*',
         disallow: '/',  // Disallow all pages
       },
-      //sitemap: 'https://wellness-for-you-ecommerce.vercel.app/sitemap.xml', // Update sitemap URL
+      sitemap: 'https://testwithupturnist.com/en/sitemap.xml',
     }
   }
   

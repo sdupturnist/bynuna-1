@@ -112,28 +112,22 @@ export let accountMenus = [
 //EMAIL CONFIG
 
 // GMAIL
-export let hostName = "smtp.gmail.com";
-export let portNumber = 587;
-export let emailUsername = "jaseerali2012@gmail.com";
-export let emailPassword = "thmqawimjxglferj";
-export let siteEmail = "jaseerali2012@gmail.com";
-export let siteFromEmail = "jaseerali2012@gmail.com";
+// export let hostName = "smtp.gmail.com";
+// export let portNumber = 587;
+// export let emailUsername = "jaseerali2012@gmail.com";
+// export let emailPassword = "thmqawimjxglferj";
+// export let siteEmail = "jaseerali2012@gmail.com";
+// export let siteFromEmail = "jaseerali2012@gmail.com";
 
-// export const hostName = "smtp.gmail.com";
-// export const portNumber = 587;
-// export const emailUsername = "shamnadsdofficial@gmail.com";
-// export const emailPassword = "pkhvpdfdfgkazzvj";
-// export const siteEmail = "shamnad2nk@gmail.com";
-// export const siteFromEmail = "shamnad2nk@gmail.com";
 
 //MAILEROO
 
-// export let hostName = "smtp.maileroo.com"
-// export let portNumber =  587
-// export let emailUsername = "mail@wellness4u.in"
-// export let emailPassword = "e88e7123011b9dc905870ed8"
-//  export let siteEmail = "jaseerali2012@gmail.com";
-//  export let siteFromEmail = "mail@wellness4u.in";
+export let hostName = "smtp.maileroo.com"
+export let portNumber =  587
+export let emailUsername = "no-reply@bynuna.ae"
+export let emailPassword = "265e0b1132eb125f2b2454b6"
+ export let siteEmail = "online@bynuna.ae";
+ export let siteFromEmail = "no-reply@bynuna.ae";
 
 //DEFAULT META TAGS
 

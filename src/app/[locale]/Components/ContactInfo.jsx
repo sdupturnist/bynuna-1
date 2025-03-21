@@ -18,7 +18,11 @@ export default function ContactInfo() {
   return (
     contactData && (
       <div className="grid gap-5">
-        <p>{contactData?.acf?.address}</p>
+       <p
+                dangerouslySetInnerHTML={{
+                  __html: contactData?.acf?.address,
+                }}
+              />
         <Link href={`tel:${contactData?.acf?.phone}`}>
           {" "}
           {contactData?.acf?.phone}
