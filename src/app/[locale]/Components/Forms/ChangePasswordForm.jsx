@@ -32,6 +32,7 @@ export default function ChangePasswordForm() {
     setLoading(true);
     // Validate that the new passwords match
     if (newPassword !== confirmPassword) {
+      setLoading(false);
       setError(
         getTranslation(
           translation[0]?.translations,
@@ -44,6 +45,7 @@ export default function ChangePasswordForm() {
 
     // Check if the new password is at least 6 characters
     if (newPassword.length < 6) {
+      setLoading(false);
       setError(
         getTranslation(
           translation[0]?.translations,
@@ -95,12 +97,14 @@ export default function ChangePasswordForm() {
 
     if (response.ok) {
       const data = await response.json();
+      setLoading(false);
       setMessage(data.message);
       setOldPassword("");
       setNewPassword("");
       setConfirmPassword("");
       return true;
     } else {
+      setLoading(false);
       const errorData = await response.json();
       setError(errorData.message);
       return false;
@@ -113,7 +117,7 @@ export default function ChangePasswordForm() {
       {error && <Alerts title={error} status="red" />}
 
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-5 lg:max-w-[500px] w-full">
+        <div className="grid gap-5 lg:max-w-[500px] w-full mt-3">
           <FloatingLabelInput
             label={getTranslation(
               translation[0]?.translations,
@@ -126,6 +130,7 @@ export default function ChangePasswordForm() {
             className="input"
             onChange={(e) => setOldPassword(e.target.value)}
             required
+            password
           />
 
           <FloatingLabelInput
@@ -140,6 +145,7 @@ export default function ChangePasswordForm() {
             className="input"
             onChange={(e) => setNewPassword(e.target.value)}
             required
+            password
           />
 
           <FloatingLabelInput
@@ -154,6 +160,7 @@ export default function ChangePasswordForm() {
             className="input"
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            password
           />
 
           <div>

@@ -29,7 +29,7 @@ export let woocommerceKey =
 
 
 
-export let returnDays = 24; //24 hours
+
 
 //.ENV
 export let homeUrl = process.env.NEXT_PUBLIC_SITE_URL
@@ -43,7 +43,11 @@ export let apiUrl = process.env.NEXT_PUBLIC_API_URL
 export let siteName = "bynuna";
 export let siteAuthor = `${siteName} admin`;
 export let year = date.getFullYear();
-export let copyright = `©` + year + ` ` + siteName + " All rights reserved";
+
+
+
+
+export let copyright = `© ${year} Bynuna. All Rights Reserved!`;
 export let siteLogo = `${apiUrl}wp-content/uploads/2025/01/bynuna_logo.png`;
 export let siteLogoWhite = `${apiUrl}wp-content/uploads/2025/01/bynuna_logo.png`;
 

@@ -36,7 +36,7 @@ export default function Card({
   //CHECK NEED LICENCE FOR BUY THIS PRODUCT
   const isNeedLicence =
     data &&
-    data?.meta_data?.find((item) => item.key === "required_valid_documents");
+    data?.meta_data?.find((item) => item.key === "_required_valid_documents");
 
   if (type === "categoryLarge") {
     return (
@@ -250,7 +250,7 @@ export default function Card({
                   name={data?.name}
                   image={data?.images?.featured?.url || data?.images}
                   slug={data?.slug}
-                  isNeedLicence={parseInt(isNeedLicence?.value)}
+                  isNeedLicence={isNeedLicence?.value}
                   category={mainCategoryName}
                   subCategory={subCategoryName}
                   childCategory={childCategoryName}
@@ -328,7 +328,7 @@ export default function Card({
                 name={data?.name}
                 image={data?.images?.featured?.url || data?.images}
                 slug={data?.slug}
-                isNeedLicence={parseInt(isNeedLicence?.value)}
+                isNeedLicence={isNeedLicence?.value}
                 category={mainCategoryName}
                 subCategory={subCategoryName}
                 childCategory={childCategoryName}

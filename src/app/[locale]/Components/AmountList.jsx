@@ -111,6 +111,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
         finalPrice = item.price;
       }
 
+
       // Calculate tax on discounted price
       const tax = (finalPrice * vatCharge) / 100;
 
@@ -224,6 +225,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 </span>
               </li>
             )}
+            
 
             {shippingChargeLimit > cartSubTotal && (
               <li>

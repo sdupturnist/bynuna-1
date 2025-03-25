@@ -1,15 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams,useRouter } from "next/navigation";
-
+import { useParams, useRouter } from "next/navigation";
+import { Preview, print } from "react-html2pdf";
 import MyOrder from "@/app/[locale]/Components/MyOrder";
 import SectionHeader from "@/app/[locale]/Components/SectionHeader";
 import {
   apiUrl,
   convertCurrency,
   getTranslation,
-  returnDays,
   siteName,
   woocommerceKey,
 } from "@/app/[locale]/Utils/variables";
@@ -25,7 +24,8 @@ import Alerts from "@/app/[locale]/Components/Alerts";
 import Button from "@/app/[locale]/Components/Button";
 
 export default function OrderItem() {
-  const { activeCurrencySymbol, currencies, activeCurrency } = useSiteContext();
+  const { activeCurrencySymbol, currencies, activeCurrency, returnDays } =
+    useSiteContext();
 
   const params = useParams();
   const locale = params.locale;
@@ -55,7 +55,9 @@ export default function OrderItem() {
     // Only run once on mount
 
     fetch(
-      `${apiUrl}wp-json/wc/v3/orders/${orderId}${woocommerceKey}&customer=${userId}&per_page=1`
+      `${apiUrl}wp-json/wc/v3/orders/${id[0]}${woocommerceKey}&customer=${
+        userData && userData?.id
+      }&per_page=1`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -76,8 +78,8 @@ export default function OrderItem() {
   const splitSlug = id;
   const orderId = splitSlug[1];
 
-  const trackingMessage =
-    order && order?.meta_data.filter((item) => item.key === "tracking");
+  // const trackingMessage =
+  //   order && order?.meta_data.filter((item) => item.key === "tracking");
 
   const subTotal = parseInt(
     order?.line_items?.reduce((acc, item) => acc + parseFloat(item.subtotal), 0)
@@ -108,7 +110,7 @@ export default function OrderItem() {
   const hoursDifference = timeDifference / (1000 * 60 * 60);
 
   // Check if the order was placed within the last 24 hours
-  const isWithin24Hours = hoursDifference <= returnDays;
+  const isWithin24Hours = hoursDifference <= returnDays?.return_days;
 
   return (
     <div>
@@ -123,47 +125,13 @@ export default function OrderItem() {
           <div className="bg-bggray">
             <section className="pb-0 sm:pt-0 pt-3">
               <div className="sm:bg-transparent max-w-[999px] mx-auto grid gap-5">
-                {/* {order?.status === "return-rejected" && (
-                  <Alerts
-                    status="red"
-                    title={`${getTranslation(
-                      translation[0]?.translations,
-                      "We’re sorry, but your return request has been rejected",
-                      locale || "en"
-                    )}${
-                      rejectReason
-                        ? getTranslation(
-                            translation[0]?.translations,
-                            "Because",
-                            locale || "en"
-                          ) + rejectReason?.value
-                        : ""
-                    }
-                   
-                    `}
-                  />
-                )} */}
-
-                {/* {order?.status === "returned" && (
-                  <Alerts
-                    status="green"
-                    title={getTranslation(
-                      translation[0]?.translations,
-                      "Your order return request has been successfully submitted. We will review the details and get back to you shortly.",
-                      locale || "en"
-                    )}
-                  />
-                )}
-
-                {order?.status === "cancelled" && (
-                  <Alerts
-                    status="green"
-                    title="Your order cancellation request has been successfully submitted. If any amount has been debited, we will transfer it to your bank account within 7 days."
-                  />
-                )} */}
-
                 <ul>
-                  <MyOrder data={order} orderView single />
+                  <MyOrder
+                    data={order}
+                    orderView
+                    single
+                    status={order && order?.status}
+                  />
                 </ul>
 
                 <div>
@@ -251,6 +219,7 @@ export default function OrderItem() {
                           {order?.payment_method_title}
                         </span>
                       </li>
+
                       <li>
                         <span className="label">
                           {getTranslation(
@@ -268,6 +237,22 @@ export default function OrderItem() {
                           )}
                         </span>
                       </li>
+
+                      {order?.coupon_lines?.length !== 0 && (
+                        <li>
+                          <span className="label">
+                            {getTranslation(
+                              translation[0]?.translations,
+                              "Coupon discount",
+                              locale || "en"
+                            )}
+                          </span>
+                          <span className="val !text-primary">
+                            -{activeCurrencySymbol}
+                            {order?.coupon_lines[0]?.discount}
+                          </span>
+                        </li>
+                      )}
                       <li>
                         <span className="label grid">
                           {getTranslation(
@@ -335,7 +320,7 @@ export default function OrderItem() {
                     </ul>
                   </div>
                 </div>
-                {trackingMessage.length > 0 && (
+                {/* {trackingMessage.length > 0 && (
                   <div className="card-rounded-none-small w-full bg-white py-4 px-3">
                     <SectionHeader
                       title="Track order"
@@ -347,7 +332,7 @@ export default function OrderItem() {
                       {trackingMessage[0]?.value}
                     </div>
                   </div>
-                )}
+                )} */}
 
                 <div>
                   {isWithin24Hours &&
@@ -356,7 +341,6 @@ export default function OrderItem() {
                       order?.status === "order-delivered") && (
                       <button
                         className="btn btn-primary"
-                      
                         onClick={(e) => setShowReturnOrder(!showReturnOrder)}
                       >
                         {getTranslation(
@@ -376,9 +360,8 @@ export default function OrderItem() {
                       />
                     )}
                   {order?.status !== "completed" &&
-                    order?.status !== "order-delivered" && 
-                    order?.status !== "return-initiated" &&
-                    (
+                    order?.status !== "order-delivered" &&
+                    order?.status !== "return-initiated" && (
                       <>
                         {!cancelForm && (
                           <Button
@@ -387,7 +370,6 @@ export default function OrderItem() {
                             action={() => setCancelForm(!cancelForm)}
                           />
                         )}
-
                         {cancelForm && (
                           <CancelOrderForm
                             data={order}

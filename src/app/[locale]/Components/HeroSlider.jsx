@@ -6,7 +6,6 @@ import Button from "./Button";
 import { homeUrl } from "../Utils/variables";
 
 export default function HeroSlider({ data, locale }) {
-
   var settings = {
     dots: false,
     infinite: true,
@@ -28,10 +27,11 @@ export default function HeroSlider({ data, locale }) {
             <div className="container container-fixed absolute right-0 left-0 bottom-0 top-0 flex items-center z-10 [&>*]:text-white">
               <div className="grid gap-7 w-full">
                 <h1 className="heading-xl">{item?.title?.rendered}</h1>
+              
                 <div>
                   <Button
                     link
-                    url={`${homeUrl}${locale}/products`}
+                    url={`${item?.acf?.url ? item?.acf?.url : homeUrl}`}
                     label={item?.acf?.hero_button}
                   />
                 </div>

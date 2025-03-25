@@ -18,11 +18,11 @@ export default function ContactInfo() {
   return (
     contactData && (
       <div className="grid gap-5">
-       <p
-                dangerouslySetInnerHTML={{
-                  __html: contactData?.acf?.address,
-                }}
-              />
+        <p
+          dangerouslySetInnerHTML={{
+            __html: contactData?.acf?.address,
+          }}
+        />
         <Link href={`tel:${contactData?.acf?.phone}`}>
           {" "}
           {contactData?.acf?.phone}
@@ -30,6 +30,7 @@ export default function ContactInfo() {
         <Link href={`mailto:${contactData?.acf?.email}`}>
           {contactData?.acf?.email}
         </Link>
+        {contactData?.acf?.working_time ? <p>{contactData?.acf?.working_time}</p> : null}
         <div className="mt-3">
           <SocialIcons
             center

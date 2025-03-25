@@ -97,7 +97,7 @@ export default function PasswordResetRequest() {
       {message && <Alerts title={message} status="green" />}
       {error && <Alerts title={error} status="red" />}
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-5">
+        <div className="grid gap-5 mt-3">
           <FloatingLabelInput
             type="email"
             value={email}

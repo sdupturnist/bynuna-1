@@ -1607,3 +1607,44 @@ html[lang="ar"] {
 .modal-box{
   overflow: hidden !important;
 }
+
+
+  /* Ensure correct layout for the PDF preview */
+  #jsx-template {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: auto;
+    page-break-inside: avoid;
+  }
+  
+  /* Ensure that elements fit the page when printing */
+  @media print {
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+  
+    #jsx-template {
+      width: 100%;
+      max-width: 210mm;  /* A4 paper width */
+      height: auto;
+      box-sizing: border-box;
+      page-break-before: always;
+    }
+  }
+  
+  /* Optional: Adjust scaling if content is too large */
+  #jsx-template {
+    transform: scale(0.5);  /* Adjust this value as needed */
+    transform-origin: top left;
+    width: 100%;
+  }
+
+  .show-password{
+
+    @apply absolute top-[50%] right-4 translate-y-[-50%] cursor-pointer text-[16px]
+    
+  }
+  

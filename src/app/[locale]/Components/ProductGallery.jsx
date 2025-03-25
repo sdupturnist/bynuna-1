@@ -13,7 +13,7 @@ export default function ProductGallery({ data }) {
       }))
     : [{ original: data || '', thumbnail: data || '' }];
 
-  console.log(images);
+
 
   return (
     // <SliderImage

@@ -202,7 +202,7 @@ category,
 subCategory, 
    childCategory
   ) => {
-    if (!isInCart && isNeedLicence === 1) {
+    if (!isInCart && isNeedLicence === "yes") {
       const swalWithBootstrapButtons = Swal.mixin({
         customClass: {
           confirmButton: "btn btn-success",
@@ -393,6 +393,7 @@ subCategory,
         if (result.isConfirmed) {
           const updatedCartItems = cartItems.filter((item) => item.id !== id);
           setCartItems(updatedCartItems);
+          setDiscount(0)
           // localStorage.setItem(`${siteName}_cart`,updatedCartItems);
           localStorage.setItem(
             `${siteName}_cart`,

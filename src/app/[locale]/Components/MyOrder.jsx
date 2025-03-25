@@ -4,26 +4,35 @@ import { useState, useEffect } from "react";
 import Alerts from "./Alerts";
 import Images from "./Images";
 import Link from "next/link";
+import { Preview, print } from "react-html2pdf";
+
+
 import { useParams, usePathname, useRouter } from "next/navigation";
 import {
+  apiUrl,
   currency,
   formatDate,
   formatDateStringWithTime,
   getTranslation,
   siteName,
   translateStatusToArabic,
+  woocommerceKey,
 } from "../Utils/variables";
 import Skelton from "./Skelton";
 import { useLanguageContext } from "../Context/LanguageContext";
+import { useAuthContext } from "../Context/authContext";
+import Invoice from "./Invoice";
 
-export default function MyOrder({ data, orderView, userInfo, single }) {
+export default function MyOrder({ data, orderView, userInfo, single, status }) {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale;
+  const id = useParams();
 
   const pathname = usePathname();
 
   const { translation } = useLanguageContext();
+  const {userData} = useAuthContext()
 
   // Define the status to color mapping
   const statusColorMap = {
@@ -36,8 +45,12 @@ export default function MyOrder({ data, orderView, userInfo, single }) {
     refunded: "text-blue-500",
     confirmed: "text-green-500",
   };
+  
 
+  const [invoice, setInvoice] = useState([]);
   const [loading, setLoading] = useState(true);
+
+
 
   useEffect(() => {
     if (data) {
@@ -105,6 +118,53 @@ export default function MyOrder({ data, orderView, userInfo, single }) {
     (item) => item.key === "Return Rejected Reason"
   );
 
+
+
+
+  
+
+
+
+  
+  useEffect(() => {
+    // Fetch the invoice data when component mounts
+    fetch(
+      `${apiUrl}wp-json/wc/v3/orders/${id?.id}${woocommerceKey}&customer=${userData && userData?.id}&per_page=1`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setInvoice(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      });
+  }, [id]);
+
+
+
+
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const element = document.getElementById("jsx-template");
+
+      if (element) {
+        const parent = element.parentElement;
+        if (parent) {
+          parent.style.width = "0px"; // Ensure width is 0px to avoid overflow
+          parent.style.overflow = "hidden";
+        }
+      }
+    }, 3000); // Set a timeout of 3 seconds to adjust styles
+
+    return () => clearTimeout(timer); // Cleanup timeout on component unmount
+  }, []);
+
+
+
+
   return (
     <>
       {loading ? (
@@ -119,6 +179,14 @@ export default function MyOrder({ data, orderView, userInfo, single }) {
         >
           {single ? (
             <>
+
+<div className="hidden">
+<Preview id={"jsx-template"}>
+              <Invoice data={invoice} />
+            </Preview>
+</div>
+
+            
               <div className="lg:flex items-start justify-between w-full gap-3">
                 <div className="flex gap-[10px] justify-between w-full">
                   <div className="grid gap-[10px] py-2">
@@ -283,37 +351,37 @@ export default function MyOrder({ data, orderView, userInfo, single }) {
                     </div>
                   )}
 
-{data?.status === "refunded" && (
-                      <div className="item">
-                        <div className="content">
-                          <p className="text-[14px] font-bold">
-                            {getTranslation(
+                  {data?.status === "refunded" && (
+                    <div className="item">
+                      <div className="content">
+                        <p className="text-[14px] font-bold">
+                          {getTranslation(
+                            translation[0]?.translations,
+                            getTranslation(
                               translation[0]?.translations,
-                              getTranslation(
-                                translation[0]?.translations,
-                                "Refund Initiated",
-                                locale || "en"
-                              ),
+                              "Refund Initiated",
                               locale || "en"
-                            )}
-                          </p>
-                          <div className="text-xs opacity-70 mt-[3px]">
-                            {getTranslation(
-                              translation[0]?.translations,
-                              "Your refund has been successfully processed. The amount will be credited to your account within 7 working days.",
-                              locale || "en"
-                            )}
+                            ),
+                            locale || "en"
+                          )}
+                        </p>
+                        <div className="text-xs opacity-70 mt-[3px]">
+                          {getTranslation(
+                            translation[0]?.translations,
+                            "Your refund has been successfully processed. The amount will be credited to your account within 7 working days.",
+                            locale || "en"
+                          )}
 
-                            <div className="mt-2 text-[10px] text-gray-500">
-                              {formatDateStringWithTime(data?.date_modified)}
-                            </div>
+                          <div className="mt-2 text-[10px] text-gray-500">
+                            {formatDateStringWithTime(data?.date_modified)}
                           </div>
                         </div>
                       </div>
-                    )}
+                    </div>
+                  )}
 
-{data?.status === "refunded" &&
-                     data?.refunds?.length !== 0 && (
+                  {data?.status === "refunded" &&
+                    data?.refunds?.length !== 0 && (
                       <div className="item">
                         <div className="content">
                           <p className="text-[14px] font-bold">
@@ -343,8 +411,7 @@ export default function MyOrder({ data, orderView, userInfo, single }) {
                     )}
 
                   {data?.status === "cancelled" &&
-                    data?.payment_method !== "cash_on_delivery" &&
-                     (
+                    data?.payment_method !== "cash_on_delivery" && (
                       <div className="item">
                         <div className="content">
                           <p className="text-[14px] font-bold">
@@ -438,7 +505,33 @@ export default function MyOrder({ data, orderView, userInfo, single }) {
                       </div>
                     </div>
                   )}
-
+                  {status === "completed" && (
+                    <button
+                      className="border-border p-3 text-xs uppercase border mt-5 ml-3 mb-2 hover:border-primary transition-all hover:text-primary"
+                      onClick={(e) =>
+                        print(`${siteName}_invoice_${data?.id}`, "jsx-template", {
+                          filename: `${siteName}_invoice_${data?.id}.pdf`,
+                          jsPDF: {
+                            unit: "mm",
+                            format: "a4", // A4 size for PDF
+                            orientation: "portrait", // Portrait orientation
+                          },
+                          html2canvas: {
+                            scale: 0.5, // Increase scale for higher quality rendering
+                            logging: true, // Enable logging for debugging
+                            letterRendering: true, // Optional: for better text rendering
+                          },
+                        })
+                      }
+                    >
+                      <i className="bi bi-download mr-2"></i>
+                      {getTranslation(
+                        translation[0]?.translations,
+                        "Download Invoice",
+                        locale || "en"
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="border-t border-border py-2 px-2 flex items-center justify-between">
@@ -458,7 +551,7 @@ export default function MyOrder({ data, orderView, userInfo, single }) {
           ) : (
             <Link
               className="w-full"
-              href={`${pathname}/${userInfo?.id}/${data?.id}`}
+              href={`${pathname}/${data?.id}`}
             >
               <div className="lg:flex items-start justify-between w-full gap-3">
                 <div className="flex gap-[10px] justify-between w-full">

@@ -104,7 +104,7 @@ export default function TotalPay({ locale }) {
     );
 
   const hasLicenceItems =
-    cartItems && cartItems?.some((item) => item?.isNeedLicence === 1);
+    cartItems && cartItems?.some((item) => item?.isNeedLicence === "yes");
 
   //CREATE ORDER NUMBER BY THE RECENT ORDER
   const recentOrder = async () => {
@@ -416,7 +416,7 @@ export default function TotalPay({ locale }) {
 
   return (
     <div className="w-full">
-       {savedAddress &&
+       {savedAddress ?
       <button className="btn btn-primary !w-full" onClick={handlePayment}>
         {loading
           ? getTranslation(
@@ -430,6 +430,7 @@ export default function TotalPay({ locale }) {
               locale || "en"
             )}
       </button>
+      : null
 }
       <div className="absolute">
         <ToastContainer

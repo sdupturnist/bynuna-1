@@ -5,7 +5,12 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { apiUrl, siteName, woocommerceKey, woocommerceKeyAdd } from "../Utils/variables";
+import {
+  apiUrl,
+  siteName,
+  woocommerceKey,
+  woocommerceKeyAdd,
+} from "../Utils/variables";
 import { userId } from "../Utils/UserInfo";
 import { useParams, useRouter } from "next/navigation";
 
@@ -43,7 +48,8 @@ export const SiteProvider = ({ children }) => {
   const [mainCatMenues, setMainCatMenues] = useState([]);
   const [searchMobileVisible, setSearchMobileVisible] = useState(false);
   const [queryUpdated, setQueryUpdated] = useState(false);
- const [savedAddress, setSavedAddress] = useState([]);
+  const [savedAddress, setSavedAddress] = useState([]);
+  const [returnDays, setReturnDays] = useState(0);
 
   //CATEGORIES MENUS
 
@@ -68,61 +74,51 @@ export const SiteProvider = ({ children }) => {
   //HEADER MENUS
 
   const headerMenuData = async () => {
-
-   
-    
-    
-        try {
-          const response = await fetch(
-            `${apiUrl}wp-json/custom/v1/menus/header-menu`,
-            // `${apiUrl}wp-json/custom/v1/menus/test`,
-            {
-              next: { revalidate: 60 },
-            }
-          );
-          if (!response.ok) {
-            throw new Error("Failed to fetch header menus");
-          }
-          const data = await response.json();
-         setHeaderMenu(data);
-         // console.log('ddddddddd',data)
-    
-        } catch (error) {
-          console.error(error);
+    try {
+      const response = await fetch(
+        `${apiUrl}wp-json/custom/v1/menus/header-menu`,
+        // `${apiUrl}wp-json/custom/v1/menus/test`,
+        {
+          next: { revalidate: 60 },
         }
-      };
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch header menus");
+      }
+      const data = await response.json();
+      setHeaderMenu(data);
+      // console.log('ddddddddd',data)
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-      
+  //   const headerMenuData = async () => {
 
+  // if(localStorage.getItem(`${siteName}_menu`)){
+  //   return false
+  // }
 
+  //     try {
+  //       const response = await fetch(
+  //         `${apiUrl}wp-json/custom/v1/menus/header-menu`,
+  //         // `${apiUrl}wp-json/custom/v1/menus/test`,
+  //         {
+  //           next: { revalidate: 60 },
+  //         }
+  //       );
+  //       if (!response.ok) {
+  //         throw new Error("Failed to fetch header menus");
+  //       }
+  //       const data = await response.json();
+  //       typeof window !== "undefined" && localStorage.setItem(`${siteName}_menu`, JSON.stringify(data))
+  //       setHeaderMenu(data);
+  //      // console.log('ddddddddd',data)
 
-//   const headerMenuData = async () => {
-
-// if(localStorage.getItem(`${siteName}_menu`)){
-//   return false
-// }
-
-
-//     try {
-//       const response = await fetch(
-//         `${apiUrl}wp-json/custom/v1/menus/header-menu`,
-//         // `${apiUrl}wp-json/custom/v1/menus/test`,
-//         {
-//           next: { revalidate: 60 },
-//         }
-//       );
-//       if (!response.ok) {
-//         throw new Error("Failed to fetch header menus");
-//       }
-//       const data = await response.json();
-//       typeof window !== "undefined" && localStorage.setItem(`${siteName}_menu`, JSON.stringify(data))
-//       setHeaderMenu(data);
-//      // console.log('ddddddddd',data)
-
-//     } catch (error) {
-//       console.error(error);
-//     }
-//   };
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
 
   //FOOTER MENUS
 
@@ -180,6 +176,22 @@ export const SiteProvider = ({ children }) => {
       }
       const data = await response.json();
       setCurrencies(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  //RETURN DAYS
+  const getReturnDays = async () => {
+    try {
+      const response = await fetch(`${apiUrl}wp-json/custom/v1/return-days`, {
+        next: { revalidate: 60 },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch return days");
+      }
+      const data = await response.json();
+      setReturnDays(data);
     } catch (error) {
       console.error(error);
     }
@@ -265,8 +277,6 @@ export const SiteProvider = ({ children }) => {
     }
   };
 
- 
-
   //WISH LIST
   const fetchWishlist = async () => {
     try {
@@ -285,13 +295,6 @@ export const SiteProvider = ({ children }) => {
       console.error(error);
     }
   };
-
-
-
-  
-  
-
-
 
   //CONTACT INFO
   const fetchContactInfo = async () => {
@@ -348,6 +351,7 @@ export const SiteProvider = ({ children }) => {
   }, [activeCurrency]);
 
   useEffect(() => {
+    getReturnDays();
     mainCatMenuData();
     footerMenuPagesData();
     footerMenuData();
@@ -377,6 +381,8 @@ export const SiteProvider = ({ children }) => {
         setContactData,
         activeWishlist,
         mainCatMenues,
+        returnDays,
+        setReturnDays,
         setMainCatMenues,
         headerMenu,
         setHeaderMenu,
@@ -418,7 +424,8 @@ export const SiteProvider = ({ children }) => {
         queryUpdated,
         setQueryUpdated,
         loading,
-        savedAddress, setSavedAddress,
+        savedAddress,
+        setSavedAddress,
         error, // Pass loading and error to context
       }}
     >

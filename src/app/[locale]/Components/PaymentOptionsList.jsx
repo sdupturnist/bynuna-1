@@ -27,7 +27,7 @@ export default function PaymentOptionsList({ data }) {
   const { cartItems } = useCartContext();
 
   const hasLicenceItems =
-    cartItems && cartItems?.some((item) => item?.isNeedLicence === 1);
+    cartItems && cartItems?.some((item) => item?.isNeedLicence === "yes");
 
   const enabledGateways =
     data && data.filter((gateway) => gateway.enabled === true);

@@ -134,12 +134,12 @@ export default function CartListItem({}) {
             <li
               key={index}
               className={` ${
-                item?.isNeedLicence === 1 ? "!border-red-300 border" : ""
+                item?.isNeedLicence === "yes" ? "!border-red-300 border" : ""
               }  !pb-0`}
             >
               <div
                 className={`lg:flex items-center justify-start w-full gap-5 pb-5  ${
-                  item?.isNeedLicence === 1 ? "px-5 pb-5" : ""
+                  item?.isNeedLicence === "yes" ? "px-5 pb-5" : ""
                 }`}
               >
                 <div className="flex items-center justify-start w-full gap-5 mb-7 lg:mb-0">
@@ -204,7 +204,7 @@ export default function CartListItem({}) {
                   />
                 )}
               </div>
-              {item?.isNeedLicence === 1 && (
+              {item?.isNeedLicence === "yes" && (
                 <div className="border-t border-red-300 bg-red-300 bg-opacity-10 text-xs p-2">
                   <i className="bi bi-exclamation-triangle-fill text-red-500 mr-1 text-[11px] mb-1"></i>
                   <span className="uppercase text-red-500 font-medium px-2">

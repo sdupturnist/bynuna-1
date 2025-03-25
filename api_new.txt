@@ -1902,66 +1902,6 @@ function allow_maximum_amount_in_coupon_rest_update($args, $request) {
     return $args;
 }
 
-// Add Refundable Checkbox to Coupon Admin Page
-add_action('woocommerce_coupon_options', 'add_refundable_checkbox_coupon_field', 10, 1);
-function add_refundable_checkbox_coupon_field($coupon_id) {
-    $refundable = get_post_meta($coupon_id, 'refundable_field', true); // Get the current value of the 'refundable_field'
-
-    // If no value is set for refundable_field, default to 'no' (unchecked)
-    if (empty($refundable)) {
-        $refundable = 'no';
-    }
-
-    woocommerce_wp_checkbox(array(
-        'id' => 'refundable_field',
-        'label' => __('Refundable', 'your-textdomain'),
-        'description' => __('Check this box if this coupon is refundable', 'your-textdomain'),
-        'desc_tip' => true,
-        'value' => 'yes', // This is the value when the checkbox is checked
-        'checked' => ($refundable === 'yes'), // Check the box if the value is 'yes'
-    ));
-}
-
-// Save Refundable Checkbox Value
-add_action('woocommerce_coupon_options_save', 'save_refundable_checkbox_coupon_field', 10, 1);
-function save_refundable_checkbox_coupon_field($coupon_id) {
-    // Get the value of the refundable checkbox from the POST data
-    $refundable = isset($_POST['refundable_field']) ? 'yes' : 'no'; // Checkbox is either checked (yes) or unchecked (no)
-    
-    // Save the refundable status to the coupon's meta data
-    update_post_meta($coupon_id, 'refundable_field', $refundable);
-}
-
-// Add Refundable Field to Coupon Meta Data in REST API Response
-add_filter('woocommerce_rest_prepare_shop_coupon_object', 'add_refundable_field_to_coupon_meta_data', 10, 3);
-function add_refundable_field_to_coupon_meta_data($response, $coupon, $request) {
-    $refundable = get_post_meta($coupon->get_id(), 'refundable_field', true);
-    
-    // Add the 'refundable_field' to the coupon's meta_data in the REST API response
-    if (!empty($refundable)) {
-        $response->data['meta_data'][] = [
-            'key' => 'refundable_field',
-            'value' => $refundable,
-        ];
-    }
-    
-    return $response;
-}
-
-// Allow updating Refundable Field via REST API
-add_filter('woocommerce_rest_shop_coupon_object_query', 'allow_refundable_in_coupon_rest_update', 10, 3);
-function allow_refundable_in_coupon_rest_update($args, $request) {
-    $refundable = $request->get_param('refundable_field');
-    
-    // If refundable is set in the request, update the coupon's meta field
-    if ($refundable !== null) {
-        $coupon_id = $request->get_param('id');
-        update_post_meta($coupon_id, 'refundable_field', sanitize_text_field($refundable));
-    }
-    
-    return $args;
-}
-
 
 
 
@@ -1983,6 +1923,8 @@ function hide_woocommerce_coupon_fields() {
                 $('.options_group .usage_limit_field').hide();
                 $('.options_group .limit_usage_to_x_items_field').hide();
 				 $('#woocommerce-coupon-data  .woocommerce_options_panel .options_group:nth-child(3)').hide();
+				$('#usage_restriction_coupon_data .form-field:nth-child(3)').hide();
+				$('#usage_restriction_coupon_data > .form-field').hide();
 				$('#woocommerce-coupon-description').hide();
             });
         </script>
@@ -3631,36 +3573,7 @@ function get_child_categories_data( $data ) {
 
 // CONTACT INFO
 
-// 1. Hide "Add New" from the Admin Menu
-function hide_add_new_from_admin_menu_contact_info() {
-    remove_submenu_page('edit.php?post_type=contact-info', 'post-new.php?post_type=contact-info');
-}
-add_action('admin_menu', 'hide_add_new_from_admin_menu_contact_info', 999);
-
-// 2. Hide "Add New" from the Admin Bar
-function hide_add_new_from_admin_bar_contact_info($wp_admin_bar) {
-    $wp_admin_bar->remove_node('new-contact-info');
-}
-add_action('admin_bar_menu', 'hide_add_new_from_admin_bar_contact_info', 999);
-
-// 3. Hide "Add New" from the Post Listing Page (Button)
-function hide_add_new_button_for_contact_info() {
-    if (isset($_GET['post_type']) && $_GET['post_type'] === 'contact-info') {
-        ?>
-        <script type="text/javascript">
-            document.addEventListener("DOMContentLoaded", function() {
-                var addNewButton = document.querySelector('.page-title-action[href*="post-new.php?post_type=contact-info"]');
-                if (addNewButton) {
-                    addNewButton.style.display = 'none';  // Hides the "Add New" button
-                }
-            });
-        </script>
-        <?php
-    }
-}
-add_action('admin_footer', 'hide_add_new_button_for_contact_info');
-
-// 4. Hide "Move to Trash" and "Delete" from the Post Listing Page and Bulk Actions
+// 1. Hide "Move to Trash" and "Delete" from Bulk Actions for 'contact-info'
 function hide_trash_and_delete_bulk_action_contact_info($actions) {
     if (isset($_GET['post_type']) && $_GET['post_type'] === 'contact-info') {
         unset($actions['trash']); // Remove the "Move to Trash" option from bulk actions
@@ -3669,7 +3582,7 @@ function hide_trash_and_delete_bulk_action_contact_info($actions) {
 }
 add_filter('bulk_actions-edit-contact-info', 'hide_trash_and_delete_bulk_action_contact_info');
 
-// 5. Hide "Move to Trash" from Individual Post Action Links
+// 2. Hide "Move to Trash" from Individual Post Action Links for 'contact-info'
 function hide_trash_on_edit_page_contact_info($actions, $post) {
     if ($post->post_type === 'contact-info') {
         unset($actions['trash']); // Remove "Move to Trash" from post action links on the edit page
@@ -3677,6 +3590,7 @@ function hide_trash_on_edit_page_contact_info($actions, $post) {
     return $actions;
 }
 add_filter('post_row_actions', 'hide_trash_on_edit_page_contact_info', 10, 2);
+
 
 // CURRENCY
 
@@ -3727,6 +3641,7 @@ function hide_trash_on_edit_page_currency($actions, $post) {
 }
 add_filter('post_row_actions', 'hide_trash_on_edit_page_currency', 10, 2);
 
+
 // SHIPPING CHARGE
 
 // 1. Hide "Add New" from the Admin Menu for 'shipping-charge'
@@ -3775,6 +3690,7 @@ function hide_trash_on_edit_page_shipping_charge($actions, $post) {
     return $actions;
 }
 add_filter('post_row_actions', 'hide_trash_on_edit_page_shipping_charge', 10, 2);
+
 
 // FAQ
 
@@ -3825,6 +3741,7 @@ function hide_trash_on_edit_page_faq($actions, $post) {
 }
 add_filter('post_row_actions', 'hide_trash_on_edit_page_faq', 10, 2);
 
+
 // SECURITY PAYMENTS
 
 // 1. Hide "Add New" from the Admin Menu for 'security-payments'
@@ -3874,6 +3791,7 @@ function hide_trash_on_edit_page_security_payments($actions, $post) {
 }
 add_filter('post_row_actions', 'hide_trash_on_edit_page_security_payments', 10, 2);
 
+
 // DELIVERY AND RETURNS
 
 // 1. Hide "Add New" from the Admin Menu for 'delivery-and-returns'
@@ -3922,6 +3840,55 @@ function hide_trash_on_edit_page_delivery_and_returns($actions, $post) {
     return $actions;
 }
 add_filter('post_row_actions', 'hide_trash_on_edit_page_delivery_and_returns', 10, 2);
+
+
+// PAGES
+// 1. Hide "Add New" from the Admin Menu for 'page' (Except for user with email "jaseerali2012@gmail.com")
+function hide_add_new_from_admin_menu_pages() {
+    // Get the current logged-in user's email
+    $current_user_email = wp_get_current_user()->user_email;
+    
+    // Check if the user's email is NOT "jaseerali2012@gmail.com"
+    if ($current_user_email !== 'jaseerali2012@gmail.com') {
+        remove_submenu_page('edit.php?post_type=page', 'post-new.php?post_type=page');
+    }
+}
+add_action('admin_menu', 'hide_add_new_from_admin_menu_pages', 999);
+
+// 2. Hide "Add New" from the Admin Bar for 'page' (Except for user with email "jaseerali2012@gmail.com")
+function hide_add_new_from_admin_bar_pages($wp_admin_bar) {
+    // Get the current logged-in user's email
+    $current_user_email = wp_get_current_user()->user_email;
+    
+    // Check if the user's email is NOT "jaseerali2012@gmail.com"
+    if ($current_user_email !== 'jaseerali2012@gmail.com') {
+        $wp_admin_bar->remove_node('new-page');
+    }
+}
+add_action('admin_bar_menu', 'hide_add_new_from_admin_bar_pages', 999);
+
+// 3. Hide "Add New" from the Post Listing Page (Button) for 'page' (Except for user with email "jaseerali2012@gmail.com")
+function hide_add_new_button_for_pages() {
+    // Get the current logged-in user's email
+    $current_user_email = wp_get_current_user()->user_email;
+    
+    // Check if the user's email is NOT "jaseerali2012@gmail.com"
+    if (isset($_GET['post_type']) && $_GET['post_type'] === 'page' && $current_user_email !== 'jaseerali2012@gmail.com') {
+        ?>
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                var addNewButton = document.querySelector('.page-title-action[href*="post-new.php?post_type=page"]');
+                if (addNewButton) {
+                    addNewButton.style.display = 'none';  // Hides the "Add New" button
+                }
+            });
+        </script>
+        <?php
+    }
+}
+add_action('admin_footer', 'hide_add_new_button_for_pages');
+
+
 
 
 
@@ -3978,3 +3945,105 @@ add_action( 'rest_api_init', function() {
 
 // Disable new user registration email
 remove_action( 'user_register', 'wp_send_new_user_notifications', 10, 1 );
+
+
+
+//RETURN DAYS
+// Hook to add admin menu
+add_action('admin_menu', 'add_return_settings_menu');
+
+// Function to add the menu item
+function add_return_settings_menu() {
+    // Create top-level menu item
+    add_menu_page(
+        'Return Settings',               // Page title
+        'Return Settings',               // Menu title
+        'read',                          // Capability (read is for all users)
+        'return-settings',               // Menu slug
+        'return_settings_page',          // Function to display the page
+        'dashicons-undo',                // Icon
+        80                               // Position
+    );
+}
+
+// Function to display the settings page
+function return_settings_page() {
+    // Check if the user has permission to read (accessible for all users)
+    if (!current_user_can('read')) {
+        return;
+    }
+
+    // Handle form submission to save the "Return Days" option
+    if (isset($_POST['return_days'])) {
+        update_option('return_days', sanitize_text_field($_POST['return_days']));
+        echo '<div class="updated"><p>Settings saved successfully!</p></div>';
+    }
+
+    // Get the current "Return Days" value
+    $return_days = get_option('return_days', '30'); // Default to 30 days if no value is saved
+    ?>
+
+    <div class="wrap">
+        <h1>Return Settings</h1>
+        <form method="POST">
+            <table class="form-table">
+                <tr valign="top">
+                    <th scope="row"><label for="return_days">Return Days</label></th>
+                    <td>
+                        <input type="number" id="return_days" name="return_days" value="<?php echo esc_attr($return_days); ?>" min="1" step="1" />
+                        <p class="description">Enter the number of days allowed for returns.</p>
+                    </td>
+                </tr>
+            </table>
+
+            <p class="submit">
+                <input type="submit" class="button-primary" value="Save Settings" />
+            </p>
+        </form>
+    </div>
+    <?php
+}
+
+
+// Register custom REST API endpoints
+add_action('rest_api_init', 'register_return_settings_endpoint');
+
+// Function to register the custom endpoint
+function register_return_settings_endpoint() {
+    // GET endpoint to retrieve the "Return Days" value
+    register_rest_route('custom/v1', '/return-days', [
+        'methods' => 'GET',
+        'callback' => 'get_return_days',
+        'permission_callback' => '__return_true', // Public access (adjust for your use case)
+    ]);
+
+    // POST endpoint to update the "Return Days" value
+    register_rest_route('custom/v1', '/return-days', [
+        'methods' => 'POST',
+        'callback' => 'update_return_days',
+        'permission_callback' => 'is_user_logged_in', // Ensure user is logged in before updating
+    ]);
+}
+
+// Callback function for GET request (retrieve "Return Days")
+function get_return_days(WP_REST_Request $request) {
+    // Get the current "Return Days" value from the options table
+    $return_days = get_option('return_days', 30); // Default to 30 if not set
+    return new WP_REST_Response(['return_days' => $return_days], 200);
+}
+
+// Callback function for POST request (update "Return Days")
+function update_return_days(WP_REST_Request $request) {
+    // Get the new "Return Days" value from the request
+    $new_return_days = $request->get_param('return_days');
+
+    // Validate input (ensure it's a valid number and greater than 0)
+    if (!is_numeric($new_return_days) || $new_return_days <= 0) {
+        return new WP_REST_Response(['message' => 'Invalid Return Days value. It must be a positive number.'], 400);
+    }
+
+    // Save the new value to the options table
+    update_option('return_days', $new_return_days);
+
+    return new WP_REST_Response(['message' => 'Return Days updated successfully.'], 200);
+}

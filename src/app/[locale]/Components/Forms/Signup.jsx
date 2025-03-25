@@ -18,7 +18,7 @@ import { useLanguageContext } from "../../Context/LanguageContext";
 import { useParams, useRouter } from "next/navigation";
 import LoadingItem from "../LoadingItem";
 
-export default function Signup({customers}) {
+export default function Signup({ customers }) {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale;
@@ -57,8 +57,6 @@ export default function Signup({customers}) {
     return age >= 18;
   }
 
-
-
   const privacy = () =>
     fetch(`${apiUrl}wp-json/wp/v2/pages?slug=privacy-policy&lang=${locale}`)
       .then((res) => res.json())
@@ -69,9 +67,8 @@ export default function Signup({customers}) {
         console.error("Error fetching data:", error);
       });
 
-
-      const isEmailExist = customers && customers?.some(user => user.email === email);
-
+  const isEmailExist =
+    customers && customers?.some((user) => user.email === email);
 
   useEffect(() => {
     setPrivacyContent(privacy);
@@ -120,16 +117,13 @@ export default function Signup({customers}) {
 
     setPasswordMismatch(false);
 
+    if (isEmailExist) {
+      setEmailAlreadyHave(true);
+      setLoading(false);
+      return;
+    }
 
-
-if (isEmailExist) {
-  setEmailAlreadyHave(true)
-  setLoading(false);
-  return;
-} 
-
-setEmailAlreadyHave(false)
-
+    setEmailAlreadyHave(false);
 
     try {
       const token = Math.random().toString(36).substring(2);
@@ -200,7 +194,7 @@ setEmailAlreadyHave(false)
             status="red"
           />
         )}
-            {emailAlreadyHave && (
+        {emailAlreadyHave && (
           <Alerts
             title={getTranslation(
               translation[0]?.translations,
@@ -264,6 +258,7 @@ setEmailAlreadyHave(false)
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              password
             />
 
             <FloatingLabelInput
@@ -276,6 +271,7 @@ setEmailAlreadyHave(false)
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              password
             />
 
             <div className="grid gap-3 my-2">
@@ -306,7 +302,8 @@ setEmailAlreadyHave(false)
                     translation[0]?.translations,
                     "I have read and agree to the",
                     locale || "en"
-                  )}  <span
+                  )}{" "}
+                  <span
                     className="underline text-primary cursor-pointer hover:opacity-60 transition-all"
                     onClick={(e) =>
                       document.getElementById("modal_all").showModal()

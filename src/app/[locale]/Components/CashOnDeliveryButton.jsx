@@ -134,7 +134,7 @@ export default function CashOnDeliveryPayment({ userData }) {
     );
 
   const hasLicenceItems =
-    cartItems && cartItems?.some((item) => item?.isNeedLicence === 1);
+    cartItems && cartItems?.some((item) => item?.isNeedLicence === "yes");
 
   // Handle the payment and order creation logic
   const handlePayment = async () => {
@@ -429,7 +429,7 @@ export default function CashOnDeliveryPayment({ userData }) {
 
   return (
     <>
-      {savedAddress && (
+      {savedAddress ? (
         <button
           disabled={loading}
           onClick={handlePayment}
@@ -447,7 +447,7 @@ export default function CashOnDeliveryPayment({ userData }) {
                 locale || "en"
               )}
         </button>
-      )}
+      ) : null}
       <div className="absolute">
         <ToastContainer
           position="top-right"

@@ -127,7 +127,7 @@ export default function ResetPasswordForm() {
       {message && <Alerts title={message} status="green" />}
       {error && <Alerts title={error} status="red" />}
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-5">
+        <div className="grid gap-5 mt-3">
           <FloatingLabelInput
             type="password"
             value={newPassword}
@@ -140,6 +140,7 @@ export default function ResetPasswordForm() {
           
             className="input"
             required
+            password
           />
           <FloatingLabelInput
             type="password"
@@ -153,6 +154,7 @@ export default function ResetPasswordForm() {
            
             className="input"
             required
+            password
           />
 
           <button

@@ -87,7 +87,7 @@ export default async function ProductSingle({
   const isNeedLicence =
     singleProduct &&
     singleProduct?.meta_data?.find(
-      (item) => item.key === "required_valid_documents"
+      (item) => item.key === "_required_valid_documents"
     );
 
   //const relatedProducts = relatedProductsGet?.products;
@@ -422,7 +422,7 @@ export default async function ProductSingle({
                     )}
                     singlePage
                     slug={singleProduct?.slug}
-                    isNeedLicence={parseInt(isNeedLicence?.value)}
+                    isNeedLicence={isNeedLicence?.value}
                     category={
                       mainCatById(
                         singleProduct?.meta_data.filter(

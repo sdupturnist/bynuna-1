@@ -11,13 +11,17 @@ export default function SocialIcons({ color, large, data, centerSM, center }) {
         } ${center && "items-center  w-full justify-center"} flex gap-3`}
       >
         <li>
-          <Link href={data?.instagram || "#"} target="_blank" title="Instagram">
+          <Link
+            href={(data && data[0]?.instagram) || "#"}
+            target="_blank"
+            title="Instagram"
+          >
             <i className="bi bi-instagram"></i>
           </Link>
         </li>
         <li>
           <Link
-            href={(data && data?.facebook) || "#"}
+            href={(data && data[1]?.facebook) || "#"}
             target="_blank"
             title="Facebook"
           >
@@ -26,7 +30,7 @@ export default function SocialIcons({ color, large, data, centerSM, center }) {
         </li>
         <li>
           <Link
-            href={(data && data?.youtube) || "#"}
+            href={(data && data[2]?.youtube) || "#"}
             target="_blank"
             title="Facebook"
           >
