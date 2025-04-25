@@ -18,6 +18,7 @@ import { useAuthContext } from "../Context/authContext";
 import { useLanguageContext } from "../Context/LanguageContext";
 
 import { useParams, useRouter } from "next/navigation";
+import { useSiteContext } from "../Context/siteContext";
 
 export default function AddToCart({
   itemid,
@@ -46,6 +47,9 @@ export default function AddToCart({
   const { cartItems, setCartItems, setCart, setDiscount, setCouponCode } =
     useCartContext();
 
+
+    const {cartConfirmation} = useSiteContext()
+
   const { validUserTocken } = useAuthContext(); 
 
 
@@ -58,6 +62,7 @@ export default function AddToCart({
   const [cartAddQty, setCartAddQty] = useState(false);
   const [showGotoCartBtn, setShowGotoCartBtn] = useState(false);
 
+  
 
   const { translation } = useLanguageContext();
 
@@ -224,23 +229,12 @@ subCategory,
             translation[0]?.translations,
             "Cancel",
             locale || 'en'
-          ),
+          ),  
 
-          title: getTranslation(
-            translation[0]?.translations,
-            'Please Check the statements below - if you agree, click "Agree & Proceed"',
-            locale || 'en'
-          ),
+          title: locale === 'en' ? cartConfirmation?.heading_en : cartConfirmation?.heading_ar,
 
           html:
-            locale  === "en"
-              ? "SGC Will only send restricted items in this instance an Airgun to our branches or a 3rd Party Registered Firearms Dealer For collection of this item you are required to present a valid form of Identification. When ordering this product you understand a member of staff will contact you to discuss delivery and collection options. You understand that a 3rd Party Gun Dealer may charge a small fee (typically £0-£25.00) If returning goods you are to ensure they are not charged, cocked or loaded and are in a safe condition to travel by a normal carrier network. You confirm you are over 18 Years old and you understand the Terms and Conditions."
-              : `سترسل شركة SGC فقط العناصر المحظورة في هذه الحالة، وهي بندقية هوائية، إلى فروعنا أو إلى تاجر أسلحة نارية مسجل تابع لجهة خارجية.
-لجمع هذا العنصر، يتعين عليك تقديم نموذج صالح من بطاقة الهوية.
-عند طلب هذا المنتج، فأنت تفهم أن أحد أعضاء الموظفين سيتصل بك لمناقشة خيارات التسليم والاستلام.
-أنت تفهم أن تاجر الأسلحة النارية التابع لجهة خارجية قد يفرض رسومًا صغيرة (عادةً ما تكون 0 جنيه إسترليني إلى 25.00 جنيه إسترليني)
-إذا كنت ترغب في إرجاع البضائع، فيجب عليك التأكد من أنها غير مشحونة أو مسلحة أو محملة وأنها في حالة آمنة للسفر عبر شبكة نقل عادية.
-أنت تؤكد أنك أكبر من 18 عامًا وأنك تفهم الشروط والأحكام.`,
+          locale === 'en' ? cartConfirmation?.description_en : cartConfirmation?.description_ar,
 
           icon: false,
           confirmButtonText: getTranslation(

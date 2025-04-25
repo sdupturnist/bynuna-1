@@ -58,6 +58,7 @@ export default async function Category({
                   key={index}
                   data={item}
                   locale={locale}
+                  subcategoryFromUrl={category}
                 />
               ))}
           </ul>

@@ -8,7 +8,7 @@ import LoadingItem from "./LoadingItem";
 const LanguageSelector = () => {
   const router = useRouter();
   const pathname = usePathname(); // Get the current path (e.g., '/about-us')
-  
+
   const [loading, setLoading] = useState(false); // Loading state
 
   const handleLanguageToggle = async () => {
@@ -21,7 +21,6 @@ const LanguageSelector = () => {
     // Remove the current language part from the pathname
     const currentPath = pathname.replace(/^\/(en|ar)/, "");
 
-    // Change the URL to reflect the selected language and keep the current path
     router.push(`/${newLanguage}${currentPath}`);
 
     // After a small delay, set loading to false to simulate completion of the action
@@ -33,12 +32,12 @@ const LanguageSelector = () => {
   return (
     <div
       className={`${
-        pathname.startsWith("/en") ? 'arabic-font' : ''
+        pathname.startsWith("/en") ? "arabic-font" : ""
       } text-white text-[12px] cursor-pointer py-1 px-2 flex items-center justify-center`}
       onClick={handleLanguageToggle}
     >
       {loading ? (
-        <LoadingItem dot classes="size-4 text-white"/>
+        <LoadingItem dot classes="size-4 text-white" />
       ) : (
         <span>{pathname.startsWith("/en") ? "عربي" : "English"}</span>
       )}

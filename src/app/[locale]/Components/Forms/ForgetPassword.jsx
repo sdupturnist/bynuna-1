@@ -101,7 +101,9 @@ export default function PasswordResetRequest() {
           <FloatingLabelInput
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            onChange={(name, value) => setEmail(value)}
+
             className="input"
             label={getTranslation(
               translation[0]?.translations,

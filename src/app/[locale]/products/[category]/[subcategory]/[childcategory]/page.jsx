@@ -7,6 +7,7 @@ import {
   siteAuthor,
   siteLogo,
   siteName,
+  sortByStockStatus,
   woocommerceKey,
 } from "@/app/[locale]/Utils/variables";
 
@@ -176,7 +177,8 @@ export default async function childcategoryPage({
       }))
     );
   
-
+    
+   const sortedProducts = sortByStockStatus(products);
 
  
   return (
@@ -218,7 +220,7 @@ export default async function childcategoryPage({
               <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
                 <ProductWrapper
                   locale={locale}
-                  data={products && products}
+                  data={products && sortedProducts}
                   searchParams={searchParams}
                   type="product"
                 />

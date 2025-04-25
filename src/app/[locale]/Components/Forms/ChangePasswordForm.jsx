@@ -128,7 +128,9 @@ export default function ChangePasswordForm() {
             id="oldPassword"
             value={oldPassword}
             className="input"
-            onChange={(e) => setOldPassword(e.target.value)}
+          name="oldPassword"
+            onChange={(name, value) => setOldPassword(value)}
+            
             required
             password
           />
@@ -143,7 +145,8 @@ export default function ChangePasswordForm() {
             id="newPassword"
             value={newPassword}
             className="input"
-            onChange={(e) => setNewPassword(e.target.value)}
+            name="newPassword"
+            onChange={(name, value) => setNewPassword(value)}
             required
             password
           />
@@ -158,7 +161,9 @@ export default function ChangePasswordForm() {
             id="confirmPassword"
             value={confirmPassword}
             className="input"
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            name="confirmPassword"
+            onChange={(name, value) => setConfirmPassword(value)}
+            setNewPassword
             required
             password
           />

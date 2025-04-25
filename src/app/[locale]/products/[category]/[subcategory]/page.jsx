@@ -6,6 +6,7 @@ import {
   metaStaticData,
   siteLogo,
   siteName,
+  sortByStockStatus,
   woocommerceKey,
 } from "@/app/[locale]/Utils/variables";
 import Card from "@/app/[locale]/Components/Card";
@@ -177,6 +178,8 @@ export default async function SubCategoryPage({
   );
 
   
+   const sortedProducts = sortByStockStatus(products);
+  
 
   return (
     <div className="bg-bggray">
@@ -215,7 +218,7 @@ export default async function SubCategoryPage({
               <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
                 <ProductWrapper
                   locale={locale}
-                  data={products && products}
+                  data={products && sortedProducts}
                   searchParams={subcategory}
                   type="product"
                 />

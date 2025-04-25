@@ -73,6 +73,7 @@ export default function Card({
   if (type === "subcategoryLarge") {
     return (
       <li>
+        {/* {console.log('SUBCA', subcategoryFromUrl)} */}
         <Link
           href={`${homeUrl}${locale}/products/${
             subcategoryFromUrl || mainCategoryName || mainCategoryName?.slug

@@ -1,5 +1,11 @@
 // context/CheckoutContext.js
-import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 
 const CheckoutContext = createContext();
 
@@ -16,15 +22,26 @@ export const CheckoutProvider = ({ children }) => {
   const [updatePaymentStatus, setUpdatePaymentStatus] = useState("");
   const [paymentId, setPaymentId] = useState("");
   const [identificationTerms, setIdentificationsTerms] = useState(false);
-  const [validateGuestCheckoutForm, setValidateGuestCheckoutForm] = useState(false);
+  const [validateGuestCheckoutForm, setValidateGuestCheckoutForm] =
+    useState(false);
   const [orderPlaceLoading, setOrderPlaceLoading] = useState(false);
 
 
+  //GUSETCHECKOUT
+  const [guestCheckoutformData, setGuestCheckoutformData] = useState({
+    country: "United Arab Emirates",
+    firstName: "",
+    phone: "",
+    email: "",
+    houseName: "",
+    street: "",
+    city: "",
+    state: "",
+  });
 
+  const [validationError, setValidationError] = useState({});
+  const [checkFormValid, setCheckFormValid] = useState(true);
 
-  // useEffect(() => {
-  //   setValidateAddress(false);
-  // }, [validateAddress]); 
 
   return (
     <CheckoutContext.Provider
@@ -45,17 +62,23 @@ export const CheckoutProvider = ({ children }) => {
         setPaymentMethodOption,
         paymentTerms,
         setIdentificationsTerms,
-    identificationTerms,
+        identificationTerms,
         setPaymentTerms,
         validateTerms,
         setValidateTerms,
         updatePaymentStatus,
         setUpdatePaymentStatus,
-        validateGuestCheckoutForm, setValidateGuestCheckoutForm,
-        paymentId, 
-        setPaymentId,
-        orderPlaceLoading, setOrderPlaceLoading
-      }}>
+        validateGuestCheckoutForm,
+        setValidateGuestCheckoutForm,
+        paymentId,
+       setPaymentId,
+        orderPlaceLoading,
+        setOrderPlaceLoading,
+        guestCheckoutformData, setGuestCheckoutformData,
+        validationError, setValidationError,
+        checkFormValid, setCheckFormValid
+      }}
+    >
       {children}
     </CheckoutContext.Provider>
   );

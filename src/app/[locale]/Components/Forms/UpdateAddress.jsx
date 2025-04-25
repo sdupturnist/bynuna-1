@@ -38,6 +38,18 @@ export default function UpdateAddressForm() {
 
   useEffect(() => {
     fetchAddressData();
+  }, []);
+
+  useEffect(() => {
+    if (updateAddress && Object.keys(updateAddress).length > 0) {
+      setFirstName(updateAddress.full_name || "");
+      setPhone(updateAddress.phone || "");
+      setHousename(updateAddress.address_1 || "");
+      setStreet(updateAddress.street || "");
+      setCity(updateAddress.city || "");
+      setstate(updateAddress.state || "");
+      setCountry(updateAddress.country || "");
+    }
   }, [updateAddress]);
 
   const { translation } = useLanguageContext();
@@ -45,12 +57,12 @@ export default function UpdateAddressForm() {
   const { userData } = useAuthContext();
 
   const [country, setCountry] = useState(updateAddress.country);
-  const [street, setStreet] = useState("");
-  const [houseName, setHousename] = useState("");
-  const [state, setstate] = useState("");
-  const [city, setCity] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [street, setStreet] = useState(updateAddress?.street);
+  const [houseName, setHousename] = useState(updateAddress?.address_1);
+  const [state, setstate] = useState(updateAddress?.state);
+  const [city, setCity] = useState(updateAddress?.city);
+  const [firstName, setFirstName] = useState(updateAddress?.full_name);
+  const [phone, setPhone] = useState(updateAddress?.phone);
 
   const [status, setStatus] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -118,13 +130,6 @@ export default function UpdateAddressForm() {
           setStatus(false);
         }, 1000);
 
-        setCountry("");
-        setstate("");
-        setCity("");
-        setFirstName("");
-        setPhone("");
-        setStreet("");
-        setHousename("");
 
         try {
           const addressResponse = await fetch(
@@ -192,11 +197,9 @@ export default function UpdateAddressForm() {
             )}
           />
         )}
+
         <FloatingLabelInput
-          defaultValue={
-            (updateAddress && updateAddress?.full_name) ||
-            updateAddress?.shipping?.firstName
-          }
+          value={firstName}
           type="text"
           className="input"
           label={getTranslation(
@@ -204,33 +207,30 @@ export default function UpdateAddressForm() {
             "Full Name",
             locale || "en"
           )}
-          onChange={(e) => setFirstName(e.target.value)}
+          name="firstname"
+          onChange={(name, value) => setFirstName(value)}
           required
           autoComplete="none"
+          alphabet
         />
 
         <FloatingLabelInput
-          defaultValue={
-            (updateAddress && updateAddress?.phone) ||
-            updateAddress?.shipping?.phone
-          }
-          type="number"
+          value={phone}
+          type="tel"
           className="input"
           label={getTranslation(
             translation[0]?.translations,
             "Contact Number",
             locale || "en"
           )}
-          onChange={(e) => setPhone(e.target.value)}
+          name="phone"
+          onChange={(name, value) => setPhone(value)}
           required
           autoComplete="none"
         />
 
         <FloatingLabelInput
-          defaultValue={
-            (updateAddress && updateAddress?.address_1) ||
-            updateAddress?.shipping?.address_1
-          }
+          value={houseName}
           type="text"
           className="input"
           label={getTranslation(
@@ -238,19 +238,14 @@ export default function UpdateAddressForm() {
             "Address",
             locale || "en"
           )}
-          onChange={(e) => setHousename(e.target.value)}
+          name="houseName"
+          onChange={(name, value) => setHousename(value)}
           required
           autoComplete="none"
-          value={houseName}
         />
 
-  
-
         <FloatingLabelInput
-          defaultValue={
-            (updateAddress && updateAddress?.street) ||
-            updateAddress?.shipping?.street
-          }
+          value={street}
           type="text"
           className="input"
           label={getTranslation(
@@ -258,17 +253,14 @@ export default function UpdateAddressForm() {
             "Street",
             locale || "en"
           )}
-          onChange={(e) => setStreet(e.target.value)}
+          name="street"
+          onChange={(name, value) => setStreet(value)}
           required
           autoComplete="none"
-          value={street}
         />
 
         <FloatingLabelInput
-          defaultValue={
-            (updateAddress && updateAddress?.city) ||
-            updateAddress?.shipping?.city
-          }
+          value={city}
           type="text"
           className="input"
           label={getTranslation(
@@ -276,17 +268,15 @@ export default function UpdateAddressForm() {
             "City",
             locale || "en"
           )}
-          onChange={(e) => setCity(e.target.value)}
+          name="city"
+          onChange={(name, value) => setCity(value)}
           required
           autoComplete="none"
-          value={city}
+          alphaNuemricOnly
         />
 
         <FloatingLabelInput
-          defaultValue={
-            (updateAddress && updateAddress?.state) ||
-            updateAddress?.shipping?.state
-          }
+          value={state}
           type="text"
           className="input"
           label={getTranslation(
@@ -294,10 +284,11 @@ export default function UpdateAddressForm() {
             "State",
             locale || "en"
           )}
-          onChange={(e) => setstate(e.target.value)}
+          name="state"
+          onChange={(name, value) => setstate(value)}
           required
           autoComplete="none"
-          value={state}
+          alphaNuemricOnly
         />
         <div className="w-full">
           <select

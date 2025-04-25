@@ -22,6 +22,7 @@ import {
   metaStaticData,
   siteLogo,
   siteName,
+  sortByStockStatus,
   woocommerceKey,
 } from "./Utils/variables";
 import Card from "./Components/Card";
@@ -63,6 +64,8 @@ export default async function Home({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
+
+
   //PRODUCTS
   let products = await fetch(
     `${apiUrl}wp-json/custom/v1/products?_star_product=yes&per_page=8`,
@@ -74,6 +77,7 @@ export default async function Home({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
+
   //SUBCAT
   let subCategoreis = await fetch(
     `${apiUrl}wp-json/wp/v2/sub-categories?per_page=99&lang=${locale}`,
@@ -83,6 +87,9 @@ export default async function Home({
   )
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
+
+    
+    const sortedProducts = sortByStockStatus(products);
 
   return (
     <>
@@ -104,7 +111,7 @@ export default async function Home({
             <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-8 gap-3">
               <ProductWrapper
                 locale={locale}
-                data={products && products}
+                data={products && sortedProducts}
                 searchParams={searchParams}
                 type="product"
               />
@@ -114,10 +121,10 @@ export default async function Home({
       )}
       <section className="p-0 text-center">
         <div className="container border-t sm:border-black border-border spacing-normal spacing-gap">
-           <h2 className="heading-lg">
-              {page[0]?.acf?.featured_subcategories_heading}
-            </h2>
-            </div>
+          <h2 className="heading-lg">
+            {page[0]?.acf?.featured_subcategories_heading}
+          </h2>
+        </div>
         <ul
           className={`${
             products?.length === 0 ? "sm:mt-10" : ""
@@ -133,7 +140,6 @@ export default async function Home({
               />
             ))}
         </ul>
-        
       </section>
       <section className="text-center">
         <div className="container conatiner-fixed border-b sm:border-black border-border spacing !pt-0">
@@ -213,8 +219,6 @@ export async function generateMetadata({ params, searchParams }, parent) {
     );
 
     const [pageData] = await page.json();
-
-
 
     // Return metadata object with dynamic values, or fall back to static values
     return {

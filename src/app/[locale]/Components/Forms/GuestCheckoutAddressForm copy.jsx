@@ -540,7 +540,7 @@ export default function GuestCheckoutAddressForm() {
         <FloatingLabelInput
           type="text"
           className={`${!firstName ? "border !border-red-400" : ""} input`}
-          label={getTranslation(translation[0]?.translations,"First name",locale || 'en')}
+          label={getTranslation(translation[0]?.translations,"Full Name",locale || 'en')}
           onChange={(e) => setFirstName(e.target.value)}
           required
           autoComplete="none"
@@ -548,7 +548,7 @@ export default function GuestCheckoutAddressForm() {
         />
 
         <FloatingLabelInput
-          type="number"
+         type="tel"
           className={`${!phone ? "border !border-red-400" : ""} input`}
           label={getTranslation(translation[0]?.translations,"Phone",locale || 'en')}
           onChange={(e) => setPhone(e.target.value)}

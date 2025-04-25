@@ -27,6 +27,8 @@ export default function CartView() {
   const handleGuestCheckout = () => {
     if (!validUserTocken) {
       setGuestUser(true);
+      typeof window !== "undefined" &&
+        localStorage.setItem(`${siteName}_guestuser`, true);
       setLoadingAuth(false);
       router.push(`${homeUrl}${locale}/checkout`);
     }
@@ -150,6 +152,8 @@ export default function CartView() {
                         } else if (result.isDenied) {
                           // If user cancels (clicks "Guest checkout")
                           setGuestUser(true);
+                          typeof window !== "undefined" &&
+                            localStorage.setItem(`${siteName}_guestuser`, true);
                           router.push(`${homeUrl}${locale}/checkout`);
                         }
                       });

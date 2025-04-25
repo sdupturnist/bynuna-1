@@ -734,7 +734,8 @@ export default function UpdateAddressForm({ addressCount }) {
             "Address",
             locale || "en"
           )}
-          onChange={(e) => setHousename(e.target.value)}
+          name="houseName"
+          onChange={(name, value) => setHousename(value)}
           required
           autoComplete="none"
           value={houseName}
@@ -749,7 +750,8 @@ export default function UpdateAddressForm({ addressCount }) {
             "Street",
             locale || "en"
           )}
-          onChange={(e) => setStreet(e.target.value)}
+          name="street"
+          onChange={(name, value) => setStreet(value)}
           required
           autoComplete="none"
           value={street}
@@ -764,7 +766,8 @@ export default function UpdateAddressForm({ addressCount }) {
             "City",
             locale || "en"
           )}
-          onChange={(e) => setCity(e.target.value)}
+          name="sity"
+          onChange={(name, value) => setCity(value)}
           required
           autoComplete="none"
           value={city}
@@ -779,7 +782,8 @@ export default function UpdateAddressForm({ addressCount }) {
             "State",
             locale || "en"
           )}
-          onChange={(e) => setstate(e.target.value)}
+          name="state"
+          onChange={(name, value) => setstate(value)}
           required
           autoComplete="none"
           value={state}

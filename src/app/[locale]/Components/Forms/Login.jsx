@@ -3,7 +3,6 @@
 import { useState, Suspense } from "react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 
-
 import Link from "next/link";
 import Alerts from "../Alerts";
 import { useAuthContext } from "../../Context/authContext";
@@ -11,21 +10,21 @@ import Cookies from "js-cookie"; // Import js-cookie for cookies handling
 import { useCartContext } from "../../Context/cartContext";
 import FloatingLabelInput from "../FloatingLabelInput";
 import { useLanguageContext } from "../../Context/LanguageContext";
-import {   apiUrl,
+import {
+  apiUrl,
   getTranslation,
   homeUrl,
-  siteName, } from "../../Utils/variables";
+  siteName,
+} from "../../Utils/variables";
 import LoadingItem from "../LoadingItem";
-
 
 function LoginForm() {
   const router = useRouter();
-  const params = useParams();  
-  const locale = params.locale; 
+  const params = useParams();
+  const locale = params.locale;
   const searchParams = useSearchParams();
   const confirmEmailLogin = searchParams.get("confirmEmailLogin");
   const mainLogin = searchParams.get("mainLogin");
-  
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +33,6 @@ function LoginForm() {
 
   const { setAuth } = useAuthContext();
   const { setGuestUser } = useCartContext();
-
 
   const { translation } = useLanguageContext();
 
@@ -65,7 +63,7 @@ function LoginForm() {
             getTranslation(
               translation[0]?.translations,
               "Invalid email or password.",
-              locale || 'en'
+              locale || "en"
             )
         );
       }
@@ -95,26 +93,24 @@ function LoginForm() {
       setGuestUser(false);
       setLoading(false);
 
+      typeof window !== "undefined" &&
+        localStorage.removeItem(`${siteName}_guestuser`);
+
       // if (confirmEmailLogin === "true") {
       //   router.push(`${homeUrl}account`);
       // } else {
       //   router.back();
       // }
 
-
-      if (confirmEmailLogin === "true" ) {
+      if (confirmEmailLogin === "true") {
         router.push(`${homeUrl}${locale}/account`);
       } else {
-        if(mainLogin === "true"){
+        if (mainLogin === "true") {
           router.push(homeUrl);
-        }
-        else{
+        } else {
           router.back();
         }
-        
       }
-
-      
     } catch (err) {
       setError(err.message);
     } finally {
@@ -126,9 +122,10 @@ function LoginForm() {
     <>
       {error && <Alerts title={error} status="red" />}{" "}
       {/* Display error if any */}
-      <form onSubmit={handleLogin} >
+      <form onSubmit={handleLogin}>
         <div className="grid gap-4 mt-4">
-          <FloatingLabelInput
+          {/* <FloatingLabelInput
+          name="email"
             type="email"
             className="input"
             label={getTranslation(
@@ -139,18 +136,33 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+          /> */}
+
+          <FloatingLabelInput
+            name="email"
+            type="email"
+            className="input"
+            label={getTranslation(
+              translation[0]?.translations,
+              "Email",
+              locale || "en"
+            )}
+            value={email}
+            onChange={(name, value) => setEmail(value)}
+            required
           />
 
           <FloatingLabelInput
+           name="password"
             type="password"
             className="input"
             label={getTranslation(
               translation[0]?.translations,
               "Password",
-              locale || 'en'
+              locale || "en"
             )}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(name, value) => setPassword(value)}
             required
             password
           />
@@ -164,9 +176,13 @@ function LoginForm() {
               ? getTranslation(
                   translation[0]?.translations,
                   "Login...",
-                  locale || 'en'
+                  locale || "en"
                 )
-              : getTranslation(translation[0]?.translations, "Login", locale || 'en')}
+              : getTranslation(
+                  translation[0]?.translations,
+                  "Login",
+                  locale || "en"
+                )}
           </button>
           <Link
             className="hover:text-primary transition-all"
@@ -175,14 +191,14 @@ function LoginForm() {
             {getTranslation(
               translation[0]?.translations,
               "Forgotten Password?",
-              locale || 'en'
+              locale || "en"
             )}
           </Link>
           <Link className="btn" href={`${homeUrl}${locale}/auth/register`}>
             {getTranslation(
               translation[0]?.translations,
               "Create a account",
-              locale || 'en'
+              locale || "en"
             )}
           </Link>
         </div>
@@ -193,7 +209,7 @@ function LoginForm() {
 
 export default function Login() {
   return (
-    <Suspense fallback={<LoadingItem  fullscreen />}>
+    <Suspense fallback={<LoadingItem fullscreen />}>
       <LoginForm />
     </Suspense>
   );

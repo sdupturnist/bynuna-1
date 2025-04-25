@@ -116,22 +116,22 @@ export let accountMenus = [
 //EMAIL CONFIG
 
 // GMAIL
-// export let hostName = "smtp.gmail.com";
-// export let portNumber = 587;
-// export let emailUsername = "jaseerali2012@gmail.com";
-// export let emailPassword = "thmqawimjxglferj";
-// export let siteEmail = "jaseerali2012@gmail.com";
-// export let siteFromEmail = "jaseerali2012@gmail.com";
+export let hostName = "smtp.gmail.com";
+export let portNumber = 587;
+export let emailUsername = "jaseerali2012@gmail.com";
+export let emailPassword = "thmqawimjxglferj";
+export let siteEmail = "jaseerali2012@gmail.com";
+export let siteFromEmail = "jaseerali2012@gmail.com";
 
 
 //MAILEROO
 
-export let hostName = "smtp.maileroo.com"
-export let portNumber =  587
-export let emailUsername = "no-reply@bynuna.ae"
-export let emailPassword = "265e0b1132eb125f2b2454b6"
- export let siteEmail = "online@bynuna.ae";
- export let siteFromEmail = "no-reply@bynuna.ae";
+// export let hostName = "smtp.maileroo.com"
+// export let portNumber =  587
+// export let emailUsername = "no-reply@bynuna.ae"
+// export let emailPassword = "265e0b1132eb125f2b2454b6"
+//  export let siteEmail = "online@bynuna.ae";
+//  export let siteFromEmail = "no-reply@bynuna.ae";
 
 //DEFAULT META TAGS
 
@@ -433,3 +433,16 @@ export let isValidEmail = (email) => {
   return emailRegex.test(email);
 };
 
+
+
+
+export const sortByStockStatus = (data) => {
+      return [...data].sort((a, b) => {
+        const aStock = a.meta_data.find(item => item.key === "_stock_status")?.value;
+        const bStock = b.meta_data.find(item => item.key === "_stock_status")?.value;
+    
+        if (aStock === "outofstock" && bStock !== "outofstock") return 1;
+        if (aStock !== "outofstock" && bStock === "outofstock") return -1;
+        return 0;
+      });
+    };

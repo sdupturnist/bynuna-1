@@ -15,11 +15,9 @@ import { useAuthContext } from "../Context/authContext";
 import { useLanguageContext } from "../Context/LanguageContext";
 import { useParams, useRouter } from "next/navigation";
 
-export default function AmountList({ data, forOrderDetails, tableView,  }) {
-
-  
-       const params = useParams();  
-       const locale = params.locale; 
+export default function AmountList({ data, forOrderDetails, tableView }) {
+  const params = useParams();
+  const locale = params.locale;
 
   const { activeCurrencySymbol, activeCurrency, currencies } = useSiteContext();
   const {
@@ -27,10 +25,10 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
     couponCode,
     discount,
     cartSubTotal,
-    setHaveShippingCharge,
     shippingCharge,
     vat,
     setVatAmount,
+    payAmount,
     setPayAmount,
     setFinalDiscount,
     maximumCouponApplied,
@@ -40,7 +38,6 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
   } = useCartContext();
 
   const { userData } = useAuthContext();
-
 
   const { translation } = useLanguageContext();
 
@@ -67,26 +64,34 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
   const shippingChargeLimit =
     shippingCharge?.acf?.Active_Shipping_Charge?.sub_total_minimum;
 
-  //const shippingChargeLimit = 10000;
-
   const freeShippingDays =
     shippingCharge?.acf?.Active_Shipping_Charge?.free_shipping_days;
-  const isFreeShipping = freeShippingDays > joinDays;
-  const vatCharge = parseInt(vat?.rate);
+
+  const guestUser =
+    typeof window !== "undefined" &&
+    localStorage.getItem(`${siteName}_guestuser`);
+
+  //SHIPING CALCULATION
+  function isFreeShippingEligible(joinDays, cartSubTotal) {
+    if (joinDays !== 0) {
+      if (joinDays < freeShippingDays) {
+        return true;
+      }
+    } else {
+      if (cartSubTotal >= shippingChargeLimit) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  const vatCharge = Number(vat?.rate);
 
   const currentShippingCharge =
     shippingChargeLimit > cartSubTotal ? getcurrentShippingCharge : 0;
 
   let currentDiscount = (cartSubTotal * discount) / 100;
-
-  const isHaveShippingCharge = () => {
-    const shippingCharge =
-      joinDays > freeShippingDays && shippingChargeLimit > cartSubTotal
-        ? parseInt(getcurrentShippingCharge)
-        : 0;
-
-    return shippingCharge;
-  };
 
   //CHECK TAX AFTER DISCOUNT IF HAVE
   const cartItemsWithDiscountAndTax =
@@ -99,9 +104,9 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
       if (discount) {
         if (discountType === "percent") {
           if (maximumCouponApplied) {
-            finalPrice = (item.price - maximumCouponApplied) * item?.quantity;
+            finalPrice = item.price - maximumCouponApplied;
           } else {
-            finalPrice = item.price * (1 - discount / 100) * item?.quantity;
+            finalPrice = item.price * (1 - discount / 100);
           }
         } else {
           finalPrice = item.price - discount / cartItems.length;
@@ -111,12 +116,14 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
         finalPrice = item.price;
       }
 
-
       // Calculate tax on discounted price
       const tax = (finalPrice * vatCharge) / 100;
 
       // Calculate total price after discount and tax
-      const totalPrice = finalPrice + tax + parseInt(isHaveShippingCharge());
+      const totalPrice =
+        finalPrice +
+        tax +
+        Number(isFreeShippingEligible(guestUser ? 0 : joinDays, cartSubTotal));
 
       // Return item with updated properties
       return {
@@ -146,31 +153,35 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
   useEffect(() => {
     // const payAmount = totalPayAmount();
 
-    const payAmount = parseInt(
-      parseInt(
-        discount
-          ? maximumCouponApplied
-            ? maximumCouponApplied
-            : discountType === "percent"
-            ? currentDiscount +
-              totalTax +
-              (eligibleFreeShipping ? 0 : parseInt(getcurrentShippingCharge))
-            : cartSubTotal -
-              discount +
-              totalTax +
-              (eligibleFreeShipping ? 0 : parseInt(getcurrentShippingCharge))
-          : totalPayAmount +
-              totalTax +
-              (eligibleFreeShipping ? 0 : parseInt(getcurrentShippingCharge))
-      )
-    );
+    const payAmount = discount
+      ? maximumCouponApplied
+        ? maximumCouponApplied
+        : discountType === "percent"
+        ? currentDiscount +
+          totalTax +
+          (isFreeShippingEligible(guestUser ? 0 : joinDays, cartSubTotal)
+            ? 0
+            : Number(currentShippingCharge))
+        : cartSubTotal -
+          discount +
+          totalTax +
+          (isFreeShippingEligible(guestUser ? 0 : joinDays, cartSubTotal)
+            ? 0
+            : Number(currentShippingCharge))
+      : totalPayAmount +
+        totalTax +
+        (isFreeShippingEligible(guestUser ? 0 : joinDays, cartSubTotal)
+          ? 0
+          : Number(currentShippingCharge));
 
-    setHaveShippingCharge(isFreeShipping);
     setVatAmount(totalTax);
     setPayAmount(payAmount);
-    setEligibleFreeShipping(isFreeShipping ? true : false);
+    setEligibleFreeShipping(
+      isFreeShippingEligible(guestUser ? 0 : joinDays, cartSubTotal)
+    );
+
     setFinalDiscount(
-      parseInt(
+      Number(
         maximumCouponApplied
           ? maximumCouponApplied
           : discountType === "percent"
@@ -178,7 +189,13 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
           : cartItems && discount
       )
     );
-  }, [cartSubTotal, currentDiscount, vatCharge, getcurrentShippingCharge]); // Dependencies to re-run when relevant data changes
+  }, [
+    cartSubTotal,
+    currentDiscount,
+    vatCharge,
+    getcurrentShippingCharge,
+    eligibleFreeShipping,
+  ]); // Dependencies to re-run when relevant data changes
 
   const renderAmountList = () => {
     switch (true) {
@@ -190,13 +207,13 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "Subtotal",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </span>
               <span className="val">
                 {activeCurrencySymbol}
                 {convertCurrency(
-                  parseInt(cartSubTotal),
+                  Number(cartSubTotal),
                   currency?.acf?.currency_rate
                 )}
               </span>
@@ -207,13 +224,13 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                   {getTranslation(
                     translation[0]?.translations,
                     "Coupon discount",
-                    locale || 'en'
+                    locale || "en"
                   )}
                 </span>
                 <span className="val !text-primary">
                   -{activeCurrencySymbol}
                   {convertCurrency(
-                    parseInt(
+                    Number(
                       maximumCouponApplied
                         ? maximumCouponApplied
                         : discountType === "percent"
@@ -225,46 +242,58 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 </span>
               </li>
             )}
-            
 
-            {shippingChargeLimit > cartSubTotal && (
-              <li>
-                <span className="label grid">
-                  {getTranslation(
-                    translation[0]?.translations,
-                    "Delivery fee",
-                    locale || 'en'
-                  )}
-                  {isFreeShipping && (
-                    <small className="text-primary text-xs font-normal block pt-2">
-                      {getTranslation(
-                        translation[0]?.translations,
-                        "FREE Delivery First 3 Months",
-                        locale || 'en'
-                      )}
-                    </small>
-                  )}
-                </span>
-                <span className="val ">
-                  {activeCurrencySymbol}
-                  {isFreeShipping
-                    ? 0
-                    : convertCurrency(
-                        parseInt(currentShippingCharge),
-                        currency?.acf?.currency_rate
-                      )}
-                </span>
-              </li>
-            )}
             <li>
               <span className="label grid">
-                {getTranslation(translation[0]?.translations, "VAT", locale || 'en')}{" "}
+                {getTranslation(
+                  translation[0]?.translations,
+                  "Delivery fee",
+                  locale || "en"
+                )}
+                {joinDays < freeShippingDays && (
+                  <small className="text-primary text-xs font-normal block pt-2">
+                    {getTranslation(
+                      translation[0]?.translations,
+                      "FREE Delivery First 3 Months",
+                      locale || "en"
+                    )}
+                  </small>
+                )}
+
+                {cartSubTotal >= shippingChargeLimit && (
+                  <small className="text-primary text-xs font-normal block pt-2">
+                    {getTranslation(
+                      translation[0]?.translations,
+                      "Free shipping on orders over",
+                      locale || "en"
+                    )}{" "}
+                    {activeCurrency}
+                    {shippingChargeLimit}
+                  </small>
+                )}
+              </span>
+              <span className="val ">
+                {activeCurrencySymbol}
+                {convertCurrency(
+                  Number(currentShippingCharge),
+                  currency?.acf?.currency_rate
+                )}
+              </span>
+            </li>
+         
+            <li>
+              <span className="label grid">
+                {getTranslation(
+                  translation[0]?.translations,
+                  "VAT",
+                  locale || "en"
+                )}{" "}
                 ({vatCharge}%)
               </span>
               <span className="val">
                 {activeCurrencySymbol}
                 {convertCurrency(
-                  parseInt(totalTax),
+                  parseFloat(totalTax),
                   currency?.acf?.currency_rate
                 )}
               </span>
@@ -274,7 +303,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "Total",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </span>
 
@@ -282,28 +311,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 <span className="block">
                   {activeCurrencySymbol}
                   {convertCurrency(
-                    parseInt(
-                      discount
-                        ? maximumCouponApplied
-                          ? maximumCouponApplied
-                          : discountType === "percent"
-                          ? currentDiscount +
-                            totalTax +
-                            (eligibleFreeShipping
-                              ? 0
-                              : parseInt(getcurrentShippingCharge))
-                          : cartSubTotal -
-                            discount +
-                            totalTax +
-                            (eligibleFreeShipping
-                              ? 0
-                              : parseInt(getcurrentShippingCharge))
-                        : totalPayAmount +
-                            totalTax +
-                            (eligibleFreeShipping
-                              ? 0
-                              : parseInt(getcurrentShippingCharge))
-                    ).toFixed(2),
+                    payAmount.toFixed(2),
                     currency?.acf?.currency_rate
                   )}
                 </span>
@@ -316,7 +324,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                   {getTranslation(
                     translation[0]?.translations,
                     "A discount of",
-                    locale || 'en'
+                    locale || "en"
                   )}
                   <span className="px-1">
                     {maximumCouponApplied
@@ -328,13 +336,13 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                           )
                         : activeCurrencySymbol + currentDiscount
                       : discountType === "percent"
-                      ? `${parseInt(discount)}% OFF`
+                      ? `${Number(discount)}% OFF`
                       : `${activeCurrencySymbol}${discount?.toFixed(2)}`}
                   </span>
                   {getTranslation(
                     translation[0]?.translations,
                     "has been applied",
-                    locale || 'en'
+                    locale || "en"
                   )}
 
                   {maximumCouponApplied !== 0 &&
@@ -342,17 +350,17 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                     `, ${getTranslation(
                       translation[0]?.translations,
                       "with a",
-                      locale || 'en'
+                      locale || "en"
                     )} ${discount}% ${getTranslation(
                       translation[0]?.translations,
                       "discount off the total.",
-                      locale || 'en'
+                      locale || "en"
                     )}`}
                   {maximumCouponApplied !== 0 &&
                     `${getTranslation(
                       translation[0]?.translations,
                       "up to a maximum of",
-                      locale || 'en'
+                      locale || "en"
                     )} ${
                       activeCurrencySymbol +
                       convertCurrency(
@@ -373,7 +381,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "payment ID",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </span>
               <span className="val">
@@ -386,7 +394,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "Payment method",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </span>
               <span className="val">
@@ -399,7 +407,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "Subtotal",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </span>
               <span className="val">
@@ -413,10 +421,10 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                   {getTranslation(
                     translation[0]?.translations,
                     "Coupon discount",
-                    locale || 'en'
+                    locale || "en"
                   )}
                 </span>
-                <span className="val !text-primary">-{parseInt(discount)}</span>
+                <span className="val !text-primary">-{Number(discount)}</span>
               </li>
             )}
 
@@ -425,13 +433,13 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "Delivery fee",
-                  locale || 'en'
+                  locale || "en"
                 )}
                 <small className="text-primary text-xs font-normal block pt-2">
                   {getTranslation(
                     translation[0]?.translations,
                     "FREE Delivery First 3 Months",
-                    locale || 'en'
+                    locale || "en"
                   )}
                 </small>
               </span>
@@ -439,11 +447,19 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
             </li>
             <li>
               <span className="label grid">
-                {getTranslation(translation[0]?.translations, "VAT", locale || 'en')}{" "}
+                {getTranslation(
+                  translation[0]?.translations,
+                  "VAT",
+                  locale || "en"
+                )}{" "}
                 (5%)
               </span>
               <span className="val ">
-                {getTranslation(translation[0]?.translations, "AED", locale || 'en')}
+                {getTranslation(
+                  translation[0]?.translations,
+                  "AED",
+                  locale || "en"
+                )}
               </span>
             </li>
             <li className="border-t border-border">
@@ -451,7 +467,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                 {getTranslation(
                   translation[0]?.translations,
                   "Total",
-                  locale || 'en'
+                  locale || "en"
                 )}
               </span>
               <span className="val !text-lg font-bold !grid justify-end text-end grid-2">
@@ -481,7 +497,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                           ? getTranslation(
                               translation[0]?.translations,
                               "Transaction ID: #",
-                              locale || 'en'
+                              locale || "en"
                             ) + item.transaction_id
                           : `Order ID: #` + item?.id
                       }`}
@@ -493,7 +509,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                         {getTranslation(
                           translation[0]?.translations,
                           "Payment Method:",
-                          locale || 'en'
+                          locale || "en"
                         )}
                       </span>
                       <span className="text-sm">
@@ -505,7 +521,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                         {getTranslation(
                           translation[0]?.translations,
                           "Payment Status:",
-                          locale || 'en'
+                          locale || "en"
                         )}
                       </span>
                       <span
@@ -524,14 +540,14 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                           {getTranslation(
                             translation[0]?.translations,
                             "Refund Status:",
-                            locale || 'en'
+                            locale || "en"
                           )}
                         </span>
                         <span className="text-sm text-green-600">
                           {getTranslation(
                             translation[0]?.translations,
                             "Refunded",
-                            locale || 'en'
+                            locale || "en"
                           )}
                         </span>
                       </li>
@@ -547,7 +563,7 @@ export default function AmountList({ data, forOrderDetails, tableView,  }) {
                       {getTranslation(
                         translation[0]?.translations,
                         "View",
-                        locale || 'en'
+                        locale || "en"
                       )}
                     </Link>
                   )}

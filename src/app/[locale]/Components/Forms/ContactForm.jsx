@@ -80,7 +80,9 @@ export default function ContactForm() {
                 locale || "en"
               )}
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name"
+              onChange={(name, value) => setName(value)}
+              setEmail
               required
             />
 
@@ -93,7 +95,8 @@ export default function ContactForm() {
                 locale || "en"
               )}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              onChange={(name, value) => setEmail(value)}
               required
             />
 
@@ -106,7 +109,8 @@ export default function ContactForm() {
                 locale || "en"
               )}
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              name="subject"
+              onChange={(name, value) => setSubject(value)}
               required
             />
 
@@ -119,7 +123,8 @@ export default function ContactForm() {
                 locale || "en"
               )}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              name="message"
+              onChange={(name, value) => setMessage(value)}
             />
 
             <div>

@@ -38,7 +38,13 @@ function Checkout() {
 
   const router = useRouter();
 
-  const { guestUser } = useCartContext();
+  // const { guestUser } = useCartContext();
+
+  // console.log(typeof window !== "undefined" && localStorage.getItem(`${siteName}_guestuser`))
+
+  const guestUserStatus =
+    typeof window !== "undefined" &&
+    localStorage.getItem(`${siteName}_guestuser`);
 
   const { userData } = useAuthContext();
 
@@ -117,7 +123,7 @@ function Checkout() {
   useEffect(() => {
     fetchCustomerData();
 
-    if (!guestUser && !selectAddressFromList) {
+    if (!guestUserStatus && !selectAddressFromList) {
       if (
         userData?.id &&
         Array.isArray(savedAddress) &&
@@ -222,6 +228,8 @@ function Checkout() {
       });
   };
 
+  console.log(orderPlaceLoading)
+
   if (orderPlaceLoading) {
     return <LoadingItem order />;
   } else {
@@ -235,12 +243,13 @@ function Checkout() {
               locale || "en"
             )}
           />
+
           <div className="mobile-container-fixed">
             <div className="lg:pt-10 max-w-[999px] mx-auto grid sm:gap-12 gap-5">
               <div className={`lg:justify-between  lg:gap-0 gap-2`}>
                 {!showAddNewAddress && (
                   <div className="bg-white lg:p-0 p-5 !pb-6 text-center">
-                    {!guestUser ? (
+                    {!guestUserStatus ? (
                       <>
                         <SectionHeader
                           title={getTranslation(
@@ -377,7 +386,7 @@ function Checkout() {
                         )}
                       </>
                     ) : (
-                      <div className="card bg-white grid">
+                      <div className="card bg-white grid sm:p-10">
                         <SectionHeader
                           title={getTranslation(
                             translation[0]?.translations,

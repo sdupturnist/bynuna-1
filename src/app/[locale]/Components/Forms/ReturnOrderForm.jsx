@@ -200,7 +200,11 @@ export default function ReturnOrderForm({ userInfo, data, }) {
           required
           autoComplete="none"
         >
-          <option value="" disabled selected>
+          <option value="" disabled  defaultValue={getTranslation(
+              translation[0]?.translations,
+              "Reason for Return",
+              locale
+            )}>
             
             {getTranslation(
               translation[0]?.translations,
@@ -273,7 +277,10 @@ export default function ReturnOrderForm({ userInfo, data, }) {
             locale
           )}
         
-          onChange={(e) => setDetails(e.target.value)}
+          value={details}
+          name="details"
+          onChange={(name, value) => setDetails(value)}
+
         />
 
         <div>

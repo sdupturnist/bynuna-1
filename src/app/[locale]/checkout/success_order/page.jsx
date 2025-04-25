@@ -41,6 +41,7 @@ export default function SuccessOrder() {
     setValidateAddress(false);
     setPaymentTerms(false);
     setGuestUser(false);
+     typeof window !== "undefined" && localStorage.removeItem(`${siteName}_guestuser`)
   }, []);
 
   return (

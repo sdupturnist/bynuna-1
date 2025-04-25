@@ -6,6 +6,7 @@ import {
   metaStaticData,
   siteLogo,
   siteName,
+  sortByStockStatus,
   woocommerceKey,
 } from "@/app/[locale]/Utils/variables";
 import Alerts from "@/app/[locale]/Components/Alerts";
@@ -46,7 +47,8 @@ export default async function SearchPage({ params, searchParams, params: { local
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
-  
+    
+   const sortedProducts = sortByStockStatus(products);
 
   return (
     <div className="bg-bggray">
@@ -73,7 +75,7 @@ export default async function SearchPage({ params, searchParams, params: { local
           <div className="grid md:grid-cols-3 grid-cols-2 lg:gap-7 gap-3">
              <ProductWrapper
                               locale={locale}
-                              data={products && products}
+                              data={products && sortedProducts}
                               searchParams={searchParams}
                               type="product"
                             />

@@ -23,6 +23,7 @@ import {
   metaStaticData,
   siteAuthor,
   siteName,
+  sortByStockStatus,
   woocommerceKey,
 } from "@/app/[locale]/Utils/variables";
 
@@ -108,6 +109,10 @@ export default async function ProductSingle({
     allProducts.filter(
       (product) => upsell_ids && upsell_ids.includes(product.id)
     );
+
+    
+
+ 
 
   const accordianItems = [
     singleProduct?.description || singleProduct?.acf?.arabic?.description
@@ -477,7 +482,8 @@ export default async function ProductSingle({
                   />
                   <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3 sm:my-10 mb-5">
                     <ProductWrapper
-                      data={upsellProducts && upsellProducts}
+                       locale={locale}
+                      data={upsellProducts && sortByStockStatus(upsellProducts)}
                       searchParams={searchParams}
                       type="product"
                     />
@@ -496,7 +502,8 @@ export default async function ProductSingle({
                     />
                     <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3 sm:my-10 my-5">
                       <ProductWrapper
-                        data={crossSellProducts && crossSellProducts}
+                          locale={locale}
+                            data={crossSellProducts && sortByStockStatus(crossSellProducts)}
                         searchParams={searchParams}
                         type="product"
                       />

@@ -23,16 +23,11 @@ export let OrderPlacedEmailTemplate = (
   vatAmount,
   finalDiscount,
   currency,
-  orderStatus
+  orderStatus,
+  payAmount
 ) => {
   let today = new Date();
 
-  // Calculate Sub-Total dynamically
-  // let cartSubTotal = cartItems.reduce((acc, item) => acc + (item?.price * item?.quantity), 0);
-
-  let total = eligibleFreeShipping === false
-    ? parseInt(cartSubTotal - finalDiscount + parseInt(shippingChargeFinal) + vatAmount)
-    : parseInt(cartSubTotal - finalDiscount + vatAmount)
 
   // Mapping cart items into a string of <tr> for the table
   const orderItems = cartItems
@@ -45,8 +40,8 @@ export let OrderPlacedEmailTemplate = (
       <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px">${
         item?.quantity
       }</td>
-      <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px">AED ${parseInt(item?.price)}</td>
-      <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px">AED ${parseInt((item?.price * item?.quantity))}
+      <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px">AED ${item?.price}</td>
+      <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px">AED ${(item?.price * item?.quantity)}
      </td>
     </tr>`
     )
@@ -161,16 +156,16 @@ export let OrderPlacedEmailTemplate = (
   }</td>
       </tr>
          <tr>
-        <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px" colspan="3"><b>VAT(${parseInt(
+        <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px" colspan="3"><b>VAT(${
           vat?.rate || vat
-        )}%):</b></td>
+        }%):</b></td>
         <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px">AED ${vatAmount}
     
   </td>
       </tr>
       <tr>
         <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px" colspan="3"><b>Total:</b></td>
-        <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px">AED ${total}
+        <td style="font-size:12px;border-right:1px solid #dddddd;border-bottom:1px solid #dddddd;text-align:right;padding:7px">AED ${payAmount}
         </td>
       </tr>
     </tfoot>

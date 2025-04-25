@@ -1,231 +1,213 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-
-
-import "react-country-state-city/dist/react-country-state-city.css";
-import {
-  getTranslation,
-  siteName,
-} from "../../Utils/variables";
-
+import { useEffect, useState } from "react";
 import { useCheckoutContext } from "../../Context/checkoutContext";
 import FloatingLabelInput from "../FloatingLabelInput";
-
-
-
-import "ol/ol.css";
-
+import { getTranslation } from "../../Utils/variables";
 import { useLanguageContext } from "../../Context/LanguageContext";
-import { useParams, useRouter } from "next/navigation";
-
+import { useParams } from "next/navigation";
+import Alerts from "../Alerts";
 
 export default function GuestCheckoutAddressForm() {
- 
+  const params = useParams();
+  const locale = params.locale;
 
-  const params = useParams();  
-  const locale = params.locale; 
+  const {
+    setGuestCheckoutformData,
+    guestCheckoutformData,
+    validationError,
+    checkFormValid,
+    billingAddress,
+    setBillingAddress,
+  } = useCheckoutContext();
 
+  const { translation } = useLanguageContext();
 
-
-
-  const { setValidateGuestCheckoutForm, billingAddress, setBillingAddress } =
-    useCheckoutContext();
-
-    const [country, setCountry] = useState("United Arab Emirates");
-  const [street, setStreet] = useState("");
-  const [houseName, setHousename] = useState("");
-  const [state, setstate] = useState("");
-  const [city, setCity] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-
-  const isValidEmail = (email) => {
-    // Basic email regex pattern
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailPattern.test(email); // Returns true if email is valid, false otherwise
+  const handleChange = (name, value) => {
+    setGuestCheckoutformData({
+      ...guestCheckoutformData,
+      [name]: value,
+    });
   };
 
+  const handleSelectChange = (e) => {
+    const { name, value } = e.target;
+    handleChange(name, value); // Update the country field correctly
+  };
 
-
-    const { translation } = useLanguageContext();
-
-
-  const handleSubmit = async (e) => {
-   
-   
-    const isFormValid =
-      firstName &&
-      phone &&
-      houseName &&
-      street &&
-      city &&
-      state &&
-      country &&
-      isValidEmail(email);
-
-    // If not valid, set the validation state to false
-    if (!isFormValid) {
-      setValidateGuestCheckoutForm(false); // Set form invalid state
-      return; // Prevent submission
-    }
-
-    setValidateGuestCheckoutForm(true);
-
+  const handleFormChange = async (e) => {
     setBillingAddress({
-      firstName: firstName,
+      firstName: guestCheckoutformData.firstName,
       lastName: "",
-      country: country,
-      houseName: houseName,
-      street: street,
+      country: guestCheckoutformData.country,
+      houseName: guestCheckoutformData.houseName,
+      street: guestCheckoutformData.street,
       landmark: "",
-      state: state,
-      city: city,
+      state: guestCheckoutformData.state,
+      city: guestCheckoutformData.city,
       pinCode: "",
-      phone: phone,
-      email: email,
+      phone: guestCheckoutformData.phone,
+      email: guestCheckoutformData.email,
     });
   };
 
   useEffect(() => {
-    billingAddress
-    handleSubmit();
+    billingAddress;
+    handleFormChange();
   }, []);
 
-
-
-
-
-
   return (
-    <form onChange={handleSubmit} autoComplete="none">
+    <form onChange={handleFormChange} autoComplete="none" noValidate>
       <div className="grid gap-8">
+        {!checkFormValid && (
+          <Alerts
+            center
+            status="red"
+            title={getTranslation(
+              translation[0]?.translations,
+              "Please fill in all required fields or provide valid information, highlighted in red, before proceeding.",
+              locale || "en"
+            )}
+          />
+        )}
+
         <FloatingLabelInput
+          name="firstName"
           type="text"
-          className={`${!firstName ? "border !border-red-400" : ""} input`}
-          label={getTranslation(translation[0]?.translations,"First name",locale || 'en')}
-          onChange={(e) => setFirstName(e.target.value)}
+          className={`${
+            validationError.firstName ? "border !border-red-400" : ""
+          } input`}
+          label={getTranslation(
+            translation[0]?.translations,
+            "Full Name",
+            locale || "en"
+          )}
+          onChange={handleChange}
           required
           autoComplete="none"
-          value={firstName}
+          value={guestCheckoutformData.firstName}
+          alphabet
         />
 
         <FloatingLabelInput
-          type="number"
-          className={`${!phone ? "border !border-red-400" : ""} input`}
-          label={getTranslation(translation[0]?.translations,"Phone",locale || 'en')}
-          onChange={(e) => setPhone(e.target.value)}
+          name="phone"
+          type="tel"
+          className={`${
+            validationError.phone ? "border !border-red-400" : ""
+          } input `}
+          label={getTranslation(
+            translation[0]?.translations,
+            "Phone",
+            locale || "en"
+          )}
+          onChange={handleChange}
           required
           autoComplete="none"
-          value={phone}
+          value={guestCheckoutformData.phone}
+          phoneNumber
         />
 
         <FloatingLabelInput
+          name="email"
           type="email"
           className={`${
-            !isValidEmail(email) ? "border !border-red-400" : ""
+            validationError.email ? "border !border-red-400" : ""
           } input`}
-          label={getTranslation(translation[0]?.translations,"Email",locale || 'en')}
-          onChange={(e) => {
-            setEmail(e.target.value);
-          }}
+          label={getTranslation(
+            translation[0]?.translations,
+            "Email",
+            locale || "en"
+          )}
+          onChange={handleChange}
           required
           autoComplete="none"
-          value={email}
-        />
-
-      
-        <FloatingLabelInput
-          type="text"
-          className={`${!houseName ? "border !border-red-400" : ""} input`}
-          label={getTranslation(translation[0]?.translations,"Address",locale || 'en')}
-          onChange={(e) => setHousename(e.target.value)}
-          required
-          autoComplete="none"
-          value={houseName}
+          value={guestCheckoutformData.email}
         />
 
         <FloatingLabelInput
+          name="houseName"
           type="text"
-          className={`${!street ? "border !border-red-400" : ""} input`}
-          label={getTranslation(translation[0]?.translations,"Street",locale || 'en')}
-          onChange={(e) => setStreet(e.target.value)}
+          className={`${
+            validationError.houseName ? "border !border-red-400" : ""
+          } input`}
+          label={getTranslation(
+            translation[0]?.translations,
+            "Address",
+            locale || "en"
+          )}
+          onChange={handleChange}
           required
           autoComplete="none"
-          value={street}
+          value={guestCheckoutformData.houseName}
         />
 
         <FloatingLabelInput
+          name="street"
           type="text"
-          className={`${!city ? "border !border-red-400" : ""} input`}
-          label={getTranslation(translation[0]?.translations,"City",locale || 'en')}
-          onChange={(e) => setCity(e.target.value)}
+          className={`${
+            validationError.street ? "border !border-red-400" : ""
+          } input`}
+          label={getTranslation(
+            translation[0]?.translations,
+            "Street",
+            locale || "en"
+          )}
+          onChange={handleChange}
           required
           autoComplete="none"
-          value={city}
+          value={guestCheckoutformData.street}
         />
 
         <FloatingLabelInput
+          name="city"
           type="text"
-          className={`${!state ? "border !border-red-400" : ""} input`}
-          label={getTranslation(translation[0]?.translations,"State",locale || 'en')}
-          onChange={(e) => setstate(e.target.value)}
+          className={`${
+            validationError.city ? "border !border-red-400" : ""
+          } input`}
+          label={getTranslation(
+            translation[0]?.translations,
+            "City",
+            locale || "en"
+          )}
+          onChange={handleChange}
           required
           autoComplete="none"
-          value={state}
+          value={guestCheckoutformData.city}
+          alphaNuemricOnly
         />
 
-<div className="w-full">
-          {/* <label className=" bg-white block mb-2 transform transition-all cursor-pointer text-start label-input w-fit   uppercase text-primary  text-[12px] ">
-            {getTranslation(translation[0]?.translations, "Country", locale)}
-          </label> */}
+        <FloatingLabelInput
+          name="state"
+          type="text"
+          className={`${
+            validationError.state ? "border !border-red-400" : ""
+          } input`}
+          label={getTranslation(
+            translation[0]?.translations,
+            "State",
+            locale || "en"
+          )}
+          onChange={handleChange}
+          required
+          autoComplete="none"
+          value={guestCheckoutformData.state}
+          alphaNuemricOnly
+        />
+
+        <div className="w-full">
           <select
+            name="country"
             className="input w-full"
-            onChange={(e) => setCountry(e.target.value)}
+            onChange={handleSelectChange} // Use handleSelectChange for select
+            value={guestCheckoutformData.country} // Make sure the select is controlled
           >
-            <option value={country} selected>
-              {getTranslation(translation[0]?.translations, country, locale)}
-            </option>
-            <option value="Bahrain">
-              {getTranslation(translation[0]?.translations, "Bahrain", locale)}
-            </option>
-            <option value="Kuwait">
-              {getTranslation(translation[0]?.translations, "Kuwait", locale)}
-            </option>
-            <option value="Oman">
-              {getTranslation(translation[0]?.translations, "Oman", locale)}
-            </option>
-            <option value="Qatar">
-              {getTranslation(translation[0]?.translations, "Qatar", locale)}
-            </option>
-            <option value="Saudi Arabia">
-              {getTranslation(
-                translation[0]?.translations,
-                "Saudi Arabia",
-                locale
-              )}
-            </option>
-            <option value="United Arab Emirates">
-              {getTranslation(
-                translation[0]?.translations,
-                "United Arab Emirates",
-                locale
-              )}
-            </option>
+            <option value="United Arab Emirates">United Arab Emirates</option>
+            <option value="Bahrain">Bahrain</option>
+            <option value="Kuwait">Kuwait</option>
+            <option value="Oman">Oman</option>
+            <option value="Qatar">Qatar</option>
+            <option value="Saudi Arabia">Saudi Arabia</option>
           </select>
         </div>
-
-        {/* <FloatingLabelInput
-          type="text"
-          className={`${!country ? "border !border-red-400" : ""} input`}
-          label={getTranslation(translation[0]?.translations,"Country",locale || 'en')}
-          onChange={(e) => setCountry(e.target.value)}
-          required
-          autoComplete="none"
-          value={country}
-        /> */}
-
-     
       </div>
     </form>
   );

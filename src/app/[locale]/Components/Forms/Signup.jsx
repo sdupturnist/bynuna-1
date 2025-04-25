@@ -215,8 +215,10 @@ export default function Signup({ customers }) {
               )}
               className="input"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              name="userName"
+              onChange={(name, value) => setUsername(value)}
               required
+              alphabet
             />
 
             <FloatingLabelInput
@@ -227,7 +229,8 @@ export default function Signup({ customers }) {
                 locale || "en"
               )}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              onChange={(name, value) => setEmail(value)}
               required
             />
             <DatePicker
@@ -256,7 +259,8 @@ export default function Signup({ customers }) {
                 locale || "en"
               )}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              onChange={(name, value) => setPassword(value)}
               required
               password
             />
@@ -269,7 +273,8 @@ export default function Signup({ customers }) {
                 locale || "en"
               )}
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              name="confirmPassword"
+              onChange={(name, value) => setConfirmPassword(value)}
               required
               password
             />

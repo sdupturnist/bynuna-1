@@ -207,8 +207,7 @@ export default function WriteReviewForm({ productId}) {
           <FloatingLabelInput
             required={true}
             textarea
-            name=""
-            id=""
+            name="review"
             className="input h-[100px]"
             label={getTranslation(
               translation[0]?.translations,
@@ -216,7 +215,7 @@ export default function WriteReviewForm({ productId}) {
               locale || 'en'
             )}
             value={review}
-            onChange={(e) => setReview(e.target.value)}
+            onChange={(name, value) => setReview(value)}
             rows="10"
           />
 

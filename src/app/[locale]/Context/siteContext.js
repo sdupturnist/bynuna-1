@@ -50,6 +50,7 @@ export const SiteProvider = ({ children }) => {
   const [queryUpdated, setQueryUpdated] = useState(false);
   const [savedAddress, setSavedAddress] = useState([]);
   const [returnDays, setReturnDays] = useState(0);
+  const [cartConfirmation, setCartConfirmation] = useState([]);
 
   //CATEGORIES MENUS
 
@@ -334,6 +335,30 @@ export const SiteProvider = ({ children }) => {
     }
   };
 
+
+  //CART CONFIRMATION
+  const fetchCartConfirmation = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}wp-json/cart-confirmation/v1/data`,
+        {
+          next: { revalidate: 60 },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setCartConfirmation(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
+
+
+
   //ACTIVE CURRENCY
 
   useEffect(() => {
@@ -351,6 +376,7 @@ export const SiteProvider = ({ children }) => {
   }, [activeCurrency]);
 
   useEffect(() => {
+    fetchCartConfirmation()
     getReturnDays();
     mainCatMenuData();
     footerMenuPagesData();
@@ -423,6 +449,7 @@ export const SiteProvider = ({ children }) => {
         setShowFilter,
         queryUpdated,
         setQueryUpdated,
+        cartConfirmation, setCartConfirmation,
         loading,
         savedAddress,
         setSavedAddress,

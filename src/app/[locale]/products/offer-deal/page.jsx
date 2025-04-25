@@ -6,6 +6,7 @@ import {
   metaStaticData,
   siteLogo,
   siteName,
+  sortByStockStatus,
 } from "../../Utils/variables";
 
 import Alerts from "../../Components/Alerts";
@@ -79,6 +80,8 @@ export default async function BrandPage({
     .catch((error) => console.error("Error:", error));
 
  
+       const sortedProducts = sortByStockStatus(products);
+
 
   return (
     <div className="bg-bggray">
@@ -106,7 +109,7 @@ export default async function BrandPage({
             <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
               <ProductWrapper
                 locale={locale}
-                data={products && products}
+                data={products && sortedProducts}
                 searchParams={searchParams}
                 type="product"
               />

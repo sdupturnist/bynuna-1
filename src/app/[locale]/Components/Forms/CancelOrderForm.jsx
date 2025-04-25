@@ -166,7 +166,11 @@ export default function CancelOrderForm({ userInfo, data }) {
           required
           autoComplete="none"
         >
-          <option value="" disabled selected>
+          <option value="" disabled defaultValue={getTranslation(
+              translation[0]?.translations,
+              "Reason for cancel",
+              locale || 'en'
+            )}>
             {getTranslation(
               translation[0]?.translations,
               "Reason for cancel",
@@ -227,15 +231,17 @@ export default function CancelOrderForm({ userInfo, data }) {
         </select>
 
         <FloatingLabelInput
-          textarea
-          className="input"
-          label={getTranslation(
-            translation[0]?.translations,
-            "Any other reasons?",
-            locale || 'en'
-          )}
-          onChange={(e) => setDetails(e.target.value)}
-        />
+  textarea
+  className="input"
+  label={getTranslation(
+    translation[0]?.translations,
+    "Any other reasons?",
+    locale || 'en'
+  )}
+  name="details"
+  value={details} 
+  onChange={(name, value) => setDetails(value)} 
+/>
 
         <div>
           <button

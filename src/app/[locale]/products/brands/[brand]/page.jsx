@@ -6,6 +6,7 @@ import {
   metaStaticData,
   siteLogo,
   siteName,
+  sortByStockStatus,
   woocommerceKey,
 } from "@/app/[locale]/Utils/variables";
 import Alerts from "@/app/[locale]/Components/Alerts";
@@ -87,6 +88,10 @@ export default async function BrandPage({
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));
 
+
+    const sortedProducts = sortByStockStatus(products);
+
+
   return (
     <div className="bg-bggray">
       <section className="p-0">
@@ -119,7 +124,7 @@ export default async function BrandPage({
             <div className="grid xl:grid-cols-4 grid-cols-2 lg:gap-7 gap-3">
               <ProductWrapper
                 locale={locale}
-                data={products && products}
+                data={products && sortedProducts}
                 searchParams={searchParams}
                 type="product"
               />

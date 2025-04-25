@@ -131,7 +131,10 @@ export default function ResetPasswordForm() {
           <FloatingLabelInput
             type="password"
             value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+         
+            name="newPassword"
+            onChange={(name, value) => setNewPassword(value)}
+
             label={getTranslation(
               translation[0]?.translations,
               "Enter new password",
@@ -145,7 +148,9 @@ export default function ResetPasswordForm() {
           <FloatingLabelInput
             type="password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+             name="ci=onfirmPassword"
+            onChange={(name, value) => setConfirmPassword(value)}
+
             label={getTranslation(
               translation[0]?.translations,
               "Confirm new password",

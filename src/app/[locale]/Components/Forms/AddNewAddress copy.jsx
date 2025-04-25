@@ -628,7 +628,7 @@ export default function AddNewAddressForm({ onAddressAdded }) {
           className="input"
           label={getTranslation(
             translation[0]?.translations,
-            "First name",
+            "Full Name",
             locale
           )}
           onChange={(e) => setFirstName(e.target.value)}
@@ -638,7 +638,7 @@ export default function AddNewAddressForm({ onAddressAdded }) {
         />
 
         <FloatingLabelInput
-          type="number"
+        type="tel"
           className="input"
           label={getTranslation(translation[0]?.translations, "Phone", locale)}
           onChange={(e) => setPhone(e.target.value)}

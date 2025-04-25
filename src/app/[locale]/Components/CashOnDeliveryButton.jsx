@@ -22,7 +22,6 @@ import {
 } from "../Utils/variables";
 import { OrderPlacedEmailTemplate } from "../Utils/MailTemplates";
 import { useSiteContext } from "../Context/siteContext";
-import { use } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { userEmail } from "../Utils/UserInfo";
 
@@ -46,11 +45,7 @@ export default function CashOnDeliveryPayment({ userData }) {
     shippingCharge,
     setDiscount,
     guestUserData,
-    guestUser,
-    setGuestUserDataValidation,
-    setGuestUser,
     payAmount,
-    haveShippingCharge,
     discountType,
     vat,
     vatAmount,
@@ -61,18 +56,20 @@ export default function CashOnDeliveryPayment({ userData }) {
   const {
     validateGuestCheckoutForm,
     billingAddress,
-    validateAddress,
     setValidateAddress,
     setUpdatePaymentStatus,
-    validateTerms,
     setValidateTerms,
     paymentTerms,
     setPaymentTerms,
     setBillingAddress,
     identificationTerms,
-    setIdentificationsTerms,
     setValidateGuestCheckoutForm,
     setOrderPlaceLoading,
+    guestCheckoutformData, 
+    setGuestCheckoutformData,
+    setValidationError,
+    setCheckFormValid,
+    
   } = useCheckoutContext();
 
   const { token } = useJwt();
@@ -98,11 +95,19 @@ export default function CashOnDeliveryPayment({ userData }) {
     setValidateTerms(false);
   }, []);
 
+
+
+  //NEW
+  const guestUser =
+    typeof window !== "undefined" &&
+    localStorage.getItem(`${siteName}_guestuser`);
+
+  
   const notifyAddress = () =>
     toast.error(
       getTranslation(
         translation[0]?.translations,
-        "Please select a billing address",
+         "Please select a billing address",
         locale || "en"
       )
     );
@@ -124,11 +129,12 @@ export default function CashOnDeliveryPayment({ userData }) {
       )
     );
 
+    //NEW
   const validateGuestaddressForm = () =>
     toast.error(
       getTranslation(
         translation[0]?.translations,
-        "Please fill the  billing address completely.",
+        "Please fill in all required fields or provide valid information, highlighted in red, before proceeding.",
         locale || "en"
       )
     );
@@ -136,15 +142,61 @@ export default function CashOnDeliveryPayment({ userData }) {
   const hasLicenceItems =
     cartItems && cartItems?.some((item) => item?.isNeedLicence === "yes");
 
+
+//NEW
+  //GUEST USER FORM VALIDATION
+  const validate = () => {
+      const newErrors = {};
+  
+      if (!guestCheckoutformData.firstName.trim()) newErrors.firstName = 'First name is required';
+  
+      if (!guestCheckoutformData.phone.trim()) {
+        newErrors.phone = 'Phone is required';
+      } else if (!/^\d{10}$/.test(guestCheckoutformData.phone)) {
+        newErrors.phone = 'Phone must be 10 digits';
+      }
+  
+      if (!guestCheckoutformData.email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/\S+@\S+\.\S+/.test(guestCheckoutformData.email)) {
+        newErrors.email = 'Email is invalid';
+      }
+  
+      if (!guestCheckoutformData.street.trim()) newErrors.street = 'Street is required';
+      if (!guestCheckoutformData.houseName.trim()) newErrors.houseName = 'House name is required';
+      if (!guestCheckoutformData.state.trim()) newErrors.state = 'State is required';
+      if (!guestCheckoutformData.city.trim()) newErrors.city = 'City is required';
+  
+      return newErrors;
+    };
+    
+
+ 
+
+
   // Handle the payment and order creation logic
   const handlePayment = async () => {
     if (guestUser) {
-      if (!validateGuestCheckoutForm) {
-        validateGuestaddressForm();
-        return;
-      }
+     
+     
+      //NEW
+      const validationErrors = validate();
+    if (Object.keys(validationErrors).length === 0) {
+      // alert('Form submitted successfully!');
+      // console.log(formData);
+      setCheckFormValid(true)
+      // submit to server here
+    } else {
+      setValidationError(validationErrors);
+      setCheckFormValid(false)
+      validateGuestaddressForm();
+      return false
+    }
 
-      setValidateGuestCheckoutForm(true);
+     
+
+
+
     } else {
       if (
         billingAddress === null ||
@@ -274,17 +326,7 @@ export default function CashOnDeliveryPayment({ userData }) {
                 phone: userData?.phone || billingAddress?.phone || "",
               },
               tax_lines: [
-                {
-                  id: 1200,
-                  rate_code: "VAT-1",
-                  rate_id: 2,
-                  label: "VAT",
-                  compound: false,
-                  tax_total: "0.00",
-                  shipping_tax_total: "0.00",
-                  rate_percent: 5,
-                  meta_data: [],
-                },
+                vat
               ],
               line_items: filteredItems || [],
               coupon_lines:
@@ -329,7 +371,6 @@ export default function CashOnDeliveryPayment({ userData }) {
             );
 
             if (response.ok) {
-
               setCartItems([]);
               setCartSubTotal(0);
               setCartTotal(0);
@@ -345,13 +386,16 @@ export default function CashOnDeliveryPayment({ userData }) {
                 expires: 1 / 1440,
               });
 
-              setOrderPlaceLoading(false);
-              
+            
+
               router.push(
                 `${homeUrl}${locale}/checkout/success_order?user_type=${
                   userEmail === undefined ? "guest" : "account"
                 }`
               );
+
+
+          
 
 
               //   // Send email notification to the user
@@ -378,7 +422,8 @@ export default function CashOnDeliveryPayment({ userData }) {
                   vatAmount,
                   finalDiscount,
                   currency,
-                  "Pending"
+                  "Pending",
+                  payAmount
                 ),
               });
 
@@ -404,11 +449,28 @@ export default function CashOnDeliveryPayment({ userData }) {
                   vatAmount,
                   finalDiscount,
                   currency,
-                  "Pending"
+                  "Pending",
+                  payAmount
                 ),
               });
 
-              
+
+              setOrderPlaceLoading(false);
+
+
+              //NEW
+              setGuestCheckoutformData({
+                country: "United Arab Emirates",
+                firstName: "",
+                phone: "",
+                email: "",
+                houseName: "",
+                street: "",
+                city: "",
+                state: "",
+              });
+
+
             } else {
               setOrderPlaceLoading(false);
               throw new Error("Failed to create order in WooCommerce");

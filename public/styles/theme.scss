@@ -45,6 +45,11 @@ body {
 {font-family: "Cairo", serif !important;}
 
 html[lang="ar"] {
+
+  input[type="tel"] {
+    text-align: right !important;
+  }
+
   .heading,
   h1,
   h2,
@@ -1647,4 +1652,6 @@ html[lang="ar"] {
     @apply absolute top-[50%] right-4 translate-y-[-50%] cursor-pointer text-[16px]
     
   }
+  
+
   

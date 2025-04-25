@@ -43,6 +43,7 @@ const SuccessPageContent = () => {
     setCouponCode,
     setDiscount,
     setGuestUser,
+    payAmount
   } = useCartContext();
 
   const { guestUser } = useCartContext();
@@ -56,6 +57,7 @@ const SuccessPageContent = () => {
     setUpdatePaymentStatus,
     setValidateTerms,
     setPaymentTerms,
+    setGuestCheckoutformData
   } = useCheckoutContext();
 
   const { token } = useJwt();
@@ -141,7 +143,8 @@ const SuccessPageContent = () => {
                 emailData[0]?.vatAmount,
                 emailData[0]?.finalDiscount,
                 emailData[0]?.activeCurrencySymbol,
-                "Processing"
+                "Processing",
+                emailData[0]?.payAmount
               ),
             });
 
@@ -167,7 +170,8 @@ const SuccessPageContent = () => {
                 emailData[0]?.vatAmount,
                 emailData[0]?.finalDiscount,
                 emailData[0]?.activeCurrencySymbol,
-                "Processing"
+                "Processing",
+                emailData[0]?.payAmount
               ),
             });
 
@@ -181,6 +185,21 @@ const SuccessPageContent = () => {
             setValidateAddress(false);
             setPaymentTerms(false);
             setGuestUser(false);
+            typeof window !== "undefined" && localStorage.removeItem(`${siteName}_guestuser`)
+
+
+              //NEW
+              setGuestCheckoutformData({
+                country: "United Arab Emirates",
+                firstName: "",
+                phone: "",
+                email: "",
+                houseName: "",
+                street: "",
+                city: "",
+                state: "",
+              });
+
 
             router.push(
               `${homeUrl}${locale}/checkout/success_order?user_type=${

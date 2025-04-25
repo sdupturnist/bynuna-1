@@ -12,7 +12,7 @@ import { useSiteContext } from "../../Context/siteContext";
 import Alerts from "../Alerts";
 import { useParams, useRouter } from "next/navigation";
 
-export default function AddNewAddressForm() { 
+export default function AddNewAddressForm() {
   const router = useRouter();
   const params = useParams();
   const locale = params.locale;
@@ -159,23 +159,27 @@ export default function AddNewAddressForm() {
           className="input"
           label={getTranslation(
             translation[0]?.translations,
-            "First name",
+            "Full Name",
             locale
           )}
-          onChange={(e) => setFirstName(e.target.value)}
+          name="firstName"
+          onChange={(name, value) => setFirstName(value)}
           required
           autoComplete="none"
           value={firstName}
+          alphabet
         />
 
         <FloatingLabelInput
-          type="number"
+         type="tel"
           className="input"
           label={getTranslation(translation[0]?.translations, "Phone", locale)}
-          onChange={(e) => setPhone(e.target.value)}
+          name="phone"
+          onChange={(name, value) => setPhone(value)}
           required
           autoComplete="none"
           value={phone}
+          phoneNumber
         />
 
         <FloatingLabelInput
@@ -186,7 +190,8 @@ export default function AddNewAddressForm() {
             "Address",
             locale
           )}
-          onChange={(e) => setHousename(e.target.value)}
+          name="houseName"
+          onChange={(name, value) => setHousename(value)}
           required
           autoComplete="none"
           value={houseName}
@@ -196,38 +201,45 @@ export default function AddNewAddressForm() {
           type="text"
           className="input"
           label={getTranslation(translation[0]?.translations, "Street", locale)}
-          onChange={(e) => setStreet(e.target.value)}
+         name="street"
+          onChange={(name, value) => setStreet(value)}
           required
           autoComplete="none"
           value={street}
+          
         />
 
         <FloatingLabelInput
           type="text"
           className="input"
           label={getTranslation(translation[0]?.translations, "City", locale)}
-          onChange={(e) => setCity(e.target.value)}
+          name="city"
+          onChange={(name, value) => setCity(value)}
           required
           autoComplete="none"
           value={city}
+          alphaNuemricOnly
         />
 
         <FloatingLabelInput
           type="text"
           className="input"
           label={getTranslation(translation[0]?.translations, "State", locale)}
-          onChange={(e) => setstate(e.target.value)}
+        name="state"
+          onChange={(name, value) => setstate(value)}
           required
           autoComplete="none"
           value={state}
+          alphaNuemricOnly
         />
 
         <div className="w-full">
           <select
             className="input w-full"
             onChange={(e) => setCountry(e.target.value)}
+            
           >
-            <option value={country} selected>
+            <option value={country} defaultValue={country}>
               {getTranslation(translation[0]?.translations, country, locale)}
             </option>
             <option value="Bahrain">

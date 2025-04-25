@@ -50,6 +50,7 @@ function add_cors_headers() {
         'https://testwithupturnist.com', // Your production domain
         'https://bynuna.ae',          // Another production domain
         'https://admin.testwithupturnist.com', // Your subdomain or admin panel
+		'https://admin.bynuna.ae', // Your subdomain or admin panel
     ];
 
     // Get the origin of the request (the domain making the request)
@@ -132,7 +133,7 @@ add_action('admin_head', function () {
 //WIDGET FOR ANALYTICS
 function custom_dashboard_widget() {
     // Fetch data from the API
-    $url = 'https://admin.testwithupturnist.com/wp-json/wc-analytics/reports/revenue/stats?consumer_key=ck_c10388e89a3e74feeaf32ec349bf9f810f8071bc&consumer_secret=cs_48ef9b20fbd7ca0883b3cb20e9cd0d78398f3d03&orderby=date&order=desc&after=2024-09-21T00%3A00%3A00&page=1&per_page=25&interval=day&_locale=user';
+    $url = 'https://admin.bynuna.ae/wp-json/wc-analytics/reports/revenue/stats?consumer_key=ck_c10388e89a3e74feeaf32ec349bf9f810f8071bc&consumer_secret=cs_48ef9b20fbd7ca0883b3cb20e9cd0d78398f3d03&orderby=date&order=desc&after=2024-09-21T00%3A00%3A00&page=1&per_page=25&interval=day&_locale=user';
     $response = wp_remote_get($url);
 
     if (is_wp_error($response)) {
@@ -407,7 +408,7 @@ function display_recent_orders() {
     $consumer_secret = 'cs_48ef9b20fbd7ca0883b3cb20e9cd0d78398f3d03';
     
     // Base API URL
-    $base_url = 'https://admin.testwithupturnist.com/wp-json/wc/v3/orders';
+    $base_url = 'https://admin.bynuna.ae/wp-json/wc/v3/orders';
 
     // Number of orders per page (set to 5 for the most recent 5 orders)
     $per_page = 5;
@@ -457,7 +458,7 @@ function display_recent_orders() {
 
             // Render each order row
             echo '<tr>';
-            echo '<td><a href="https://admin.testwithupturnist.com/wp-admin/post.php?post=' . $order_id . '&action=edit">#' . $order_id . '</a></td>';
+            echo '<td><a href="https://admin.bynuna.ae/wp-admin/post.php?post=' . $order_id . '&action=edit">#' . $order_id . '</a></td>';
             echo '<td>' . esc_html($customer_name) . '</td>';
             echo '<td style="' . $status_color . '">' . esc_html($order_status) . '</td>';
             echo '<td>' . esc_html($order_total) . '</td>';
@@ -4047,3 +4048,99 @@ function update_return_days(WP_REST_Request $request) {
 
     return new WP_REST_Response(['message' => 'Return Days updated successfully.'], 200);
 }
+
+
+
+
+//CONFIRMATION POPUP FOR ADDTOCART
+add_action('admin_menu', 'add_cart_confirmation_menu');
+
+function add_cart_confirmation_menu() {
+    add_menu_page(
+        'Cart Confirmation',        // Page title
+        'Cart Confirmation',        // Menu title
+        'manage_options',           // Capability
+        'cart-confirmation-page',   // Menu slug
+        'cart_confirmation_page_content', // Callback function
+        'dashicons-cart',           // Icon (Cart icon from Dashicons)
+        25                           // Position
+    );
+}
+
+function cart_confirmation_page_content() {
+    // Check if user has permission
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    // Handle form submission
+    if (isset($_POST['submit'])) {
+        update_option('cart_confirmation_heading_en', sanitize_text_field($_POST['heading_en']));
+        update_option('cart_confirmation_heading_ar', sanitize_text_field($_POST['heading_ar']));
+        update_option('cart_confirmation_description_en', sanitize_textarea_field($_POST['description_en']));
+        update_option('cart_confirmation_description_ar', sanitize_textarea_field($_POST['description_ar']));
+        echo '<div class="updated"><p>Settings Saved!</p></div>';
+    }
+
+    ?>
+    <div class="wrap">
+        <h1>Cart Confirmation Settings</h1>
+        <form method="POST" action="">
+            <h2>English</h2>
+            <table class="form-table">
+                <tr>
+                    <th><label for="heading_en">Heading</label></th>
+                    <td><input type="text" id="heading_en" name="heading_en" value="<?php echo esc_attr(get_option('cart_confirmation_heading_en')); ?>" class="regular-text" /></td>
+                </tr>
+                <tr>
+                    <th><label for="description_en">Description</label></th>
+                    <td><textarea id="description_en" name="description_en" class="large-text"><?php echo esc_textarea(get_option('cart_confirmation_description_en')); ?></textarea></td>
+                </tr>
+            </table>
+
+            <h2>Arabic</h2>
+            <table class="form-table">
+                <tr>
+                    <th><label for="heading_ar">Heading</label></th>
+                    <td><input type="text" id="heading_ar" name="heading_ar" value="<?php echo esc_attr(get_option('cart_confirmation_heading_ar')); ?>" class="regular-text" /></td>
+                </tr>
+                <tr>
+                    <th><label for="description_ar">Description</label></th>
+                    <td><textarea id="description_ar" name="description_ar" class="large-text"><?php echo esc_textarea(get_option('cart_confirmation_description_ar')); ?></textarea></td>
+                </tr>
+            </table>
+
+            <p class="submit">
+                <input type="submit" name="submit" id="submit" class="button button-primary" value="Save Changes" />
+            </p>
+        </form>
+    </div>
+    <?php
+}
+
+
+// Register custom REST API endpoint
+add_action('rest_api_init', 'register_cart_confirmation_api_endpoint');
+
+function register_cart_confirmation_api_endpoint() {
+    register_rest_route('cart-confirmation/v1', '/data/', array(
+        'methods' => 'GET',
+        'callback' => 'get_cart_confirmation_data',
+        'permission_callback' => '__return_true', // This makes the endpoint public
+    ));
+}
+
+// Callback function to return the cart confirmation data
+function get_cart_confirmation_data() {
+    // Retrieve saved options for English and Arabic
+    $data = array(
+        'heading_en' => get_option('cart_confirmation_heading_en'),
+        'heading_ar' => get_option('cart_confirmation_heading_ar'),
+        'description_en' => get_option('cart_confirmation_description_en'),
+        'description_ar' => get_option('cart_confirmation_description_ar')
+    );
+
+    // Return the data as a response
+    return rest_ensure_response($data);
+}
+

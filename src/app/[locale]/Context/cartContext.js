@@ -21,7 +21,6 @@ export function CartProvider({ children }) {
   const [guestUserData, setGuestUserData] = useState(null);
   const [guestUserDataValidation, setGuestUserDataValidation] = useState(false);
   const [cartListedItems, setCartListedItems] = useState([]);
-  const [haveShippingCharge, setHaveShippingCharge] = useState(0);
   const [maximumCouponApplied, setMaximumCouponApplied] = useState(0);
   const [refundable, setRefundable] = useState('');
   const [payAmount, setPayAmount] = useState(0);
@@ -208,8 +207,6 @@ export function CartProvider({ children }) {
         setGuestUserDataValidation,
         cartListedItems,
         setCartListedItems,
-        haveShippingCharge,
-        setHaveShippingCharge,
         vat, setVat,
         price, setPrice,
         shippingCharge, setShippingCharge

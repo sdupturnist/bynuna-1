@@ -979,6 +979,9 @@ body {
   font-family: "Cairo", serif !important;
 }
 
+html[lang=ar] input[type=tel] {
+  text-align: right !important;
+}
 html[lang=ar] .heading,
 html[lang=ar] h1,
 html[lang=ar] h2,

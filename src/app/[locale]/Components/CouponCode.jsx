@@ -302,6 +302,7 @@ export default function CouponCode({}) {
           onChange={(e) => {
             setCoupon(e.target.value), setCliked(true);
           }}
+          
         />
         {clicked && (
           <button
